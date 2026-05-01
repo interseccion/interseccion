@@ -1,0 +1,47 @@
+{
+  "id": "2025-04-6d072d44-bdfa-43ed-b924-909303e34c67",
+  "title": "Otro sencillito",
+  "type": "Diario",
+  "difficulty": "Fácil",
+  "mystery": "un objeto",
+  "showMystery": false,
+  "notes": "Venga, otro juego más.",
+  "startDate": "2025-08-11",
+  "googleFormLink": "https://forms.gle/nHcdjyeMTsppgsuR7",
+  "clues": [
+    {
+      "type": "link",
+      "content": "https://www.youtube.com/watch?v=_g_tuOS-iZ4",
+      "text": null,
+      "publishDate": "2025-08-11T22:30"
+    },
+    {
+      "type": "image",
+      "content": "https://multimedia.dideco.es/img/literatura/EAN_9788408182542-5.jpg",
+      "text": null,
+      "publishDate": "2025-08-12T12:30"
+    },
+    {
+      "type": "link",
+      "content": "https://www.youtube.com/watch?v=cO1crSpTbwE",
+      "text": null,
+      "publishDate": "2025-08-13T12:30"
+    },
+    {
+      "type": "link",
+      "content": "https://www.youtube.com/watch?v=NchIgi6cZ5U",
+      "text": null,
+      "publishDate": "2025-08-14T12:30"
+    }
+  ],
+  "isSolved": true,
+  "endDate": "2025-08-14",
+  "solution": "Una puerta.",
+  "winner": "Bea",
+  "winnerId": "b23e08d4-ad46-4176-8186-a8346d96872a",
+  "explanation": "1. Es una canción del grupo The Doors (Las Puertas).\n\n2. La puerta de los tres cerrojos lleva la palabra puerta en el nombre.\n\n3. Ana Belén y Víctor Manuel cantan también « La puerta de Alcalá ».\n\n4. Esta canción menciona la puerta varias veces (esta es un poco rebuscada, pero es que es muy fácil).",
+  "winnerExplanation": "La primera canción es del grupo \"The Doors\", que significa puerta. La segunda pista es el libro de la \"puerta\" de los tres cerrojos. La tercera pista es una canción de Ana Belén y Víctor Manuel, que también cantaban la canción titulada la \"puerta\" de Alcalá.\n",
+  "bibliography": "https://www.youtube.com/watch?v=_g_tuOS-iZ4\n\nhttps://www.dideco.es/libros/la-puerta-de-los-tres-cerrojos-9788408182542\nhttps://multimedia.dideco.es/img/literatura/EAN_9788408182542-5.jpg\n\nhttps://www.youtube.com/watch?v=NchIgi6cZ5U\n\nhttps://www.youtube.com/watch?v=cO1crSpTbwE",
+  "utd": 24,
+  "lastUpdated": "2025-08-24T19:32:18.150Z"
+}

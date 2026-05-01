@@ -1,0 +1,52 @@
+{
+  "id": "2025-05-aa392da0-17d0-4412-8d19-6d1dd07b9a1f",
+  "title": "Semanal #2",
+  "type": "Semanal",
+  "difficulty": "Medio",
+  "mystery": "Una canción.",
+  "showMystery": true,
+  "notes": "Ahora que se ha adivinado el anterior y ya sabéis cómo funciona esto, aquí va otro misterio más.",
+  "startDate": "2025-08-24",
+  "googleFormLink": "https://forms.gle/XoHYQKP4WJ2uY1Kw7",
+  "clues": [
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Ophiocordyceps_caloceroides.jpg/800px-Ophiocordyceps_caloceroides.jpg",
+      "text": null,
+      "publishDate": "2025-08-25T10:00"
+    },
+    {
+      "type": "image",
+      "content": "https://external-preview.redd.it/eOPsJiXRoDoHRJApsDaSWo0cfyJE3OmRZ1udnjwigwk.jpg?width=320&crop=smart&auto=webp&s=a2a6c82c6ed9597de12fcdaa7fb3355233328203",
+      "text": null,
+      "publishDate": "2025-09-01T10:00"
+    },
+    {
+      "type": "image",
+      "content": "https://th.bing.com/th/id/OIP.CPGWO9zTfN4qt_3hJo9vzAAAAA?rs=1&pid=ImgDetMain",
+      "text": null,
+      "publishDate": "2025-09-08T10:00"
+    },
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/en/thumb/b/b9/Umbridge.jpeg/250px-Umbridge.jpeg",
+      "text": null,
+      "publishDate": "2025-09-15T10:00"
+    },
+    {
+      "type": "image",
+      "content": "https://th.bing.com/th/id/R.8dca92322e4ef2630b168b37518296ff?rik=avHDAeD5fw6MfA&pid=ImgRaw&r=0",
+      "text": null,
+      "publishDate": "2025-09-22T10:00"
+    }
+  ],
+  "isSolved": true,
+  "endDate": "2025-09-20T18:22",
+  "solution": "Zombie - The Cranberries",
+  "winner": "Belén",
+  "explanation": " 1. Es un hongo del género « Cordyceps », famoso por parasitar otros organismos y dejarlos en un estado de zombi, como el nombre de la canción.\n\n2. Es la postura de la grulla. La palabra « Cranberry » es una adaptación del bajo alemán « kraanbere » al inglés: « kraan » (grulla) + « bere » (baya).\n\n3. Esos dos niños murieron en el atentado de Warrington del IRA, inspiración de la canción « Zombie ».\n\n4. Es Dolores Umbridge, que comparte nombre con Dolores O'Riordan, la vocalista de la banda.\n\n5. Son arándanos rojos (« cranberries »en inglés).",
+  "winnerExplanation": "",
+  "bibliography": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Ophiocordyceps_caloceroides.jpg/800px-Ophiocordyceps_caloceroides.jpg\n\nhttps://external-preview.redd.it/eOPsJiXRoDoHRJApsDaSWo0cfyJE3OmRZ1udnjwigwk.jpg?width=320&crop=smart&auto=webp&s=a2a6c82c6ed9597de12fcdaa7fb3355233328203\n\nhttps://th.bing.com/th/id/OIP.CPGWO9zTfN4qt_3hJo9vzAAAAA?rs=1&pid=ImgDetMain\n\nhttps://upload.wikimedia.org/wikipedia/en/thumb/b/b9/Umbridge.jpeg/250px-Umbridge.jpeg\n\nhttps://th.bing.com/th/id/R.8dca92322e4ef2630b168b37518296ff?rik=avHDAeD5fw6MfA&pid=ImgRaw&r=0",
+  "utd": 168,
+  "lastUpdated": "2025-08-25T16:01:22.114Z"
+}

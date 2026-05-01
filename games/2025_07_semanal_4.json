@@ -1,0 +1,48 @@
+{
+  "id": "2025-07-1fadb28b-c8e8-4cee-b774-478889a6cc94",
+  "title": "Semanal #4",
+  "type": "Semanal",
+  "difficulty": "Fácil",
+  "mystery": "Un tejido",
+  "showMystery": true,
+  "notes": "Ya que a la gente le está costando, aquí va otro más sencillito. Pistas nuevas los viernes a las cinco de la tarde.",
+  "startDate": "2025-10-31",
+  "googleFormLink": "https://forms.gle/M7bN8LEJ1n1XFBe96",
+  "formEntryId": "entry.2009487749",
+  "clues": [
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Schadow_Grabmal_Alexander_2.jpg/1280px-Schadow_Grabmal_Alexander_2.jpg",
+      "text": null,
+      "publishDate": "2025-10-31T16:00"
+    },
+    {
+      "type": "image",
+      "content": "https://media.autoexpress.co.uk/image/private/s--l_ARGE5D--/f_auto,t_content-image-full-desktop@1/v1562227917/autoexpress/0/12/car_photo_538468.jpg",
+      "text": null,
+      "publishDate": "2025-11-07T16:00"
+    },
+    {
+      "type": "image",
+      "content": "https://static.vecteezy.com/system/resources/previews/055/093/547/large_2x/background-of-dry-pine-needles-texture-of-pine-needles-pine-needles-photo.jpg",
+      "text": null,
+      "publishDate": "2025-11-14T16:00"
+    },
+    {
+      "type": "image",
+      "content": "https://sgfm.elcorteingles.es/SGFM/dctm/MEDIA03/202106/28/00118430502403____3__1200x1200.jpg",
+      "text": null,
+      "publishDate": "2025-11-21T16:00"
+    }
+  ],
+  "isSolved": true,
+  "endDate": "2025-12-19",
+  "solution": "Punto",
+  "winner": "Pata",
+  "winnerId": "eb1f03df-9132-4233-a211-62d5314a3800",
+  "explanation": "1. Las tres Moiras.\n2. Fiat Punto.\n3. Agujas de pino.\n4. Aguja de cerdo.",
+  "winnerExplanation": "Las tejedoras, el Fiat punto, las agujas de pino y el filete de aguja.... Tejer + punto+ agujas = ....",
+  "bibliography": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Schadow_Grabmal_Alexander_2.jpg/1280px-Schadow_Grabmal_Alexander_2.jpg\n\n\nhttps://www.autoexpress.co.uk/fiat/punto/13869/fiat-punto-pictures\n\nhttps://media.autoexpress.co.uk/image/private/s--l_ARGE5D--/f_auto,t_content-image-full-desktop@1/v1562227917/autoexpress/0/12/car_photo_538468.jpg\n\n\nhttps://es.vecteezy.com/foto/55093547-antecedentes-de-seco-pino-agujas-textura-de-pino-agujas-pino-agujas\n\nhttps://static.vecteezy.com/system/resources/previews/055/093/547/large_2x/background-of-dry-pine-needles-texture-of-pine-needles-pine-needles-photo.jpg\n\n\nhttps://www.elcorteingles.es/supermercado/0110118430502403-filete-de-aguja-de-cerdo/\n\nhttps://sgfm.elcorteingles.es/SGFM/dctm/MEDIA03/202106/28/00118430502403____3__1200x1200.jpg",
+  "utd": 168,
+  "lastUpdated": "2025-12-19T19:39:21.639Z"
+}

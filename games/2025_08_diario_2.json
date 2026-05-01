@@ -1,0 +1,72 @@
+{
+  "id": "2025-08-62ee73f2-d27f-4378-b2df-e1980493927c",
+  "title": "Diario #2",
+  "type": "Diario",
+  "difficulty": "Medio",
+  "mystery": "Una persona",
+  "showMystery": true,
+  "notes": "Pistas nuevas todos los días a las cinco de la tarde.",
+  "startDate": "2025-12-18",
+  "googleFormLink": "https://forms.gle/3ZmvprnSEhxwySXY7",
+  "formEntryId": "entry.2009487749",
+  "clues": [
+    {
+      "type": "link",
+      "content": "https://music.youtube.com/watch?v=h0OK2oOG1no&si=Np3BxOJIL7YYNOqk",
+      "text": null,
+      "publishDate": "2025-12-18T17:00"
+    },
+    {
+      "type": "link",
+      "content": "https://music.youtube.com/watch?v=Z_yvJ2k8QMQ&si=-Hb4Kqw_LL8ludq6",
+      "text": null,
+      "publishDate": "2025-12-19T17:00"
+    },
+    {
+      "type": "image",
+      "content": "https://m.media-amazon.com/images/I/81prBTYpgpL._SL1500_.jpg",
+      "text": null,
+      "publishDate": "2025-12-20T17:00"
+    },
+    {
+      "type": "link",
+      "content": "https://music.youtube.com/watch?v=zTQ9dAcw8HI&si=yJr0wyeHmkpHN1GH",
+      "text": null,
+      "publishDate": "2025-12-21T17:00"
+    },
+    {
+      "type": "link",
+      "content": "https://music.youtube.com/watch?v=xYEM2dUHPys&si=gycGOqGRmNdSKf2c",
+      "text": null,
+      "publishDate": "2025-12-22T17:00"
+    },
+    {
+      "type": "image",
+      "content": "https://static0.moviewebimages.com/wordpress/wp-content/uploads/2022/02/billy-elliot-best-british-movie-ever.jpeg?q=50&fit=crop&w=1200&h=675&dpr=1.5",
+      "text": null,
+      "publishDate": "2025-12-23T17:00"
+    },
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/commons/2/25/Temple_of_Diana_in_M%C3%A9rida.jpg",
+      "text": null,
+      "publishDate": "2025-12-24T17:00"
+    },
+    {
+      "type": "image",
+      "content": "https://static.wikia.nocookie.net/disney/images/9/92/Han_Solo_and_Chewbacca.jpg",
+      "text": null,
+      "publishDate": "2025-12-25T17:00"
+    }
+  ],
+  "isSolved": true,
+  "endDate": "2026-01-01",
+  "solution": "Michael Jackson",
+  "winner": "Bea",
+  "winnerId": "b23e08d4-ad46-4176-8186-a8346d96872a",
+  "explanation": "1. Conocido como el rey del pop, « Heavy is the crown » hace alusión al peso de la corona.\n2. « Soda pop » es una canción de k-pop que, combinada con la pista anterior, lleva al rey del pop.\n3. « La chica del lago », de Mikel Santiago, es una novela de « thriller » psicológico y suspense. Uno de los videoclips más famosos de la historia es « Thriller », de Michael Jackson.\n4. Michael Jackson popularizó el famoso paso de baile « moonwalk », y esta canción habla de un astronauta.\n5. « El yin y el yen » es una canción de Love of Lesbian. Michael Jackson pasó por varias operaciones para cambiar su color de piel, retratado por el símbolo del Yin Yang.\n6. « Billy Elliot » es una conocida película que comparte la pronunciación de la primera parte del nombre con « Billie Jean », una de sus canciones más conocidas. Además, en la imagen lleva una chaqueta vaquera, y los pantalones vaqueros en inglés son « jeans ».\n7. « Dirty Diana » es una canción de este archiconocido cantante, y la imagen muestra el Templo de Diana, en Mérida.\n8. Chewbacca es un Wookie, y en la canción « Smooth Criminal », a pesar de que dice « are you okay », es conocida popularmente como « Ayuwookie ».",
+  "winnerExplanation": "",
+  "bibliography": "",
+  "utd": 24,
+  "lastUpdated": "2026-01-03T12:28:01.230Z"
+}

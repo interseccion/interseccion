@@ -1,0 +1,47 @@
+{
+  "id": "2025-06-53a62bf7-a9cd-44ff-b922-e4d6a7c90dff",
+  "title": "Semanal #3",
+  "type": "Semanal",
+  "difficulty": "Medio",
+  "mystery": "Un lugar",
+  "showMystery": true,
+  "notes": "Los viernes a las cinco salen pistas. ¡Suerte!",
+  "startDate": "2025-10-02",
+  "googleFormLink": "https://forms.gle/Gyr5o7CARaepSvyq7",
+  "clues": [
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/commons/a/a3/Velazquez-las_hilanderas.jpg",
+      "text": null,
+      "publishDate": "2025-10-03T17:00"
+    },
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/commons/c/c2/Pieter_Bruegel_de_Oude_-_De_val_van_Icarus.jpg",
+      "text": null,
+      "publishDate": "2025-10-10T17:00"
+    },
+    {
+      "type": "text",
+      "content": "Axaxaxas mlö",
+      "text": null,
+      "publishDate": "2025-10-17T17:00"
+    },
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Egypte_louvre_231_visage.jpg",
+      "text": null,
+      "publishDate": "2025-10-24T17:00"
+    }
+  ],
+  "isSolved": true,
+  "endDate": "2025-10-24T20:35:57",
+  "solution": "Laberinto",
+  "winner": "Pata",
+  "winnerId": "eb1f03df-9132-4233-a211-62d5314a3800",
+  "explanation": "1. « La fábula de Aracne », conocida popularmente como « Las hilanderas », es un cuadro de Velázquez que representa a unas mujeres hilando. El símbolo del hilo, muy presente en muchas obras, viene del hilo de Ariadna, quien ayudó a Teseo a salir del laberinto de Cnossos con vida tras matar al minotauro.\n\n2. El segundo cuadro es « Paisaje con la caída de Ícaro », de Brueghel el viejo. La escena muestra a unos labradores al lado del mar, en el que muy al fondo se puede intuir la figura de Ícaro cayendo al mar tras haber escapado del laberinto de Cnossos con su padre, Dédalo.\n\n3. « Axaxaxas mlö » es el título de una obra ficticia en un relato de Borges, « La biblioteca de Babel ». La biblioteca es una estructura laberíntica, y en los relatos de este autor está muy presente la figura del laberinto.\n\n4. Es el busto de Amenenhat III, un faraón de la XII Dinastía. Junto a su pirámide, en Hawara, se cree que había una compleja estructura dedálica conocida como el « Laberinto de Egipto » o «Laberinto de Hawara ». ",
+  "winnerExplanation": "Los dos cuadros hacen referencia a mitos griegos a los que Borges hace referencia en sus cuentos. El texto es parte de un idioma que Borges se inventó para su cuento \"Tlöm, Uqbar, Orbis Tertius\" y, finalmente la escultura es la esfinge del faraón Amenemhat III a quien Borges usó en sus escritos por el laberinto de Hawara. Además Ícaro uye se un laberinto y el mito de las Moras (del mito de Aracne) hacen referencia al hilo que Teseo uso para escapar del laberinto del minotauro ",
+  "bibliography": "",
+  "utd": 168,
+  "lastUpdated": "2025-10-09T21:01:57.327Z"
+}

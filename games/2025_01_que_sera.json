@@ -1,0 +1,52 @@
+{
+  "title": "¿Qué será?",
+  "googleFormLink": "https://forms.gle/zefonZReJY7uV8q58",
+  "notes": "¡Hola! Este es el primer juego. ¡Pulsa aquí para empezar!",
+  "startDate": "2025-06-30",
+  "endDate": "2025-08-16",
+  "clues": [
+    {
+      "type": "link",
+      "content": "https://drive.google.com/file/d/11A1SXAacZGBrBzfbmy-NefuLDV_mKKDe/view?usp=sharing",
+      "text": "Primera pista (audio).",
+      "publishDate": "2025-07-01T10:00"
+    },
+    {
+      "type": "link",
+      "content": "https://drive.google.com/file/d/1svwZ4TxWneI4f9hwytUrESwTvA9IlcDE/view?usp=sharing",
+      "text": "Segunda pista (audio).",
+      "publishDate": "2025-07-08T10:00"
+    },
+    {
+      "type": "link",
+      "content": "https://drive.google.com/file/d/1knve-94Ju--Ac51UQ9lTkA9vkQIWmNaf/view?usp=sharing",
+      "text": "Tercera pista (audio).",
+      "publishDate": "2025-07-15T10:00"
+    },
+    {
+      "type": "link",
+      "content": "https://drive.google.com/file/d/1Nv-A5lUG3RsCwhFHTqSntO664fIybUV9/view?usp=sharing",
+      "text": "Cuarta pista (vídeo).",
+      "publishDate": "2025-07-22T10:00"
+    },
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Bennu_bird.svg/1280px-Bennu_bird.svg.png",
+      "text": "Quinta pista.",
+      "publishDate": "2025-07-29T10:00"
+    }
+  ],
+  "isSolved": true,
+  "solution": "Bohemian Rhapsody",
+  "winner": "Dani",
+  "explanation": "\nLa primera pista es un fragmento de la canción «The  Rose March» de Smashing Pumpkins, perteneciente al disco «American Gothic», cuyo productor fue Roy Thomas Baker: este último también produjo «Bohemian Rhapsody».\n\nLa segunda pista es un fragmento del tango «Caminito», de Carlos Gardel. La letra de la canción la escribió Gabino Coria Peñaloza, un escritor y poeta argentino que murió el 31 de octubre de 1975, fecha en que se publicó «Bohemian Rhapsody».\n\nLa tercera pista es un fragmento de «Ay mamá» de Rigoberta Bandini. Se relaciona con la letra de «Bohemian Rhapsody», pues en esta se dice «Mama» varias veces.\n\nLa cuarta y última pista es un fragmento de Montserrat Caballé cantando la «Casta diva» de la «Norma» de Bellini en las Chorégies d'Orange, un festival de ópera, un año antes de la publicación de «Bohemian Rhapsody». La soprano y el cantante de Queen interpretaron la mítica canción «Barcelona» de los Juegos Olímpicos de 1992, y aunque este murió antes del evento, la mezcla de estilos con ópera (también presente en «Bohemian Rhapsody») destaca bastante.\n\nLa quinta pista es Bennu, y así se llama también el asteroide de la misión OSIRIS-REx, lanzada el 8/9/2016, con objetivo era tomar una muestra de su superficie. Brian May, astrofísico e integrante de Queen, fue el responsable de, en términos simples, crear una imagen del asteroide a partir de los datos disponibles para identificar un lugar seguro para el aterrizaje de la sonda.",
+  "id": "2025-01-game-1751221382773",
+  "lastUpdated": "2025-08-05T19:48:20.304Z",
+  "showMystery": true,
+  "winnerExplanation": "",
+  "type": "Semanal",
+  "difficulty": "Difícil",
+  "mystery": "una canción",
+  "utd": 168,
+  "bibliography": "https://en.wikipedia.org/wiki/American_Gothic_(EP)\nhttps://www.youtube.com/watch?v=z7gw8H7NX38\nhttps://en.wikipedia.org/wiki/Roy_Thomas_Baker\n\n\nhttps://es.wikipedia.org/wiki/Caminito_(canci%C3%B3n)\nhttps://es.wikipedia.org/wiki/Gabino_Coria_Pe%C3%B1aloza#Libros\nhttps://www.youtube.com/watch?v=aOaLH2TVMUY\n\n\nhttps://es.wikipedia.org/wiki/Ay_mam%C3%A1\nhttps://www.letras.com/queen/64295/\n\n\nhttps://fr.wikipedia.org/wiki/Chor%C3%A9gies_d%27Orange\nhttps://fresques.ina.fr/en-scenes/fiche-media/Scenes01015/montserrat-caballe-chante-casta-diva-de-la-norma-de-bellini-aux-choregies-d-orange.html\nhttps://mp4studio.ina.fr/lire/0tfeS_XRwVxNtnj0Nc2I1R8kD_X5Hj2886X6mhzlSLn76Oz1JsSIaAPMUgbU6KAy4ubMoLrrUIQqA4eC-P3caS1vf_AVU74bNFyB31AORiJ44Zbqxxo5JMiArEKX1lKylQJ31WOUmR5XGLvKe6JV4aH1VGXCgb-Mj-2-tXSbUeS_c6v3cvfJCoQ\nhttps://en.wikipedia.org/wiki/Barcelona_(Freddie_Mercury_and_Montserrat_Caball%C3%A9_song)\n\nhttps://es.wikipedia.org/wiki/(101955)_Bennu\nhttps://es.wikipedia.org/wiki/Bennu\nhttps://es.wikipedia.org/wiki/OSIRIS-REx\nhttps://brianmay.com/brian-news/2023/08/brian-may-talks-nasa-asteroid-mission-collaboration-exclusive-interview-videofromspace/"
+}

@@ -1,0 +1,54 @@
+{
+  "id": "2026-01-43018ac8-088b-4c9e-9deb-48a56491b711",
+  "title": "2026 - Semanal 1",
+  "type": "Semanal",
+  "difficulty": "Difícil",
+  "mystery": "Un personaje",
+  "showMystery": false,
+  "notes": "Ya sé que estáis impacientes, así que no os haré esperar más. Qué mejor forma de comenzar marzo que con un nuevo misterio, ¿verdad? ¡Suerte! (Pistas nuevas los viernes a las tres de la tarde).",
+  "startDate": "2026-03-04",
+  "googleFormLink": "https://forms.gle/VVMt2tku3YKPMQsSA",
+  "formEntryId": "",
+  "clues": [
+    {
+      "type": "image",
+      "content": "https://raw.githubusercontent.com/releos/interseccion/refs/heads/main/archivos/2026/d804af43-d859-4f96-aa54-c3aefc842f37_0.jpg",
+      "text": null,
+      "publishDate": "2026-02-27T11:00"
+    },
+    {
+      "type": "image",
+      "content": "https://static.wikia.nocookie.net/happyfeet/images/9/9c/Adelie_Ramon_2.PNG/revision/latest?cb=20141219030651",
+      "text": null,
+      "publishDate": "2026-03-06T15:00"
+    },
+    {
+      "type": "image",
+      "content": "https://externos.uma.es/cultura/fancine/2014/wp-content/uploads/2015/07/Pesadilla-antes-de-Navidad.jpeg",
+      "text": null,
+      "publishDate": "2026-03-13T15:00"
+    },
+    {
+      "type": "image",
+      "content": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg4KbTAAL5Rdb3wwuPu7Rw0Gbo5qWyKybbRRschQ9x86uSrHlengqbFQLZ4B6XfMw-GwgzXOjVADmAMjyKEBHhY_9s2zZJBBnzIA1EPk_YdWErjnik5R1SL-z6WqlF5-SgZ95P_Zig_oYo/s1600/CuentosDelaAlhambra.jpg",
+      "text": null,
+      "publishDate": "2026-03-20T15:00"
+    },
+    {
+      "type": "link",
+      "content": "https://music.youtube.com/watch?v=tI3gI0gLlXM&si=grZAse_IYAp6fLGC",
+      "text": null,
+      "publishDate": "2026-03-27T15:00"
+    }
+  ],
+  "isSolved": false,
+  "endDate": "",
+  "solution": "",
+  "winner": "",
+  "winnerId": "",
+  "explanation": "",
+  "winnerExplanation": "",
+  "bibliography": "https://raw.githubusercontent.com/releos/interseccion/refs/heads/main/archivos/2026/d804af43-d859-4f96-aa54-c3aefc842f37_0.jpg\n\n(Gemini)\n\n\n\nhttps://static.wikia.nocookie.net/happyfeet/images/9/9c/Adelie_Ramon_2.PNG/revision/latest?cb=20141219030651\n\nhttps://happyfeet.fandom.com/wiki/Ram%C3%B3n\n\n\n\nhttps://externos.uma.es/cultura/fancine/2014/wp-content/uploads/2015/07/Pesadilla-antes-de-Navidad.jpeg\n\nhttps://externos.uma.es/cultura/fancine/2015/index.php/programacion/pesadilla-antes-de-navidad/\n\n\n\nhttps://music.youtube.com/watch?v=tI3gI0gLlXM&si=grZAse_IYAp6fLGC\n\n(YouTube Music)",
+  "utd": 168,
+  "lastUpdated": "2026-03-04T21:28:20.515Z"
+}
