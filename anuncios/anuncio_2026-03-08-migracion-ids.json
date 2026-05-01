@@ -1,0 +1,11 @@
+{
+  "id": "cambioid2026",
+  "date": "2026-03-08T22:30:30.049Z",
+  "version": "2026-03-08",
+  "title": "Actualización importante",
+  "content": "<div style=\"text-align: center; font-family: Arial, sans-serif; line-height: 1.4;\">\n    <span style=\"font-size: 2em; font-weight: bold; color: #ff6b6b;\">¡Hola, <span style=\"color: #ff6b6b;\">intersectores</span>! ✨</span>\n    <p style=\"margin-top: 30px; font-size: 1.1em;\">\n        Hoy traemos una gran noticia: hemos renovado por completo la gestión de datos para que todo funcione <span style=\"color: #ff9f1c; font-weight: bold;\">más rápido y mejor que nunca</span>. ¡Estamos impacientes por compartirlo contigo!\n    </p>\n    <p style=\"margin-top: 20px; font-size: 1.1em;\">\n        Si ya tenías un ID creado, te pedimos un pequeño favor: <span style=\"color: #ff6b6b; font-weight: bold;\"><u>borra la caché</u></span> de tu navegador (cookies y datos del sitio) y <span style=\"color: #ff6b6b; font-weight: bold;\"><u>genera un nuevo ID</u></span> (no olvides descargarlo para guardarlo). Después, <span style=\"color: #ff6b6b; font-weight: bold;\"><u>envíanoslo</u></span> a través del enlace junto con tu ID antiguo para que podamos migrar tus datos sin problema.\n    </p>\n    <p style=\"margin-top: 20px; font-size: 1.1em;\">\n        ¡Ah! Y no te pierdas las <span style=\"color: #4ecdc4; font-weight: bold;\">dos pistas ya publicadas</span> del #{2026-01-43018ac8-088b-4c9e-9deb-48a56491b711|misterio actual}. ¡Seguro que te ayudan a avanzar!\n    </p>\n    <p style=\"margin-top: 20px; font-size: 1.3em; color: #ff9f1c; font-weight: bold;\">¡Mucha suerte y gracias por formar parte! 🫶</p>\n</div>",
+  "btnText": "¡Mucha suerte!",
+  "actionType": "link",
+  "actionLabel": "Enviar ID",
+  "actionValue": "https://forms.gle/zjJ5c4ue9YejouE97"
+}

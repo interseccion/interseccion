@@ -1,0 +1,11 @@
+{
+  "id": "migrarid2026",
+  "date": "2026-03-22T19:43:45.543Z",
+  "version": "2026-03-22",
+  "title": "Cambio de ID",
+  "content": "<div style=\"font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; text-align: center;\">\n    <h2 style=\"color: #e74c3c; font-size: 32px; margin-bottom: 15px; font-weight: bold;\">\n        ¡Hola, <span style=\"color: #e74c3c;\">Intersectores</span>! 🎉\n    </h2>\n    <p style=\"margin-bottom: 15px; font-size: 16px; line-height: 1.5;\">\n        Como ya os contamos en el <strong>último anuncio</strong>, hemos mejorado la lógica de procesamiento de datos 🚀 Y, como parte de este cambio, ahora podéis personalizar vuestro <span style=\"color: #27ae60; font-weight: bold;\">nombre de usuario</span> en lugar de usar esa cadena de texto tan larga y aburrida.\n    </p>\n    <p style=\"margin-bottom: 15px; font-size: 16px; line-height: 1.5;\">\n        Si aún tenéis el ID en el formato antiguo, <strong>¡es el momento de migrarlo!</strong> 🔄 Podéis encontrar el enlace en el botón de <span style=\"color: #27BEF5; font-weight: bold;\">MIGRAR ID</span>.\n    </p>\n    <p style=\"margin-bottom: 20px; font-size: 16px; line-height: 1.5;\">\n        Una vez hecho, rellenad el formulario que encontraréis aquí abajo con ambos IDs para que podamos actualizarlo en nuestra base de datos lo antes posible. Recordad que podéis volver a abrir este anuncio desde la pestaña de <strong><u>SOBRE EL PROYECTO</u><strong>.\n    </p>\n    <div style=\"margin: 20px 0;\">\n        <a href=\"https://forms.gle/WvNsdsqoZV93qCRz7\" style=\"display: inline-block; padding: 12px 25px; background-color: #2a7fba; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; transition: background-color 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);\">\n            Rellenar formulario\n        </a>\n    </div>\n    <p style=\"font-style: italic; color: #7f8c8d; font-size: 16px;\">\n        ¡Gracias por seguir jugando y ser parte de esta aventura! ❤️\n    </p>\n</div>",
+  "btnText": "Entendido",
+  "actionType": "link",
+  "actionLabel": "Migrar ID",
+  "actionValue": "https://releos.github.io/migrar_id"
+}

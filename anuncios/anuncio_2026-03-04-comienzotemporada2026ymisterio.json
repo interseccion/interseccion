@@ -1,0 +1,11 @@
+{
+  "id": "comienzo2026",
+  "date": "2026-03-04T21:56:45.808Z",
+  "version": "2026-03-04",
+  "title": "¡Nueva temporada!",
+  "content": "¡Buenas! Nos echabais de menos, ¿verdad? Pues no os preocupéis más, que ya estamos de vuelta a tope.\n\nDe hecho, aquí va #{2026-01-43018ac8-088b-4c9e-9deb-48a56491b711|un nuevo juego} más complicadillo para calentar motores...\n\nPor cierto, también estrenamos %{2026|temporada nueva}, que la pasada ya acabó. :)",
+  "btnText": "¡Mucha suerte!",
+  "actionType": "game",
+  "actionLabel": "Jugar",
+  "actionValue": "2026-01-43018ac8-088b-4c9e-9deb-48a56491b711"
+}

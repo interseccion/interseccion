@@ -1,0 +1,11 @@
+{
+  "id": "fin2025",
+  "date": "2026-01-03T13:26:23.766Z",
+  "version": "2026-01-03",
+  "title": "Fin de temporada",
+  "content": "La %{2025|termporada de 2025} ya ha finalizado. ¡Échale un vistazo al podio final!<br><br>Primer puesto: @{b23e08d4-ad46-4176-8186-a8346d96872a|Bea} (27 puntos)<br>Segundo puesto: @{eb1f03df-9132-4233-a211-62d5314a3800|Pata} (17 puntos)<br>Tercer puesto: @{6|Isma} (3 puntos)<br><br>¡Hasta la próxima, y feliz 2026!",
+  "btnText": "Entendido",
+  "actionType": "season",
+  "actionLabel": "Abrir podio",
+  "actionValue": "2025"
+}
