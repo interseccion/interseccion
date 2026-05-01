@@ -1,0 +1,21 @@
+{
+  "gameId": "2025-08-62ee73f2-d27f-4378-b2df-e1980493927c",
+  "generatedAt": "2026-01-02T17:22:31.268Z",
+  "utdApplied": 24,
+  "entries": [
+    {
+      "id": "afabebe7-02cf-4b36-80d7-1e3e2622ab29",
+      "name": "Dani",
+      "points": 1,
+      "rank": 2,
+      "details": "(5×2) + (0×2) - 7"
+    },
+    {
+      "id": "b23e08d4-ad46-4176-8186-a8346d96872a",
+      "name": "Bea",
+      "points": 3,
+      "rank": 1,
+      "details": "(3×2) + (0×2) - 7"
+    }
+  ]
+}
