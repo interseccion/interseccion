@@ -12,7 +12,7 @@
   "clues": [
     {
       "type": "image",
-      "content": "https://raw.githubusercontent.com/interseccion/interseccion/refs/heads/main/archivos/2026/coche.jpg",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/coche.jpg",
       "text": null,
       "publishDate": "2026-02-27T11:00"
     },
@@ -24,7 +24,7 @@
     },
     {
       "type": "image",
-      "content": "https://raw.githubusercontent.com/interseccion/interseccion/refs/heads/main/archivos/2026/pesadilla.jpeg",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/pesadilla.jpeg",
       "text": null,
       "publishDate": "2026-03-13T15:00"
     },
@@ -36,7 +36,7 @@
     },
     {
       "type": "audio",
-      "content": "https://raw.githubusercontent.com/interseccion/interseccion/refs/heads/main/archivos/2026/cancion.mp3",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/cancion.mp3",
       "text": null,
       "publishDate": "2026-03-27T15:00"
     }
