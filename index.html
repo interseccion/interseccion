@@ -1775,9 +1775,22 @@
 
         // --- MANEJO DE EVENTOS ---
         // Convierte una URL a data URI base64. Devuelve la URL original si falla (p.ej. CORS).
+        // raw.githubusercontent.com no envía cabeceras CORS fiables para fetch().
+        // Lo transformamos a jsDelivr (CDN con CORS garantizado para repos de GitHub).
+        function githubRawToJsdelivr(url) {
+            // Forma 1: /refs/heads/BRANCH/PATH
+            const m1 = url.match(/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/refs\/heads\/([^/]+)\/(.+)$/);
+            if (m1) return `https://cdn.jsdelivr.net/gh/${m1[1]}/${m1[2]}@${m1[3]}/${m1[4]}`;
+            // Forma 2: /OWNER/REPO/BRANCH/PATH (sin refs/heads)
+            const m2 = url.match(/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/);
+            if (m2) return `https://cdn.jsdelivr.net/gh/${m2[1]}/${m2[2]}@${m2[3]}/${m2[4]}`;
+            return url; // no es una URL raw de GitHub, la dejamos igual
+        }
+
         async function urlToDataUri(url) {
+            const fetchUrl = githubRawToJsdelivr(url);
             try {
-                const response = await fetch(url);
+                const response = await fetch(fetchUrl);
                 if (!response.ok) return url;
                 const blob = await response.blob();
                 return new Promise((resolve) => {
