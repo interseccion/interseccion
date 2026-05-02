@@ -1148,12 +1148,13 @@
             }
 
             if (clue.type === 'interactive') {
-                const h = clue.height || 320;
-                // Escape content for srcdoc attribute
-                const escaped = (clue.content || '')
+                const minH = clue.minHeight || clue.height || 200;
+                const resizeSnip = `<scr`+`ipt>(function(){function _s(){var h=Math.max(document.documentElement.scrollHeight,document.body?document.body.scrollHeight:0);window.parent.postMessage({type:'iframeResize',h:h},'*');}window.addEventListener('load',_s);if(window.ResizeObserver){new ResizeObserver(_s).observe(document.documentElement);}setTimeout(_s,150);setTimeout(_s,600);})();<\/scr`+`ipt>`;
+                const withResize = (clue.content||'').includes('</body>') ? (clue.content||'').replace('</body>', resizeSnip+'</body>') : (clue.content||'') + resizeSnip;
+                const escaped = withResize
                     .replace(/&/g, '&amp;')
                     .replace(/"/g, '&quot;');
-                mediaHTML = `<div class="mt-4 rounded-lg overflow-hidden border border-gray-700 bg-gray-900"><iframe srcdoc="${escaped}" sandbox="allow-scripts" style="width:100%;height:${h}px;border:none;display:block;" loading="lazy" title="Pista interactiva ${index + 1}"></iframe></div>`;
+                mediaHTML = `<div class="mt-4 rounded-lg overflow-hidden border border-gray-700 bg-gray-900"><iframe id="iframe-clue-${index}" srcdoc="${escaped}" sandbox="allow-scripts" style="width:100%;height:${minH}px;border:none;display:block;" loading="lazy" title="Pista interactiva ${index + 1}"></iframe></div>`;
             } else if (clue.type !== 'text' && clue.content) {
                 let url = clue.content;
                 if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
@@ -2052,6 +2053,17 @@
 
             if (dom.exampleGameBtn) dom.exampleGameBtn.addEventListener('click', async () => { try { const response = await fetch(`${EXAMPLE_GAME_PATH}?v=${Date.now()}`); if (!response.ok) throw new Error(); const exampleGame = await response.json(); openModalWithGame(exampleGame); } catch (error) { showToast("Error cargando ejemplo", true); } });
         }
+
+        // Auto-resize de iframes de pistas interactivas
+        window.addEventListener('message', function(e) {
+            if (!e.data || e.data.type !== 'iframeResize') return;
+            document.querySelectorAll('iframe[id^="iframe-clue-"]').forEach(function(frame) {
+                if (e.source === frame.contentWindow) {
+                    const minH = parseInt(frame.style.height) || 200;
+                    frame.style.height = Math.max(minH, (e.data.h || minH) + 16) + 'px';
+                }
+            });
+        });
 
         function init() {
             initUserIdentity();
