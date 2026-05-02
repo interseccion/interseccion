@@ -1774,117 +1774,24 @@
         }
 
         // --- MANEJO DE EVENTOS ---
-        // Convierte una URL a data URI base64. Devuelve la URL original si falla (p.ej. CORS).
-        // Intenta un fetch y lo convierte a data URI.
-        // Devuelve null si falla, no es OK, o el content-type no es media (evita embeber páginas de error HTML).
-        async function tryFetchAsDataUri(fetchUrl) {
-            try {
-                const response = await fetch(fetchUrl);
-                if (!response.ok) return null;
-                const ct = response.headers.get('content-type') || '';
-                if (!ct.match(/^(image|audio|video)\//)) return null;
-                const blob = await response.blob();
-                return new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result || null);
-                    reader.onerror = () => resolve(null);
-                    reader.readAsDataURL(blob);
-                });
-            } catch (e) {
-                return null;
-            }
+        function downloadGameAsHTML(game) {
+            const visibleClues = getVisibleClues(game);
+            const cluesHTML = visibleClues.map((clue, index) => renderClue(clue, index)).join('');
+            const solutionHTML = game.isSolved ? getSolutionHTML(game, true) : '';
+            const revealButtonScript = game.isSolved ? `<div id="offline-reveal-btn" style="text-align:center; margin-top: -30px; position: relative; z-index: 20;"><button onclick="revealSpoiler()" style="background-color: #dc2626; color: white; font-weight: bold; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s;">👁️ Revelar Solución</button></div><script>function revealSpoiler(){const s=document.getElementById('solution-container');const e=document.getElementById('explanation-container');const b=document.getElementById('offline-reveal-btn');if(s)s.classList.remove('spoiler-blur');if(e)e.classList.remove('spoiler-blur');if(b)b.style.display='none';}<\/script>` : '';
+            const htmlTemplate = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Misterio: ${game.title}</title><script src="https://cdn.tailwindcss.com"><\/script><style>body { background-color: #111827; color: #e5e7eb; font-family: 'Inter', sans-serif; } .spoiler-blur { filter: blur(15px); user-select: none; pointer-events: none; } .prose a { color: #60a5fa; text-decoration: underline; }</style></head><body class="p-8"><div class="max-w-2xl mx-auto bg-gray-800 rounded-lg p-8 space-y-4 shadow-xl"><h1 class="text-3xl font-bold text-white">${game.title}</h1><p class="text-gray-400">${game.notes || ''}</p><hr class="border-gray-600">${cluesHTML}${solutionHTML}${revealButtonScript}</div></body></html>`;
+            const blob = new Blob([htmlTemplate], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `misterio_${game.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`; a.click(); URL.revokeObjectURL(url);
         }
 
-        function githubRawToJsdelivr(url) {
-            const m1 = url.match(/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/refs\/heads\/([^/]+)\/(.+)$/);
-            if (m1) return `https://cdn.jsdelivr.net/gh/${m1[1]}/${m1[2]}@${m1[3]}/${m1[4]}`;
-            const m2 = url.match(/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/);
-            if (m2) return `https://cdn.jsdelivr.net/gh/${m2[1]}/${m2[2]}@${m2[3]}/${m2[4]}`;
-            return null;
-        }
-
-        async function urlToDataUri(url) {
-            // 1. Intentar la URL original directamente
-            const direct = await tryFetchAsDataUri(url);
-            if (direct) return direct;
-
-            // 2. Si es GitHub raw, intentar con jsDelivr
-            const jsdelivrUrl = githubRawToJsdelivr(url);
-            if (jsdelivrUrl) {
-                const cdn = await tryFetchAsDataUri(jsdelivrUrl);
-                if (cdn) return cdn;
-            }
-
-            // 3. Fallback: devolver la URL original (funcionará online)
-            return url;
-        });
-            } catch (e) {
-                return url; // fallback: deja la URL original
-            }
-        }
-
-        // Procesa las pistas embebiendo imágenes y audios como base64.
-        // Los vídeos (iframes) y enlaces se dejan como URLs originales.
-        async function embedClueMedia(clues) {
-            return Promise.all(clues.map(async (clue) => {
-                if ((clue.type === 'image' || clue.type === 'audio') && clue.content) {
-                    let url = clue.content;
-                    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-                    const dataUri = await urlToDataUri(url);
-                    return { ...clue, content: dataUri };
-                }
-                return clue;
-            }));
-        }
-
-        // Genera el HTML del aviso offline que se incluye en los archivos descargados.
-        function buildOfflineNoticeHTML(clues) {
-            const hasVideo  = clues.some(c => c.type === 'video');
-            const hasLink   = clues.some(c => c.type === 'link');
-            const needsNet  = hasVideo || hasLink;
-            const extras    = [hasVideo && 'vídeos', hasLink && 'enlaces externos'].filter(Boolean).join(' y ');
-            const warnLine  = needsNet
-                ? `<span style="color:#fbbf24">⚠️ Los ${extras} siguen requiriendo conexión a internet.</span>`
-                : `<span style="color:#4ade80">✅ Este archivo funciona completamente sin conexión.</span>`;
-            return `<div style="margin-bottom:1.5rem;padding:0.75rem 1rem;background:#1f2937;border:1px solid #374151;border-radius:0.5rem;font-size:0.8rem;color:#9ca3af;line-height:1.5">
-                        <strong style="color:#e5e7eb">📦 Archivo descargado de La Intersección</strong><br>
-                        <span style="color:#4ade80">✅ Imágenes y audios incluidos en el archivo.</span><br>
-                        ${warnLine}
-                    </div>`;
-        }
-
-        async function downloadGameAsHTML(game, triggerBtn) {
-            if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = 'Descargando…'; }
-            try {
-                const visibleClues = getVisibleClues(game);
-                const processedClues = await embedClueMedia(visibleClues);
-                const cluesHTML = processedClues.map((clue, index) => renderClue(clue, index)).join('');
-                const solutionHTML = game.isSolved ? getSolutionHTML(game, true) : '';
-                const revealButtonScript = game.isSolved ? `<div id="offline-reveal-btn" style="text-align:center; margin-top: -30px; position: relative; z-index: 20;"><button onclick="revealSpoiler()" style="background-color: #dc2626; color: white; font-weight: bold; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s;">👁️ Revelar Solución</button></div><script>function revealSpoiler(){const s=document.getElementById('solution-container');const e=document.getElementById('explanation-container');const b=document.getElementById('offline-reveal-btn');if(s)s.classList.remove('spoiler-blur');if(e)e.classList.remove('spoiler-blur');if(b)b.style.display='none';}<\/script>` : '';
-                const offlineNotice = buildOfflineNoticeHTML(visibleClues);
-                const htmlTemplate = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Misterio: ${game.title}</title><script src="https://cdn.tailwindcss.com"><\/script><style>body { background-color: #111827; color: #e5e7eb; font-family: 'Inter', sans-serif; } .spoiler-blur { filter: blur(15px); user-select: none; pointer-events: none; } .prose a { color: #60a5fa; text-decoration: underline; }</style></head><body class="p-8"><div class="max-w-2xl mx-auto bg-gray-800 rounded-lg p-8 space-y-4 shadow-xl"><h1 class="text-3xl font-bold text-white">${game.title}</h1><p class="text-gray-400">${game.notes || ''}</p>${offlineNotice}<hr class="border-gray-600">${cluesHTML}${solutionHTML}${revealButtonScript}</div></body></html>`;
-                const blob = new Blob([htmlTemplate], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `misterio_${game.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`; a.click(); URL.revokeObjectURL(url);
-            } finally {
-                if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = 'Descargar'; }
-            }
-        }
-
-        async function downloadSingleClueAsHTML(game, clueIndex, triggerBtn) {
-            if (triggerBtn) { triggerBtn.disabled = true; triggerBtn.textContent = 'Descargando…'; }
-            try {
-                const rawClue = getVisibleClues(game)[clueIndex]; if (!rawClue) return;
-                const [processedClue] = await embedClueMedia([rawClue]);
-                const clueHTML = renderClue(processedClue, clueIndex);
-                const offlineNotice = buildOfflineNoticeHTML([rawClue]);
-                const htmlTemplate = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Pista ${clueIndex + 1} de: ${game.title}</title><script src="https://cdn.tailwindcss.com"><\/script><style>body { background-color: #111827; color: #e5e7eb; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }</style></head><body><div class="max-w-2xl w-full mx-auto bg-gray-800 rounded-2xl p-8 space-y-4 shadow-2xl"><h1 class="text-2xl font-bold text-indigo-400">Misterio: ${game.title}</h1>${offlineNotice}<hr class="border-gray-600">${clueHTML}</div></body></html>`;
-                const blob = new Blob([htmlTemplate], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `pista_${clueIndex + 1}_${game.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`; a.click(); URL.revokeObjectURL(url);
-            } finally {
-                if (triggerBtn) { triggerBtn.disabled = false; triggerBtn.textContent = 'Descargar'; }
-            }
+        function downloadSingleClueAsHTML(game, clueIndex) {
+            const clue = getVisibleClues(game)[clueIndex]; if (!clue) return;
+            const clueHTML = renderClue(clue, clueIndex);
+            const htmlTemplate = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Pista ${clueIndex + 1} de: ${game.title}</title><script src="https://cdn.tailwindcss.com"><\/script><style>body { background-color: #111827; color: #e5e7eb; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }</style></head><body><div class="max-w-2xl w-full mx-auto bg-gray-800 rounded-2xl p-8 space-y-4 shadow-2xl"><h1 class="text-2xl font-bold text-indigo-400">Misterio: ${game.title}</h1><hr class="border-gray-600">${clueHTML}</div></body></html>`;
+            const blob = new Blob([htmlTemplate], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `pista_${clueIndex + 1}_${game.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`; a.click(); URL.revokeObjectURL(url);
         }
 
         function openModalWithGame(game, view = null, options = {}) { renderModal(game, view || (game.isSolved ? 'pre-solved' : 'summary'), options); }
@@ -2098,8 +2005,8 @@
                 if (target.matches('.view-clue-btn')) renderModal(currentGameData, 'single-clue', { clueIndex: parseInt(target.dataset.clueIndex, 10) });
                 if (target.matches('#show-solution-btn') || target.matches('.view-all-clues-btn')) renderModal(currentGameData, 'all-clues');
                 if (target.matches('.back-to-summary-btn')) renderModal(currentGameData, 'summary');
-                if (target.matches('.download-html-btn')) downloadGameAsHTML(currentGameData, target);
-                if (target.matches('.download-clue-btn')) downloadSingleClueAsHTML(currentGameData, parseInt(target.dataset.clueIndex, 10), target);
+                if (target.matches('.download-html-btn')) downloadGameAsHTML(currentGameData);
+                if (target.matches('.download-clue-btn')) downloadSingleClueAsHTML(currentGameData, parseInt(target.dataset.clueIndex, 10));
                 if (target.matches('.share-btn')) copyToClipboard(`${window.location.origin}${window.location.pathname}#mystery=${target.dataset.gameId}`);
                 if (target.matches('.share-clue-btn')) copyToClipboard(`${window.location.origin}${window.location.pathname}#mystery=${target.dataset.gameId}&clue=${target.dataset.clueIndex}`);
                 if (target.matches('#play-solved-btn')) { revealedClueCount = 1; renderModal(currentGameData, 'play-solved'); }
