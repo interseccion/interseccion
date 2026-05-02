@@ -1013,7 +1013,8 @@
                 image: { label: 'Imagen', color: 'bg-purple-600' },
                 audio: { label: 'Audio', color: 'bg-pink-600' },
                 video: { label: 'Vídeo', color: 'bg-red-600' },
-                link: { label: 'Enlace', color: 'bg-orange-600' }
+                link: { label: 'Enlace', color: 'bg-orange-600' },
+                interactive: { label: '🧩 Interactiva', color: 'bg-teal-600' }
             };
             const config = typeMap[type] || { label: type, color: 'bg-gray-600' };
             return `<span class="text-xs font-semibold px-2 py-1 ${config.color} text-white rounded-full">${config.label}</span>`;
@@ -1146,7 +1147,14 @@
                 mainTextHTML = `<div class="prose prose-invert max-w-none prose-p:text-gray-300 prose-p:my-0">${textContent.replace(/\n/g, '<br>')}</div>`;
             }
 
-            if (clue.type !== 'text' && clue.content) {
+            if (clue.type === 'interactive') {
+                const h = clue.height || 320;
+                // Escape content for srcdoc attribute
+                const escaped = (clue.content || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;');
+                mediaHTML = `<div class="mt-4 rounded-lg overflow-hidden border border-gray-700 bg-gray-900"><iframe srcdoc="${escaped}" sandbox="allow-scripts" style="width:100%;height:${h}px;border:none;display:block;" loading="lazy" title="Pista interactiva ${index + 1}"></iframe></div>`;
+            } else if (clue.type !== 'text' && clue.content) {
                 let url = clue.content;
                 if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
 
