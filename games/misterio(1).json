@@ -1,0 +1,38 @@
+{
+  "id": "fb4ff16d-c491-48d4-923e-8128e49e2fd7",
+  "title": "",
+  "type": "Semanal",
+  "difficulty": "Medio",
+  "mystery": "",
+  "showMystery": false,
+  "notes": "",
+  "startDate": "2026-05-03",
+  "googleFormLink": "",
+  "formEntryId": "",
+  "clues": [
+    {
+      "type": "interactive",
+      "content": "<style>\n*{margin:0;padding:0;box-sizing:border-box;}\nbody{background:#111827;padding:16px;font-family:Inter,sans-serif;}\n.hdr{background:#1f2937;border-radius:10px 10px 0 0;padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #374151;}\n.av{width:32px;height:32px;border-radius:50%;background:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}\n.name{font-weight:700;font-size:14px;color:#f9fafb;}\n.status{font-size:11px;color:#10b981;}\n.chat{background:#0f172a;border-radius:0 0 10px 10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:80px;}\n.msg{max-width:80%;}\n.msg.them{align-self:flex-start;}\n.msg.me{align-self:flex-end;}\n.bubble{padding:8px 12px;border-radius:12px;font-size:14px;line-height:1.5;}\n.them .bubble{background:#1e293b;color:#e5e7eb;border-radius:2px 12px 12px 12px;}\n.me .bubble{background:#4f46e5;color:#fff;border-radius:12px 2px 12px 12px;}\n.time{font-size:10px;color:#6b7280;margin-top:2px;}\n.me .time{text-align:right;}\n.typing{display:flex;gap:4px;align-items:center;padding:8px 12px;background:#1e293b;border-radius:2px 12px 12px 12px;width:fit-content;}\n.dot{width:6px;height:6px;background:#6b7280;border-radius:50%;animation:bob 1.2s infinite;}\n.dot:nth-child(2){animation-delay:.2s;}.dot:nth-child(3){animation-delay:.4s;}\n@keyframes bob{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}\n</style>\n<body>\n<div class=\"hdr\">\n  <div class=\"av\">🕵️</div>\n  <div><div class=\"name\">Informante X</div><div class=\"status\">● en línea</div></div>\n</div>\n<div class=\"chat\" id=\"chat\"></div>\n<script>\n// ↓ Edita los mensajes (side: 'them' o 'me', delay en ms)\nvar msgs=[\n  {side:'them',text:'¿Estás ahí?',delay:400},\n  {side:'me',text:'Sí, dime.',delay:1100},\n  {side:'them',text:'Tengo información sobre la intersección.',delay:1900},\n  {side:'them',text:'La pista es: <strong style=\"color:#a78bfa\">aquí va la pista</strong>',delay:3100},\n  {side:'me',text:'Entendido. Gracias.',delay:4600},\n];\nvar chat=document.getElementById('chat');\nfunction addTyping(){var d=document.createElement('div');d.className='msg them';d.id='ty';d.innerHTML='<div class=\"typing\"><div class=\"dot\"></div><div class=\"dot\"></div><div class=\"dot\"></div></div>';chat.appendChild(d);}\nfunction rmTyping(){var t=document.getElementById('ty');if(t)t.remove();}\nfunction addMsg(m){\n  var t=new Date(),ts=(t.getHours()+'').padStart(2,'0')+':'+(t.getMinutes()+'').padStart(2,'0');\n  var d=document.createElement('div');d.className='msg '+m.side;\n  d.innerHTML='<div class=\"bubble\">'+m.text+'</div><div class=\"time\">'+ts+'</div>';\n  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;\n}\nmsgs.forEach(function(m){\n  if(m.side==='them'){setTimeout(addTyping,m.delay-400);setTimeout(function(){rmTyping();addMsg(m);},m.delay);}\n  else{setTimeout(function(){addMsg(m);},m.delay);}\n});\n</script>\n</body>",
+      "text": null,
+      "publishDate": "2026-05-03T10:09",
+      "minHeight": 200
+    },
+    {
+      "type": "interactive",
+      "content": "{\n  \"type\": \"interactive\",\n  \"content\": \"<style>\\n*{margin:0;padding:0;box-sizing:border-box;}\\nbody{background:#111827;padding:16px;font-family:Inter,sans-serif;}\\n.hdr{background:#1f2937;border-radius:10px 10px 0 0;padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #374151;}\\n.av{width:32px;height:32px;border-radius:50%;background:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}\\n.name{font-weight:700;font-size:14px;color:#f9fafb;}\\n.status{font-size:11px;color:#10b981;}\\n.chat{background:#0f172a;border-radius:0 0 10px 10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:80px;}\\n.msg{max-width:80%;}\\n.msg.them{align-self:flex-start;}\\n.msg.me{align-self:flex-end;}\\n.bubble{padding:8px 12px;border-radius:12px;font-size:14px;line-height:1.5;}\\n.them .bubble{background:#1e293b;color:#e5e7eb;border-radius:2px 12px 12px 12px;}\\n.me .bubble{background:#4f46e5;color:#fff;border-radius:12px 2px 12px 12px;}\\n.time{font-size:10px;color:#6b7280;margin-top:2px;}\\n.me .time{text-align:right;}\\n.typing{display:flex;gap:4px;align-items:center;padding:8px 12px;background:#1e293b;border-radius:2px 12px 12px 12px;width:fit-content;}\\n.dot{width:6px;height:6px;background:#6b7280;border-radius:50%;animation:bob 1.2s infinite;}\\n.dot:nth-child(2){animation-delay:.2s;}.dot:nth-child(3){animation-delay:.4s;}\\n@keyframes bob{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}\\n</style>\\n<body>\\n<div class=\\\"hdr\\\">\\n  <div class=\\\"av\\\">🕵️</div>\\n  <div><div class=\\\"name\\\">Informante X</div><div class=\\\"status\\\">● en línea</div></div>\\n</div>\\n<div class=\\\"chat\\\" id=\\\"chat\\\"></div>\\n<script>\\n// ↓ Edita los mensajes (side: 'them' o 'me', delay en ms)\\nvar msgs=[\\n  {side:'them',text:'¿Estás ahí?',delay:400},\\n  {side:'me',text:'Sí, dime.',delay:1100},\\n  {side:'them',text:'Tengo información sobre la intersección.',delay:1900},\\n  {side:'them',text:'La pista es: <strong style=\\\"color:#a78bfa\\\">aquí va la pista</strong>',delay:3100},\\n  {side:'me',text:'Entendido. Gracias.',delay:4600},\\n];\\nvar chat=document.getElementById('chat');\\nfunction addTyping(){var d=document.createElement('div');d.className='msg them';d.id='ty';d.innerHTML='<div class=\\\"typing\\\"><div class=\\\"dot\\\"></div><div class=\\\"dot\\\"></div><div class=\\\"dot\\\"></div></div>';chat.appendChild(d);}\\nfunction rmTyping(){var t=document.getElementById('ty');if(t)t.remove();}\\nfunction addMsg(m){\\n  var t=new Date(),ts=(t.getHours()+'').padStart(2,'0')+':'+(t.getMinutes()+'').padStart(2,'0');\\n  var d=document.createElement('div');d.className='msg '+m.side;\\n  d.innerHTML='<div class=\\\"bubble\\\">'+m.text+'</div><div class=\\\"time\\\">'+ts+'</div>';\\n  chat.appendChild(d);chat.scrollTop=chat.scrollHeight;\\n}\\nmsgs.forEach(function(m){\\n  if(m.side==='them'){setTimeout(addTyping,m.delay-400);setTimeout(function(){rmTyping();addMsg(m);},m.delay);}\\n  else{setTimeout(function(){addMsg(m);},m.delay);}\\n});\\n</script>\\n</body>\",\n  \"text\": null,\n  \"minHeight\": 200,\n  \"publishDate\": \"2026-05-03T10:09\"\n}",
+      "text": null,
+      "publishDate": "2026-05-03T10:09",
+      "minHeight": 200
+    }
+  ],
+  "isSolved": false,
+  "endDate": "",
+  "solution": "",
+  "winner": "",
+  "winnerId": "",
+  "explanation": "",
+  "winnerExplanation": "",
+  "bibliography": "",
+  "utd": 1,
+  "lastUpdated": "2026-05-03T08:14:40.499Z"
+}
