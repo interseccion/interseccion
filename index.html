@@ -500,6 +500,7 @@
                 <div id="notif-detail-msg" class="text-gray-300 text-sm bg-gray-900/50 p-4 rounded-lg whitespace-pre-line leading-relaxed max-h-60 overflow-y-auto modal-content-scroll"></div>
             </div>
             <div class="p-4 pt-0 flex justify-end gap-3">
+                <button id="notif-detail-open-mystery-btn" class="hidden bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm">🔍 Abrir misterio</button>
                 <a id="notif-detail-link-btn" href="#" target="_blank" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Abrir enlace →</a>
                 <button id="notif-detail-close-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm">Cerrar</button>
             </div>
@@ -605,6 +606,7 @@
             notifDetailClose   : document.getElementById('notif-detail-close'),
             notifDetailCloseBtn: document.getElementById('notif-detail-close-btn'),
             notifDetailLinkBtn : document.getElementById('notif-detail-link-btn'),
+            notifDetailOpenMysteryBtn: document.getElementById('notif-detail-open-mystery-btn'),
             // Mis respuestas modal
             myResponsesBtn     : document.getElementById('my-responses-btn'),
             myResponsesModal   : document.getElementById('my-responses-modal'),
@@ -2343,6 +2345,28 @@
             return icons[tipo] || '🔔';
         }
 
+        // Devuelve el título del misterio dado su ID, o la ID si no se encuentra
+        function getMysteryTitleById(id) {
+            if (!id) return id;
+            const game = allGames.find(g => g.id === id);
+            return game ? (game.title || id) : id;
+        }
+
+        // Extrae el ID del misterio del campo link si tiene formato #mystery=ID
+        function getMysteryIdFromLink(link) {
+            if (!link) return null;
+            const m = link.match(/^#mystery=(.+)$/);
+            return m ? m[1] : null;
+        }
+
+        // Reemplaza el ID del misterio por su título bonito en un string de texto
+        function resolveNotifText(text, mysteryId) {
+            if (!text || !mysteryId) return text || '';
+            const title = getMysteryTitleById(mysteryId);
+            if (title === mysteryId) return text; // no se encontró, no cambiar nada
+            return text.replace(new RegExp(mysteryId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), title);
+        }
+
         function renderNotifPanel(notifs) {
             const readIds = getReadIds();
             const unread  = notifs.filter(n => !readIds.has(n.id));
@@ -2361,17 +2385,20 @@
             }
 
             dom.notifList.innerHTML = notifs.map(n => {
-                const isRead = readIds.has(n.id);
-                const fecha  = (() => { try { return new Date(n.fecha).toLocaleDateString('es', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); } catch(e) { return ''; } })();
-                return `<div class="notif-item px-4 py-3 hover:bg-gray-700/50 cursor-pointer transition ${isRead ? 'opacity-60' : ''}" data-notif-id="${n.id}" data-notif-link="${n.link || ''}">
+                const isRead    = readIds.has(n.id);
+                const fecha     = (() => { try { return new Date(n.fecha).toLocaleDateString('es', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); } catch(e) { return ''; } })();
+                const mystId    = getMysteryIdFromLink(n.link);
+                const titulo    = resolveNotifText(n.titulo || '', mystId);
+                const msgPreview = resolveNotifText(n.mensaje || '', mystId);
+                return `<div class="notif-item px-4 py-3 hover:bg-gray-700/50 cursor-pointer transition ${isRead ? 'opacity-60' : ''}" data-notif-id="${n.id}">
                     <div class="flex items-start gap-3">
                         <span class="text-lg flex-shrink-0 mt-0.5">${getNotifIcon(n.tipo)}</span>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
-                                <p class="text-sm font-semibold text-white truncate">${n.titulo || ''}</p>
+                                <p class="text-sm font-semibold text-white truncate">${titulo}</p>
                                 ${!isRead ? '<span class="flex-shrink-0 w-2 h-2 bg-indigo-400 rounded-full"></span>' : ''}
                             </div>
-                            <p class="text-xs text-gray-400 mt-0.5 line-clamp-2">${n.mensaje || ''}</p>
+                            <p class="text-xs text-gray-400 mt-0.5 line-clamp-2">${msgPreview}</p>
                             <p class="text-xs text-gray-600 mt-1">${fecha}</p>
                         </div>
                     </div>
@@ -2413,15 +2440,34 @@
 
         // Abre el modal de detalle de una notificación
         function openNotifDetailModal(notif) {
+            const mystId  = getMysteryIdFromLink(notif.link);
+            const titulo  = resolveNotifText(notif.titulo || '', mystId);
+            const mensaje = resolveNotifText(notif.mensaje || '', mystId);
+
             dom.notifDetailIcon.textContent  = getNotifIcon(notif.tipo);
-            dom.notifDetailTitle.textContent = notif.titulo || '';
-            dom.notifDetailMsg.textContent   = notif.mensaje || '';
+            dom.notifDetailTitle.textContent = titulo;
+            dom.notifDetailMsg.textContent   = mensaje;
             const fecha = (() => {
                 try { return new Date(notif.fecha).toLocaleString('es', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
                 catch(e) { return ''; }
             })();
             dom.notifDetailDate.textContent = fecha;
-            if (notif.link) {
+
+            // Botón de abrir misterio (si el link apunta a uno y existe en allGames)
+            const game = mystId ? allGames.find(g => g.id === mystId) : null;
+            const openMysteryBtn = document.getElementById('notif-detail-open-mystery-btn');
+            if (game) {
+                openMysteryBtn.classList.remove('hidden');
+                openMysteryBtn.onclick = () => {
+                    dom.notifDetailModal.classList.add('hidden');
+                    openModalWithGame(game);
+                };
+            } else {
+                openMysteryBtn.classList.add('hidden');
+            }
+
+            // Botón de enlace externo (solo si el link no es interno #mystery=...)
+            if (notif.link && !notif.link.startsWith('#mystery=')) {
                 dom.notifDetailLinkBtn.href = notif.link;
                 dom.notifDetailLinkBtn.classList.remove('hidden');
             } else {
