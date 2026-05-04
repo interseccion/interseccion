@@ -76,8 +76,8 @@
                         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700">
                             <span class="font-bold text-white text-sm">Notificaciones</span>
                             <div class="flex items-center gap-3">
-                                <button id="mis-resp-btn" class="text-xs text-gray-400 hover:text-indigo-300 transition">📋 Mis respuestas</button>
-                                <button id="notif-mark-all-read" class="text-xs text-indigo-400 hover:text-indigo-300">✓ Todas leídas</button>
+                                <button id="my-responses-btn" class="text-xs text-gray-400 hover:text-indigo-300 transition" title="Ver mis respuestas enviadas">📋 Mis respuestas</button>
+                                <button id="notif-mark-all-read" class="text-xs text-indigo-400 hover:text-indigo-300">Marcar leídas</button>
                             </div>
                         </div>
                         <div id="notif-list" class="max-h-96 overflow-y-auto divide-y divide-gray-700/50">
@@ -466,49 +466,8 @@
         </div>
     </div>
 
-    <!-- Iframe invisible para envío silencioso a Google Forms -->
-    <iframe name="hidden-form-target" style="display:none;" aria-hidden="true"></iframe>
-    <!-- Formulario oculto — se rellena y envía por JS -->
-    <form id="hidden-gform" method="POST" target="hidden-form-target" style="display:none;">
-        <input name="entry.632099313"  id="hf-misterio">
-        <input name="entry.2009487749" id="hf-privado">
-        <input name="entry.475857579"  id="hf-solucion">
-        <input name="entry.1318916986" id="hf-explicacion">
-        <input name="entry.279152251"  id="hf-dificultad">
-        <input name="entry.1635700365" id="hf-opinion">
-    </form>
-
-    <!-- Modal detalle de notificación -->
-    <div id="notif-detail-modal" class="fixed inset-0 bg-black bg-opacity-80 items-center justify-center p-4 z-[80] hidden" style="display:none;">
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div class="flex items-start justify-between gap-3 mb-4">
-                <div class="flex items-center gap-3">
-                    <span id="nd-icon" class="text-3xl flex-shrink-0"></span>
-                    <h3 id="nd-title" class="text-lg font-bold text-white leading-tight"></h3>
-                </div>
-                <button onclick="closeNotifDetail()" class="text-gray-400 hover:text-white text-2xl leading-none flex-shrink-0 mt-0.5">×</button>
-            </div>
-            <p id="nd-mensaje" class="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap mb-4"></p>
-            <p id="nd-fecha" class="text-xs text-gray-500 mb-4"></p>
-            <div class="flex justify-end gap-2">
-                <a id="nd-link-btn" href="#" target="_blank" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition">Abrir enlace →</a>
-                <button onclick="closeNotifDetail()" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal "Mis respuestas" -->
-    <div id="mis-respuestas-modal" class="fixed inset-0 bg-black bg-opacity-90 items-center justify-center p-4 z-[75] hidden" style="display:none;">
-        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-            <div class="flex items-center justify-between p-5 border-b border-gray-700 flex-shrink-0">
-                <h3 class="text-lg font-bold text-white">📋 Mis respuestas</h3>
-                <button onclick="document.getElementById('mis-respuestas-modal').style.display='none';" class="text-gray-400 hover:text-white text-2xl leading-none">×</button>
-            </div>
-            <div id="mis-respuestas-list" class="overflow-y-auto p-4 space-y-3 flex-1">
-                <p class="text-gray-500 text-sm text-center py-8">⏳ Cargando...</p>
-            </div>
-        </div>
-    </div>
+    <!-- (redirect-modal legacy — se mantiene oculto por compatibilidad) -->
+    <div id="redirect-modal" class="modal fixed inset-0 bg-black bg-opacity-90 items-center justify-center p-4 z-[70]">
         <div class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-6">
             <h3 class="text-xl font-bold text-white mb-4">¡Casi listo para adivinar!</h3>
             <p class="text-gray-300 mb-4">Se va a enviar tu ID automáticamente.</p>
@@ -526,9 +485,43 @@
     <!-- Toast Notification -->
     <div id="toast-notification"></div>
 
+    <!-- Modal de detalle de notificación -->
+    <div id="notif-detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-[95]">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="flex items-start justify-between p-5 border-b border-gray-700">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span id="notif-detail-icon" class="text-2xl flex-shrink-0"></span>
+                    <h3 id="notif-detail-title" class="text-base font-bold text-white leading-snug"></h3>
+                </div>
+                <button id="notif-detail-close" class="flex-shrink-0 text-gray-400 hover:text-white text-2xl leading-none ml-3">×</button>
+            </div>
+            <div class="p-5">
+                <p id="notif-detail-date" class="text-xs text-gray-500 mb-3"></p>
+                <div id="notif-detail-msg" class="text-gray-300 text-sm bg-gray-900/50 p-4 rounded-lg whitespace-pre-line leading-relaxed max-h-60 overflow-y-auto modal-content-scroll"></div>
+            </div>
+            <div class="p-4 pt-0 flex justify-end gap-3">
+                <a id="notif-detail-link-btn" href="#" target="_blank" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Abrir enlace →</a>
+                <button id="notif-detail-close-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de mis respuestas -->
+    <div id="my-responses-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-[95]">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between p-5 border-b border-gray-700 flex-shrink-0">
+                <h3 class="text-base font-bold text-white">📋 Mis respuestas</h3>
+                <button id="my-responses-close" class="text-gray-400 hover:text-white text-2xl leading-none">×</button>
+            </div>
+            <div id="my-responses-list" class="overflow-y-auto modal-content-scroll p-4 space-y-3 flex-grow">
+                <p class="text-gray-500 text-sm text-center py-8">⏳ Cargando...</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ─── CONFIGURACIÓN ────────────────────────────────────────────────────
-        // URL del Apps Script desplegado como Web App
+        // Pega aquí la URL de tu Apps Script desplegado como Web App
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWxNV_zyNIUveSDunEUXHCuHIkWmbtLiosFHEHwJYvpprn9_Rsg4OkLZ-pLjXiiO2EbA/exec';
         // URL de envío del formulario unificado
         const FORM_SUBMIT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdT7aKWYEIVDyh1TKUalD6JcbAG0FydIrP5LBF2ueTAUdbCqw/formResponse';
@@ -603,6 +596,20 @@
             notifPanel         : document.getElementById('notif-panel'),
             notifList          : document.getElementById('notif-list'),
             notifMarkAllRead   : document.getElementById('notif-mark-all-read'),
+            // Notif detail modal
+            notifDetailModal   : document.getElementById('notif-detail-modal'),
+            notifDetailIcon    : document.getElementById('notif-detail-icon'),
+            notifDetailTitle   : document.getElementById('notif-detail-title'),
+            notifDetailDate    : document.getElementById('notif-detail-date'),
+            notifDetailMsg     : document.getElementById('notif-detail-msg'),
+            notifDetailClose   : document.getElementById('notif-detail-close'),
+            notifDetailCloseBtn: document.getElementById('notif-detail-close-btn'),
+            notifDetailLinkBtn : document.getElementById('notif-detail-link-btn'),
+            // Mis respuestas modal
+            myResponsesBtn     : document.getElementById('my-responses-btn'),
+            myResponsesModal   : document.getElementById('my-responses-modal'),
+            myResponsesList    : document.getElementById('my-responses-list'),
+            myResponsesClose   : document.getElementById('my-responses-close'),
             // Podio
             podiumBody: document.getElementById('podium-body'),
             podiumLoading: document.getElementById('podium-loading'),
@@ -2263,19 +2270,39 @@
             dom.resolverSubmitBtn.disabled = true;
             dom.resolverSubmitBtn.innerHTML = '<svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span>Enviando...</span>';
 
-            // Rellenar el formulario oculto — todos los campos llegan siempre
-            const form = document.getElementById('hidden-gform');
-            form.action = FORM_SUBMIT_URL;
-            document.getElementById('hf-misterio').value    = resolverGameId || '';
-            document.getElementById('hf-privado').value     = userId || '';
-            document.getElementById('hf-solucion').value    = solucion;
-            document.getElementById('hf-explicacion').value = dom.resolverExplicacion.value.trim();
-            document.getElementById('hf-dificultad').value  = dom.resolverDificultad.value;
-            document.getElementById('hf-opinion').value     = dom.resolverOpinion.value.trim();
-            form.submit();
+            const body = new URLSearchParams();
+            body.append(FORM_ENTRIES.id_misterio,         resolverGameId || '');
+            body.append(FORM_ENTRIES.id_privado,          userId || '');
+            body.append(FORM_ENTRIES.solucion,            solucion);
+            body.append(FORM_ENTRIES.explicacion,         dom.resolverExplicacion.value.trim());
+            body.append(FORM_ENTRIES.dificultad,          dom.resolverDificultad.value);
+            body.append(FORM_ENTRIES.opinion_sugerencias, dom.resolverOpinion.value.trim());
 
-            // Pequeño delay para que el iframe procese el submit
-            await new Promise(r => setTimeout(r, 600));
+            try {
+                // Google Forms no devuelve CORS headers, pero el envío sí llega
+                await fetch(FORM_SUBMIT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body
+                });
+            } catch(e) { /* no-cors siempre lanza, es esperado */ }
+
+            // Guardar dificultad y opinion también vía Apps Script (más fiable que Forms)
+            const dificultadVal = dom.resolverDificultad.value;
+            const opinionVal    = dom.resolverOpinion.value.trim();
+            if ((dificultadVal || opinionVal) && !APPS_SCRIPT_URL.includes('PON_AQUI') && userId) {
+                // Pequeño delay para dar tiempo a que Google Forms procese la fila
+                setTimeout(() => {
+                    const params = new URLSearchParams({
+                        action   : 'saveExtra',
+                        misterio : resolverGameId || '',
+                        privado  : userId,
+                        dificultad: dificultadVal,
+                        opinion  : opinionVal
+                    });
+                    fetch(`${APPS_SCRIPT_URL}?${params}`).catch(() => {});
+                }, 4000);
+            }
 
             dom.resolverSubmitBtn.disabled = false;
             dom.resolverSubmitBtn.innerHTML = '<span>Enviar respuesta</span>';
@@ -2316,33 +2343,11 @@
             return icons[tipo] || '🔔';
         }
 
-        // Modal detalle de notificación
-        function openNotifDetail(n) {
-            const modal = document.getElementById('notif-detail-modal');
-            document.getElementById('nd-icon').textContent = getNotifIcon(n.tipo);
-            document.getElementById('nd-title').textContent = n.titulo || '';
-            document.getElementById('nd-mensaje').textContent = n.mensaje || '';
-            const fecha = (() => { try { return new Date(n.fecha).toLocaleString('es', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }); } catch(e) { return ''; } })();
-            document.getElementById('nd-fecha').textContent = fecha;
-            const linkBtn = document.getElementById('nd-link-btn');
-            if (n.link) { linkBtn.href = n.link; linkBtn.classList.remove('hidden'); }
-            else { linkBtn.classList.add('hidden'); }
-            modal.style.display = 'flex';
-            markRead(n.id);
-        }
-        function closeNotifDetail() {
-            document.getElementById('notif-detail-modal').style.display = 'none';
-            renderNotifPanel(cachedNotifs);
-        }
-        // Cerrar con Escape o click fuera
-        document.getElementById('notif-detail-modal').addEventListener('click', e => {
-            if (e.target === e.currentTarget) closeNotifDetail();
-        });
-
         function renderNotifPanel(notifs) {
             const readIds = getReadIds();
             const unread  = notifs.filter(n => !readIds.has(n.id));
 
+            // Badge
             if (unread.length > 0) {
                 dom.bellBadge.textContent = unread.length > 9 ? '9+' : unread.length;
                 dom.bellBadge.classList.remove('hidden');
@@ -2358,7 +2363,7 @@
             dom.notifList.innerHTML = notifs.map(n => {
                 const isRead = readIds.has(n.id);
                 const fecha  = (() => { try { return new Date(n.fecha).toLocaleDateString('es', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); } catch(e) { return ''; } })();
-                return `<div class="notif-item px-4 py-3 hover:bg-gray-700/50 cursor-pointer transition ${isRead ? 'opacity-60' : ''}" data-notif-id="${n.id}">
+                return `<div class="notif-item px-4 py-3 hover:bg-gray-700/50 cursor-pointer transition ${isRead ? 'opacity-60' : ''}" data-notif-id="${n.id}" data-notif-link="${n.link || ''}">
                     <div class="flex items-start gap-3">
                         <span class="text-lg flex-shrink-0 mt-0.5">${getNotifIcon(n.tipo)}</span>
                         <div class="flex-1 min-w-0">
@@ -2373,13 +2378,22 @@
                 </div>`;
             }).join('');
 
-            // Click → abrir detalle
+            // Click en notificación → abrir modal de detalle
             dom.notifList.querySelectorAll('.notif-item').forEach(el => {
                 el.addEventListener('click', () => {
-                    const id = el.dataset.notifId;
-                    const n  = cachedNotifs.find(x => x.id === id);
-                    if (n) openNotifDetail(n);
+                    const id   = el.dataset.notifId;
+                    const notif = notifs.find(n => n.id === id);
+                    if (!notif) return;
+                    markRead(id);
+                    el.classList.add('opacity-60');
+                    el.querySelector('.bg-indigo-400')?.remove();
+                    // Actualizar badge
+                    const newUnread = notifs.filter(n => !getReadIds().has(n.id));
+                    dom.bellBadge.textContent = newUnread.length > 9 ? '9+' : newUnread.length;
+                    if (!newUnread.length) dom.bellBadge.classList.add('hidden');
+                    // Cerrar panel y abrir modal detalle
                     dom.notifPanel.classList.add('hidden');
+                    openNotifDetailModal(notif);
                 });
             });
         }
@@ -2397,67 +2411,87 @@
             } catch(e) { console.warn('Error cargando notificaciones:', e); }
         }
 
+        // Abre el modal de detalle de una notificación
+        function openNotifDetailModal(notif) {
+            dom.notifDetailIcon.textContent  = getNotifIcon(notif.tipo);
+            dom.notifDetailTitle.textContent = notif.titulo || '';
+            dom.notifDetailMsg.textContent   = notif.mensaje || '';
+            const fecha = (() => {
+                try { return new Date(notif.fecha).toLocaleString('es', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
+                catch(e) { return ''; }
+            })();
+            dom.notifDetailDate.textContent = fecha;
+            if (notif.link) {
+                dom.notifDetailLinkBtn.href = notif.link;
+                dom.notifDetailLinkBtn.classList.remove('hidden');
+            } else {
+                dom.notifDetailLinkBtn.classList.add('hidden');
+            }
+            dom.notifDetailModal.classList.remove('hidden');
+        }
+
+        // Cierre del modal de detalle
+        [dom.notifDetailClose, dom.notifDetailCloseBtn].forEach(btn => {
+            btn?.addEventListener('click', () => dom.notifDetailModal.classList.add('hidden'));
+        });
+        dom.notifDetailModal.addEventListener('click', e => {
+            if (e.target === dom.notifDetailModal) dom.notifDetailModal.classList.add('hidden');
+        });
+
+        // Mis respuestas
+        dom.myResponsesBtn?.addEventListener('click', async () => {
+            dom.notifPanel.classList.add('hidden');
+            dom.myResponsesModal.classList.remove('hidden');
+            dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">⏳ Cargando...</p>';
+            if (!userId || APPS_SCRIPT_URL.includes('PON_AQUI')) {
+                dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Necesitas un ID para ver tus respuestas.</p>';
+                return;
+            }
+            const publicId = getPublicId(userId);
+            if (!publicId) { dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">No se pudo obtener tu ID público.</p>'; return; }
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
+                const data = await res.json();
+                if (!data.length) { dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Aún no has enviado respuestas 📭</p>'; return; }
+                const difLabels = { '1':'😄 Muy fácil','2':'🙂 Fácil','3':'😐 Normal','4':'😓 Difícil','5':'😵 Muy difícil' };
+                dom.myResponsesList.innerHTML = data.map(r => {
+                    const fecha = (() => { try { return new Date(r.fecha).toLocaleDateString('es', {day:'numeric',month:'short',year:'numeric'}); } catch(e){ return ''; }})();
+                    const estadoColor = r.correcto ? 'text-green-400' : (r.comentario ? 'text-red-400' : 'text-amber-400');
+                    const estadoTxt   = r.correcto ? '✅ Correcta' : (r.comentario ? '❌ Incorrecta' : '⏳ Pendiente');
+                    return `<div class="bg-gray-900/60 rounded-xl p-4 border border-gray-700/50">
+                        <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                            <span class="text-indigo-300 font-bold text-sm">${r.misterio || '?'}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-gray-500">${fecha}</span>
+                                <span class="text-xs font-bold ${estadoColor}">${estadoTxt}</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-white mb-1"><span class="text-gray-400">Respuesta:</span> ${r.solucion || '—'}</p>
+                        ${r.explicacion ? `<p class="text-xs text-gray-400 mb-1">${r.explicacion}</p>` : ''}
+                        ${r.dificultad  ? `<p class="text-xs text-gray-500">Dificultad percibida: ${difLabels[r.dificultad] || r.dificultad}</p>` : ''}
+                        ${r.comentario  ? `<p class="text-xs text-purple-300 mt-2">💬 ${r.comentario}</p>` : ''}
+                    </div>`;
+                }).join('');
+            } catch(e) { dom.myResponsesList.innerHTML = '<p class="text-red-400 text-sm text-center py-8">Error cargando respuestas.</p>'; }
+        });
+        dom.myResponsesClose?.addEventListener('click', () => dom.myResponsesModal.classList.add('hidden'));
+        dom.myResponsesModal?.addEventListener('click', e => { if (e.target === dom.myResponsesModal) dom.myResponsesModal.classList.add('hidden'); });
+
         // Toggle panel
         dom.bellBtn.addEventListener('click', e => {
             e.stopPropagation();
             dom.notifPanel.classList.toggle('hidden');
         });
+
+        // Cerrar panel al clicar fuera
         document.addEventListener('click', e => {
             if (!dom.bellWrapper.contains(e.target)) dom.notifPanel.classList.add('hidden');
         });
+
+        // Marcar todas como leídas
         dom.notifMarkAllRead.addEventListener('click', () => {
             markAllRead(cachedNotifs);
             renderNotifPanel(cachedNotifs);
-        });
-        document.getElementById('mis-resp-btn').addEventListener('click', () => {
-            dom.notifPanel.classList.add('hidden');
-            openMisRespuestas();
-        });
-
-        // ═══════════════════════════════════════════════════════════════
-        // MIS RESPUESTAS
-        // ═══════════════════════════════════════════════════════════════
-        async function openMisRespuestas() {
-            const modal = document.getElementById('mis-respuestas-modal');
-            const list  = document.getElementById('mis-respuestas-list');
-            modal.style.display = 'flex';
-            list.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">⏳ Cargando...</p>';
-
-            if (!userId || APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                list.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Conéctate para ver tu historial.</p>';
-                return;
-            }
-
-            const publicId = getPublicId(userId);
-            try {
-                const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
-                const data = await res.json();
-                if (!data.length) { list.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Aún no has enviado ninguna respuesta.</p>'; return; }
-
-                list.innerHTML = data.map(r => {
-                    const fecha = (() => { try { return new Date(r.fecha).toLocaleDateString('es',{day:'numeric',month:'short',year:'numeric'}); } catch(e){return '';} })();
-                    const game  = allGames.find(g => g.id === r.misterio);
-                    const label = game ? game.title : (r.misterio || '?');
-                    const estado = r.correcto
-                        ? '<span class="text-xs font-bold text-green-400 bg-green-900/40 px-2 py-0.5 rounded-full">✅ Correcta</span>'
-                        : r.comentario
-                            ? '<span class="text-xs font-bold text-red-400 bg-red-900/40 px-2 py-0.5 rounded-full">❌ Incorrecta</span>'
-                            : '<span class="text-xs font-bold text-orange-400 bg-orange-900/40 px-2 py-0.5 rounded-full">⏳ Pendiente</span>';
-                    return `<div class="bg-gray-900/60 border border-gray-700 rounded-xl p-4">
-                        <div class="flex items-start justify-between gap-2 mb-2 flex-wrap">
-                            <span class="text-sm font-bold text-indigo-300">${label}</span>
-                            <div class="flex items-center gap-2">${estado}<span class="text-xs text-gray-500">${fecha}</span></div>
-                        </div>
-                        <p class="text-sm text-gray-300"><span class="text-gray-500">Solución: </span>${r.solucion || '—'}</p>
-                        ${r.explicacion ? `<p class="text-xs text-gray-500 mt-1">${r.explicacion}</p>` : ''}
-                        ${r.comentario ? `<div class="mt-2 bg-indigo-900/30 border border-indigo-800 rounded-lg px-3 py-2"><p class="text-xs text-indigo-300">💬 <em>${r.comentario}</em></p></div>` : ''}
-                    </div>`;
-                }).join('');
-            } catch(e) { list.innerHTML = '<p class="text-red-400 text-sm text-center py-8">Error al cargar el historial.</p>'; }
-        }
-
-        document.getElementById('mis-respuestas-modal').addEventListener('click', e => {
-            if (e.target === e.currentTarget) e.currentTarget.style.display = 'none';
         });
 
         // ═══════════════════════════════════════════════════════════════
