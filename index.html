@@ -266,10 +266,10 @@
                                     <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-teal-600"><span class="text-2xl">🎓</span></div>
                                     <div><div class="font-bold text-white">Ver Tutorial</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Aprende a jugar</div></div>
                                 </button>
-                                 <a href="https://forms.gle/CTqcoBsGsf2kX1WKA" target="_blank" rel="noopener noreferrer" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all">
+                                 <button id="feedback-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
                                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-blue-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-white" viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 0 1.5H4.5A1 1 0 0 0 3.5 3h10a1 1 0 0 0 1-1 .75.75 0 0 1 1.5 0v1A1.5 1.5 0 0 1 14.5 4h-13A1.5 1.5 0 0 1 0 2.5v-1A1.5 1.5 0 0 1 1.5 0H2z"/><path d="M16 5.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 5.5v-1A1.5 1.5 0 0 1 1.5 3H2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1h.5a1.5 1.5 0 0 1 1.5 1.5v1zM1.5 9h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1zm0 2.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1z"/></svg></div>
-                                     <div><div class="font-bold text-white">Dame tu opinión</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Formulario de feedback</div></div>
-                                 </a>
+                                     <div><div class="font-bold text-white">Dame tu opinión</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Feedback y sugerencias</div></div>
+                                 </button>
                                  <button id="example-game-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
                                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-teal-500"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="text-white" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg></div>
                                      <div><div class="font-bold text-white">Misterio de Ejemplo</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Prueba el juego</div></div>
@@ -482,6 +482,54 @@
         </div>
     </div>
 
+    <!-- Modal de Feedback -->
+    <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-[95]">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="flex items-center justify-between p-5 border-b border-gray-700">
+                <h3 class="text-base font-bold text-white">💬 Danos tu opinión</h3>
+                <button id="feedback-modal-close" class="text-gray-400 hover:text-white text-2xl leading-none">×</button>
+            </div>
+            <div id="feedback-form" class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">¿Qué tipo de comentario es?</label>
+                    <div class="grid grid-cols-2 gap-2" id="feedback-tipo-btns">
+                        <button type="button" data-val="sugerencia" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-indigo-800 text-gray-300 hover:text-white transition border border-transparent">💡 Sugerencia</button>
+                        <button type="button" data-val="bug" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-red-900 text-gray-300 hover:text-white transition border border-transparent">🐛 Bug / Error</button>
+                        <button type="button" data-val="elogio" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-green-900 text-gray-300 hover:text-white transition border border-transparent">❤️ Elogio</button>
+                        <button type="button" data-val="otro" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition border border-transparent">💬 Otro</button>
+                    </div>
+                    <input type="hidden" id="feedback-tipo" value="">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Valoración general <span class="normal-case text-gray-600 font-normal">(opcional)</span></label>
+                    <div class="flex gap-2" id="feedback-stars">
+                        <button type="button" data-val="1" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="2" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="3" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="4" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="5" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                    </div>
+                    <input type="hidden" id="feedback-valoracion" value="">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tu mensaje <span class="text-red-400">*</span></label>
+                    <textarea id="feedback-texto" rows="4" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none text-sm" placeholder="Cuéntanos lo que piensas..."></textarea>
+                    <p id="feedback-error" class="text-red-400 text-xs mt-1 hidden">Por favor escribe algo antes de enviar.</p>
+                </div>
+                <div class="flex justify-end gap-3 pt-1">
+                    <button id="feedback-cancel-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition">Cancelar</button>
+                    <button id="feedback-submit-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition flex items-center gap-2">Enviar opinión</button>
+                </div>
+            </div>
+            <div id="feedback-success" class="hidden text-center p-10">
+                <div class="text-5xl mb-4">🙏</div>
+                <h4 class="text-lg font-bold text-white mb-2">¡Gracias por tu opinión!</h4>
+                <p class="text-gray-400 text-sm mb-6">Tu comentario nos ayuda a mejorar el juego.</p>
+                <button id="feedback-done-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-lg text-sm">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast-notification"></div>
 
@@ -627,7 +675,20 @@
             adActions: document.getElementById('ad-actions'),
             adCloseBtn: document.getElementById('ad-close-btn'),
             recallAdBtn: document.getElementById('recall-ad-btn'),
-            recallTutorialBtn: document.getElementById('recall-tutorial-btn') // NUEVO
+            recallTutorialBtn: document.getElementById('recall-tutorial-btn'), // NUEVO
+            // Feedback
+            feedbackBtn       : document.getElementById('feedback-btn'),
+            feedbackModal     : document.getElementById('feedback-modal'),
+            feedbackForm      : document.getElementById('feedback-form'),
+            feedbackSuccess   : document.getElementById('feedback-success'),
+            feedbackTipo      : document.getElementById('feedback-tipo'),
+            feedbackValoracion: document.getElementById('feedback-valoracion'),
+            feedbackTexto     : document.getElementById('feedback-texto'),
+            feedbackError     : document.getElementById('feedback-error'),
+            feedbackSubmitBtn : document.getElementById('feedback-submit-btn'),
+            feedbackCancelBtn : document.getElementById('feedback-cancel-btn'),
+            feedbackDoneBtn   : document.getElementById('feedback-done-btn'),
+            feedbackModalClose: document.getElementById('feedback-modal-close'),
         };
 
         const GAMES_INDEX_PATH = 'games/index.json';
@@ -653,6 +714,10 @@
         let showFavoritesOnly = false;
         let currentPodiumSeasonId = 'general'; // NUEVO
         let isNewUserSession = false; // Flag para tutorial
+
+        // Sets de misterios del usuario actual
+        let userCorrectGames = new Set(); // IDs de misterios con respuesta correcta
+        let userPendingGames = new Set(); // IDs con respuesta enviada pero pendiente de revisión
 
         // Caché para podios de juegos (Sheets)
         const podiumsCache = {};
@@ -1448,7 +1513,16 @@
 
                 case 'all-clues':
                     contentHTML = `<div class="space-y-4">${availableClues.map((clue, i) => renderClue(clue, i)).join('')}${game.isSolved ? getSolutionHTML(game) : ''}</div>`;
-                    const guessBtn = (game.googleFormLink && !game.isSolved) ? `<button class="guess-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">¡Adivina aquí!</button>` : '';
+                    const _gid = game.id;
+                    const guessBtn = (() => {
+                        if (!game.googleFormLink) return '';
+                        if (game.isSolved) return '';
+                        if (userCorrectGames.has(_gid))
+                            return `<span class="inline-flex items-center gap-2 bg-green-900/50 text-green-400 font-bold py-2 px-4 rounded-lg border border-green-700/50 text-sm">✅ Ya acertaste este misterio</span>`;
+                        if (userPendingGames.has(_gid))
+                            return `<span class="inline-flex items-center gap-2 bg-amber-900/50 text-amber-400 font-bold py-2 px-4 rounded-lg border border-amber-700/50 text-sm">⏳ Respuesta enviada — pendiente de revisión</span>`;
+                        return `<button class="guess-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">¡Adivina aquí!</button>`;
+                    })();
                     footerHTML = `<div class="flex flex-wrap justify-center gap-4"><button class="back-to-summary-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Volver</button><button class="download-html-btn bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">Descargar</button><button class="share-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg" data-game-id="${game.id}">Compartir</button>${guessBtn}</div>`;
                     break;
 
@@ -2170,6 +2244,8 @@
 
                 if (target.matches('.guess-btn')) {
                     if (!userId) return showToast('¡Necesitas crear un ID para jugar!', true);
+                    if (userCorrectGames.has(currentGameData?.id)) return showToast('¡Ya acertaste este misterio! 🎉', false);
+                    if (userPendingGames.has(currentGameData?.id)) return showToast('Ya tienes una respuesta enviada pendiente de revisión ⏳', false);
                     openResolverModal(currentGameData);
                     return;
                 }
@@ -2310,6 +2386,8 @@
             dom.resolverSubmitBtn.innerHTML = '<span>Enviar respuesta</span>';
             dom.resolverForm.classList.add('hidden');
             dom.resolverSuccess.classList.remove('hidden');
+            // Marcar localmente como pendiente para que el botón cambie sin recargar
+            if (resolverGameId) userPendingGames.add(resolverGameId);
         }
 
         dom.resolverSubmitBtn.addEventListener('click', submitResolver);
@@ -2436,6 +2514,17 @@
                 cachedNotifs = await res.json();
                 renderNotifPanel(cachedNotifs);
             } catch(e) { console.warn('Error cargando notificaciones:', e); }
+            // Cargar historial para saber qué misterios ya ha resuelto/enviado
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
+                const hist = await res.json();
+                userCorrectGames.clear();
+                userPendingGames.clear();
+                hist.forEach(r => {
+                    if (r.correcto) userCorrectGames.add(r.misterio);
+                    else if (!r.comentario) userPendingGames.add(r.misterio); // sin comentario = no revisado
+                });
+            } catch(e) { console.warn('Error cargando historial de jugador:', e); }
         }
 
         // Abre el modal de detalle de una notificación
@@ -2522,6 +2611,78 @@
         });
         dom.myResponsesClose?.addEventListener('click', () => dom.myResponsesModal.classList.add('hidden'));
         dom.myResponsesModal?.addEventListener('click', e => { if (e.target === dom.myResponsesModal) dom.myResponsesModal.classList.add('hidden'); });
+
+        // ─── FEEDBACK ────────────────────────────────────────────────────────────
+
+        function openFeedbackModal() {
+            dom.feedbackTipo.value      = '';
+            dom.feedbackValoracion.value = '';
+            dom.feedbackTexto.value     = '';
+            dom.feedbackError.classList.add('hidden');
+            document.querySelectorAll('.feedback-tipo-btn').forEach(b => {
+                b.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-800', 'text-white');
+                b.classList.add('bg-gray-700', 'text-gray-300');
+            });
+            document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('text-yellow-400'));
+            document.querySelectorAll('.star-btn').forEach(b => b.classList.add('text-gray-600'));
+            dom.feedbackForm.classList.remove('hidden');
+            dom.feedbackSuccess.classList.add('hidden');
+            dom.feedbackModal.classList.remove('hidden');
+        }
+
+        dom.feedbackBtn?.addEventListener('click', openFeedbackModal);
+        [dom.feedbackModalClose, dom.feedbackCancelBtn].forEach(b => b?.addEventListener('click', () => dom.feedbackModal.classList.add('hidden')));
+        dom.feedbackDoneBtn?.addEventListener('click', () => dom.feedbackModal.classList.add('hidden'));
+        dom.feedbackModal?.addEventListener('click', e => { if (e.target === dom.feedbackModal) dom.feedbackModal.classList.add('hidden'); });
+
+        // Tipo buttons
+        document.querySelectorAll('.feedback-tipo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.feedback-tipo-btn').forEach(b => {
+                    b.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-800', 'text-white');
+                    b.classList.add('bg-gray-700', 'text-gray-300');
+                });
+                btn.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-800', 'text-white');
+                btn.classList.remove('bg-gray-700', 'text-gray-300');
+                dom.feedbackTipo.value = btn.dataset.val;
+            });
+        });
+
+        // Star rating
+        document.querySelectorAll('.star-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = parseInt(btn.dataset.val);
+                dom.feedbackValoracion.value = val;
+                document.querySelectorAll('.star-btn').forEach(b => {
+                    const bVal = parseInt(b.dataset.val);
+                    b.classList.toggle('text-yellow-400', bVal <= val);
+                    b.classList.toggle('text-gray-600',   bVal >  val);
+                });
+            });
+        });
+
+        dom.feedbackSubmitBtn?.addEventListener('click', async () => {
+            const texto = dom.feedbackTexto.value.trim();
+            if (!texto) { dom.feedbackError.classList.remove('hidden'); dom.feedbackTexto.focus(); return; }
+            dom.feedbackError.classList.add('hidden');
+            dom.feedbackSubmitBtn.disabled = true;
+            dom.feedbackSubmitBtn.textContent = '⏳ Enviando...';
+            const publicId = userId ? getPublicId(userId) : 'anónimo';
+            const params = new URLSearchParams({
+                action    : 'saveFeedback',
+                user      : publicId,
+                valoracion: dom.feedbackValoracion.value,
+                tipo      : dom.feedbackTipo.value || 'general',
+                texto
+            });
+            try {
+                await fetch(`${APPS_SCRIPT_URL}?${params}`);
+            } catch(e) { /* no-cors may throw */ }
+            dom.feedbackSubmitBtn.disabled = false;
+            dom.feedbackSubmitBtn.textContent = 'Enviar opinión';
+            dom.feedbackForm.classList.add('hidden');
+            dom.feedbackSuccess.classList.remove('hidden');
+        });
 
         // Toggle panel
         dom.bellBtn.addEventListener('click', e => {
