@@ -2558,6 +2558,13 @@
             // Botón de enlace externo (solo si el link no es interno #mystery=...)
             if (notif.link && !notif.link.startsWith('#mystery=')) {
                 dom.notifDetailLinkBtn.href = notif.link;
+                // Intentar mostrar el dominio como label en lugar de la URL completa
+                try {
+                    const domain = new URL(notif.link).hostname.replace(/^www\./, '');
+                    dom.notifDetailLinkBtn.textContent = `Abrir enlace → ${domain}`;
+                } catch(e) {
+                    dom.notifDetailLinkBtn.textContent = 'Abrir enlace →';
+                }
                 dom.notifDetailLinkBtn.classList.remove('hidden');
             } else {
                 dom.notifDetailLinkBtn.classList.add('hidden');
@@ -2595,7 +2602,9 @@
                     const estadoTxt   = r.correcto ? '✅ Correcta' : (r.comentario ? '❌ Incorrecta' : '⏳ Pendiente');
                     return `<div class="bg-gray-900/60 rounded-xl p-4 border border-gray-700/50">
                         <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                            <span class="text-indigo-300 font-bold text-sm">${r.misterio || '?'}</span>
+                            <button class="text-indigo-300 hover:text-indigo-200 font-bold text-sm text-left" onclick="(function(){const g=allGames.find(x=>x.id==='${r.misterio?.replace(/'/g,"\\'")}');if(g){document.getElementById('my-responses-modal').classList.add('hidden');openModalWithGame(g);}})()">
+                                ${allGames.find(g => g.id === r.misterio)?.title || r.misterio || '?'}
+                            </button>
                             <div class="flex items-center gap-2">
                                 <span class="text-xs text-gray-500">${fecha}</span>
                                 <span class="text-xs font-bold ${estadoColor}">${estadoTxt}</span>
