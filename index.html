@@ -2617,7 +2617,7 @@
 
         // Calcula la racha actual: número de misterios consecutivos (por orden de startDate) en los que el usuario ha participado
         function computeStreak(hist) {
-            if (!hist.length || !allGames.length) return 0;
+            if (!allGames.length) return 0;
             const participated = new Set(hist.map(r => r.misterio));
             // Ordenar misterios del más reciente al más antiguo
             const sorted = [...allGames]
@@ -2625,8 +2625,15 @@
                 .sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
             let streak = 0;
             for (const g of sorted) {
-                if (participated.has(g.id)) streak++;
-                else break; // racha rota
+                if (participated.has(g.id)) {
+                    streak++;
+                } else if (!g.isSolved) {
+                    // Misterio activo en el que aún no se ha participado: no rompe racha
+                    continue;
+                } else {
+                    // Misterio resuelto en el que no participó: racha rota
+                    break;
+                }
             }
             return streak;
         }
