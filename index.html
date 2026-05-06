@@ -1531,22 +1531,24 @@
                     // Mostrar puntos potenciales si el misterio está activo y hay Apps Script
                     if (!game.isSolved && !userCorrectGames.has(_gid) && !userPendingGames.has(_gid) && !APPS_SCRIPT_URL.includes('PON_AQUI')) {
                         fetchScoringInfo(_gid).then(info => {
-                            const pts = calcPotentialPoints(info);
+                            const result = calcPotentialPoints(info);
                             const banner = document.getElementById('scoring-live-banner');
-                            if (!banner || !pts) return;
-                            const futureDates = (info.clueDates || []).filter(d => new Date(d) > new Date());
-                            const savedPts    = futureDates.length * (info.ptsSaved || 2);
-                            if (savedPts > 0) {
-                                banner.innerHTML = `<div class="bg-indigo-900/30 border border-indigo-700/50 rounded-lg px-4 py-2 flex flex-wrap items-center gap-3 text-sm">
-                                    <span class="text-indigo-300 font-bold">⭐ Puntos si aciertas ahora: <span class="text-white text-base">${pts}</span></span>
-                                    <span class="text-gray-500">·</span>
-                                    <span class="text-amber-400/80 text-xs">Esperando ${futureDates.length} pista${futureDates.length===1?'':'s'} más podrías perder <strong>${savedPts}</strong> pts</span>
-                                </div>`;
-                                banner.classList.remove('hidden');
-                            } else {
-                                banner.innerHTML = `<div class="bg-indigo-900/30 border border-indigo-700/50 rounded-lg px-4 py-2 text-sm text-indigo-300 font-bold">⭐ Puntos si aciertas ahora: <span class="text-white text-base">${pts}</span></div>`;
-                                banner.classList.remove('hidden');
-                            }
+                            if (!banner || !result) return;
+                            const { byPos, savedPts, futurePistas } = result;
+                            const medals = ['🥇','🥈','🥉'];
+                            const posHTML = byPos.map((p, i) =>
+                                `<span class="inline-flex items-center gap-1 text-sm font-bold ${i===0?'text-yellow-300':i===1?'text-gray-300':i===2?'text-orange-300':'text-gray-500'}">
+                                    ${medals[i] || ''}<span>${p.label}:</span><span>${p.pts} pts</span>
+                                </span>`
+                            ).join('<span class="text-gray-700 mx-1">·</span>');
+                            const lossWarn = savedPts > 0
+                                ? `<p class="text-amber-400/70 text-xs mt-1">⚠️ Hay ${futurePistas} pista${futurePistas===1?'':'s'} sin revelar — esperar puede costarte hasta <strong>${savedPts} pts</strong></p>`
+                                : '';
+                            banner.innerHTML = `<div class="bg-indigo-950/50 border border-indigo-700/40 rounded-lg px-4 py-2">
+                                <div class="flex flex-wrap items-center gap-3">${posHTML}</div>
+                                ${lossWarn}
+                            </div>`;
+                            banner.classList.remove('hidden');
                         });
                     }
                     footerHTML = `<div id="scoring-live-banner" class="hidden mb-3"></div><div class="flex flex-wrap justify-center gap-4"><button class="back-to-summary-btn bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Volver</button><button class="download-html-btn bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg">Descargar</button><button class="share-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg" data-game-id="${game.id}">Compartir</button>${guessBtn}</div>`;
@@ -2584,8 +2586,38 @@
             }
         }
 
-        // Obtiene (con caché) los parámetros de puntuación de un misterio
-        async function fetchScoringInfo(mysteryId) {
+        // Calcula los puntos potenciales para cada posición posible
+        function calcPotentialPoints(info) {
+            if (!info) return null;
+            const now        = new Date();
+            const rankPoints = info.rankPoints || [5, 3, 2];
+            const rankRest   = info.rankRest   ?? 1;
+            const difficulty = info.difficulty || 2;
+            const ptsSaved   = info.ptsSaved   || 2;
+
+            // Pistas futuras aún no reveladas → bonus si aciertas antes de que aparezcan
+            let savedCount = 0;
+            (info.clueDates || []).forEach(d => { if (new Date(d) > now) savedCount++; });
+            const term2 = savedCount * ptsSaved;
+
+            // Penalización por tiempo tras última pista
+            let term3 = 0;
+            if (info.lastClue && now > new Date(info.lastClue)) {
+                const diffMs = now - new Date(info.lastClue);
+                const utdMs  = (info.utdHours || 1) * 3600000;
+                term3        = Math.max(0, Math.floor(diffMs / utdMs) - 1);
+            }
+
+            // Una entrada por posición: 1º, 2º, 3º, resto (siempre mínimo 1)
+            const allBases = [...rankPoints, rankRest];
+            const byPos = allBases.map((base, i) => ({
+                pos   : i + 1,
+                label : i < rankPoints.length ? `${i+1}º` : 'resto',
+                pts   : Math.max(1, base * difficulty + term2 - term3)
+            }));
+
+            return { byPos, savedPts: term2, term3, futurePistas: savedCount };
+        }
             if (scoringInfoCache[mysteryId]) return scoringInfoCache[mysteryId];
             if (APPS_SCRIPT_URL.includes('PON_AQUI')) return null;
             try {
