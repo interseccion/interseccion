@@ -2618,6 +2618,9 @@
 
             return { byPos, savedPts: term2, term3, futurePistas: savedCount };
         }
+
+        // Obtiene (con caché) los parámetros de puntuación de un misterio
+        async function fetchScoringInfo(mysteryId) {
             if (scoringInfoCache[mysteryId]) return scoringInfoCache[mysteryId];
             if (APPS_SCRIPT_URL.includes('PON_AQUI')) return null;
             try {
@@ -2629,23 +2632,6 @@
             } catch(e) { return null; }
         }
 
-        // Calcula los puntos potenciales actuales para un misterio
-        function calcPotentialPoints(info) {
-            if (!info) return null;
-            const now       = new Date();
-            const basePts   = (info.rankPoints?.[0] || 5); // asumimos posición 1 (mejor caso)
-            const term1     = basePts * (info.difficulty || 2);
-            let savedCount  = 0;
-            (info.clueDates || []).forEach(d => { if (new Date(d) > now) savedCount++; });
-            const term2     = savedCount * (info.ptsSaved || 2);
-            let term3       = 0;
-            if (info.lastClue && now > new Date(info.lastClue)) {
-                const diffMs = now - new Date(info.lastClue);
-                const utdMs  = (info.utdHours || 1) * 3600000;
-                term3        = Math.max(0, Math.floor(diffMs / utdMs) - 1);
-            }
-            return Math.max(1, term1 + term2 - term3);
-        }
         function openNotifDetailModal(notif) {
             const mystId  = getMysteryIdFromLink(notif.link);
             const titulo  = resolveNotifText(notif.titulo || '', mystId);
