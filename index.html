@@ -1369,6 +1369,11 @@
 
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.fav-btn-wrapper')) { toggleFavorite(game.id); }
+                else if (e.target.closest('.winner-link')) {
+                    const winnerId = e.target.closest('.winner-link').dataset.winnerId;
+                    const user = leaderboardData.find(u => u.id === winnerId) || { name: e.target.closest('.winner-link').textContent, id: winnerId, points: 0, solvedGames: [] };
+                    openProfileModal(user);
+                }
                 else { openModalWithGame(game); }
             });
             return card;
@@ -1512,7 +1517,48 @@
                             </div>`;
                     })();
 
-                    contentHTML = `<div class="space-y-4">${game.showMystery && game.mystery ? `<div class="bg-gray-700/50 p-4 rounded-lg"><p class="text-sm text-gray-400"><strong>Lo que buscamos es:</strong> ${game.mystery}</p></div>` : ''}<div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700"><p class="text-gray-300">${game.notes || 'Descripción del misterio...'}</p></div>${nextClueInfoHTML}${cluesIndex}</div>`;
+                    // Panel de puntos potenciales (si activo) o ganador (si resuelto) para el índice
+                    const summaryScoreId = `summary-score-panel-${game.id}`;
+                    let summaryScoreHTML = '';
+                    if (game.isSolved && game.winner) {
+                        const winnerId = game.winnerId || '';
+                        summaryScoreHTML = `<div class="flex items-center gap-2 bg-yellow-900/20 border border-yellow-500/30 rounded-lg px-4 py-2 text-sm">
+                            <span class="text-yellow-400">🏆</span>
+                            <span class="text-gray-400">Resuelto por </span>
+                            <button class="winner-link font-semibold text-yellow-400 underline hover:text-yellow-300" data-winner-id="${winnerId}">${game.winner}</button>
+                        </div>`;
+                    } else if (!game.isSolved && !APPS_SCRIPT_URL.includes('PON_AQUI')) {
+                        summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos potenciales...</div>`;
+                        // Fetch async
+                        const _gameId = game.id;
+                        Promise.all([fetchScoringInfo(_gameId), getPodium(_gameId)]).then(([info, pod]) => {
+                            const el = document.getElementById(summaryScoreId);
+                            if (!el || !info) return;
+                            const nextPos  = (pod?.entries?.length || 0) + 1;
+                            const rankIdx  = Math.min(nextPos - 1, (info.rankPoints?.length || 0));
+                            const basePts  = rankIdx < (info.rankPoints?.length || 0) ? info.rankPoints[rankIdx] : (info.rankRest || 1);
+                            const term1    = basePts * (info.difficulty || 2);
+                            const now      = new Date();
+                            let savedCount = 0;
+                            (info.clueDates || []).forEach(d => { if (new Date(d) > now) savedCount++; });
+                            const term2    = savedCount * (info.ptsSaved || 2);
+                            let term3      = 0;
+                            if (info.lastClue && now > new Date(info.lastClue)) {
+                                const diffMs = now - new Date(info.lastClue);
+                                term3 = Math.max(0, Math.floor(diffMs / ((info.utdHours || 1) * 3600000)) - 1);
+                            }
+                            const pts = Math.max(1, term1 + term2 - term3);
+                            const posLabel = nextPos <= 3 ? ['🥇','🥈','🥉'][nextPos-1] + ` #${nextPos}` : `#${nextPos}`;
+                            el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
+                                <span class="text-indigo-300 font-bold">⭐ Puntos si aciertas ahora: <span class="text-white text-base">${pts}</span></span>
+                                <span class="text-gray-600">·</span>
+                                <span class="text-gray-400 text-xs">Posición esperada: <span class="font-semibold text-indigo-300">${posLabel}</span></span>
+                                ${savedCount > 0 ? `<span class="text-gray-600">·</span><span class="text-amber-400/80 text-xs">Esperando ${savedCount} pista${savedCount===1?'':'s'} más podrías perder <strong>${savedCount*(info.ptsSaved||2)}</strong> pts</span>` : ''}
+                            </div>`;
+                        });
+                    }
+
+                    contentHTML = `<div class="space-y-4">${game.showMystery && game.mystery ? `<div class="bg-gray-700/50 p-4 rounded-lg"><p class="text-sm text-gray-400"><strong>Lo que buscamos es:</strong> ${game.mystery}</p></div>` : ''}<div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700"><p class="text-gray-300">${game.notes || 'Descripción del misterio...'}</p></div>${nextClueInfoHTML}${summaryScoreHTML ? `<div>${summaryScoreHTML}</div>` : ''}${cluesIndex}</div>`;
                     footerHTML = `<div class="flex flex-wrap justify-center gap-4"><button class="share-btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg" data-game-id="${game.id}">Compartir</button><button class="view-all-clues-btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg">Mostrar Pistas y Resolver</button></div>`;
                     break;
 
@@ -1898,6 +1944,19 @@
                         if (!jd) return '';
                         const jdStr = jd.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
                         return `<div class="text-xs text-gray-500 mt-1">📅 Miembro desde ${jdStr}</div>`;
+                    })()}
+                    ${(() => {
+                        // Racha: para el usuario propio usamos userStreak; para otros calculamos desde sus juegos
+                        let streak = 0;
+                        if (userData.id === currentPublicId()) {
+                            streak = userStreak;
+                        } else if (userData.solvedGames && allGames.length) {
+                            const participated = new Set(userData.solvedGames);
+                            const sorted = [...allGames].filter(g => g.startDate).sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+                            for (const g of sorted) { if (participated.has(g.id)) streak++; else break; }
+                        }
+                        if (streak < 1) return '';
+                        return `<div class="mt-2 text-orange-400 font-bold text-sm">🔥 Racha: ${streak} misterio${streak === 1 ? '' : 's'} seguido${streak === 1 ? '' : 's'}</div>`;
                     })()}
                     <div class="mt-2 text-yellow-400 font-bold">Ranking General: ${rankDisplay}</div>
                 </div>
@@ -2575,7 +2634,7 @@
         function updateStreakBadge() {
             const badge = document.getElementById('streak-badge');
             if (!badge) return;
-            if (userStreak >= 2) {
+            if (userStreak >= 1) {
                 badge.textContent = `🔥 ${userStreak}`;
                 badge.title       = `Llevas ${userStreak} misterios seguidos participando`;
                 badge.classList.remove('hidden');
