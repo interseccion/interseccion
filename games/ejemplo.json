@@ -1,69 +1,70 @@
 {
+  "id": "game-1751112643982",
   "title": "Ejemplo",
-  "googleFormLink": "https://forms.gle/WuD3VHF62H6ubz6W8",
-  "notes": "Este es un pequeño ejemplo de cómo es un juego. ¡Pulsa para empezar!",
+  "type": "Tutorial",
+  "difficulty": "Fácil",
+  "mystery": "entender el juego",
+  "showMystery": true,
+  "notes": "¡Bienvenid@ a La Intersección! 👋 Esto es un ejemplo interactivo para que entiendas cómo funciona el juego antes de lanzarte a los misterios de verdad. Ve leyendo las pistas una a una…",
   "startDate": "2025-06-27",
   "endDate": "",
+  "googleFormLink": "https://forms.gle/WuD3VHF62H6ubz6W8",
   "clues": [
     {
       "type": "text",
-      "content": "Esta sería la primera pista, publicada nada más comenzar.",
+      "content": "🕵️ En cada misterio encontrarás una serie de pistas como esta. Tu misión es descubrir qué tienen todas en común: la «Intersección».",
       "text": "",
       "publishDate": "2025-06-27T00:00"
     },
     {
-      "type": "image",
-      "content": "https://calahorra.es/wp-content/uploads/20220504-pista-de-atletismo-1-1536x1042.jpeg",
-      "text": "Las pistas pueden ser cualquier cosa: fotos, audios, vídeos, textos, enlaces...",
+      "type": "text",
+      "content": "📅 Las pistas no aparecen todas a la vez: se van publicando una a una a lo largo de días o semanas. Cuanto antes adivines, más puntos ganas (y más difícil es, porque tienes menos pistas).",
+      "text": "",
       "publishDate": "2025-06-27T01:00"
     },
     {
-      "type": "text",
-      "content": "No todas las pistas estarán disponibles a la vez: la idea es que se publique una cada semana (o cada cierto tiempo).",
-      "text": "",
+      "type": "image",
+      "content": "https://calahorra.es/wp-content/uploads/20220504-pista-de-atletismo-1-1536x1042.jpeg",
+      "text": "🖼️ Las pistas pueden ser imágenes, audios, vídeos o textos. ¿Qué te sugiere esta foto? Apunta tu hipótesis.",
       "publishDate": "2025-06-27T02:00"
     },
     {
       "type": "text",
-      "content": "De hecho, si te fijas bien, bajo cada pista hay una fecha con hora.",
+      "content": "⏱️ Hay otro truco: cada vez que se publica una pista nueva, los puntos que vale el misterio bajan un poco. Así que si ya sabes la respuesta, ¡no esperes más!",
       "text": "",
       "publishDate": "2025-06-27T03:00"
     },
     {
       "type": "text",
-      "content": "Una vez publicadas todas las pistas, ya no habrá ninguna más hasta que alguien adivine la solución que las conecta todas (la « Intersección », de ahí el nombre del juego).",
+      "content": "🏆 Solo hay un ganador por misterio: la primera persona que acierte. Pero participar siempre suma puntos al marcador, aunque no seas el primero.",
       "text": "",
       "publishDate": "2025-06-27T04:00"
     },
     {
       "type": "text",
-      "content": "Sin embargo, si sabes la solución (aunque aún no se hayan publicado todas las pistas), intenta adivinarla rellenando el formulario que encontrarás bajo las pistas.",
+      "content": "📋 Cuando creas que sabes la respuesta, rellena el formulario que encontrarás justo debajo de las pistas. Puedes intentarlo aunque no se hayan publicado todas.",
       "text": "",
       "publishDate": "2025-06-27T05:00"
     },
     {
       "type": "text",
-      "content": "¡Ánimo, y mucha suerte! 💖🍀",
+      "content": "🔥 Si participas en misterios consecutivos sin saltarte ninguno, acumulas racha. ¡El podio de rachas premia la constancia tanto como la inteligencia!",
       "text": "",
       "publishDate": "2025-06-27T06:00"
     },
     {
       "type": "text",
-      "content": "Por cierto, puedes meterte en juegos ya pasados para practicar. 😉",
+      "content": "💡 Por cierto: puedes practicar con misterios pasados sin que afecte a tu puntuación real. ¡Úsalos para entrenar el ojo antes del siguiente misterio en vivo! 😉",
       "text": "",
       "publishDate": "2025-06-27T07:00"
     }
   ],
   "isSolved": false,
   "solution": "No hay solución, es solo un ejemplo.",
-  "winner": "Nadie",
+  "winner": "",
+  "winnerId": "",
   "explanation": "",
-  "id": "game-1751112643982",
-  "lastUpdated": "2025-08-05T19:26:55.593Z",
-  "showMystery": true,
   "winnerExplanation": "",
-  "type": "Tutorial",
-  "difficulty": "Fácil",
-  "mystery": "entender el juego",
-  "bibliography": "https://calahorra.es/wp-content/uploads/20220504-pista-de-atletismo-1-1536x1042.jpeg"
+  "bibliography": "https://calahorra.es/wp-content/uploads/20220504-pista-de-atletismo-1-1536x1042.jpeg",
+  "lastUpdated": "2026-05-08T12:00:00.000Z"
 }
