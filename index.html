@@ -1286,7 +1286,7 @@
             // Filtro en Archivo
             dom.seasonFilterSelect.innerHTML = '<option value="Todos">Todas las Temporadas</option>';
             // Selector en Podio
-            dom.podiumSeasonSelect.innerHTML = '<option value="general">🏆 Clasificación General</option>';
+            dom.podiumSeasonSelect.innerHTML = '<option value="general">🏆 Clasificación General</option><option value="__streaks__">🔥 Rachas</option>';
 
             allSeasons.forEach(season => {
                 // Filtro
@@ -1528,34 +1528,48 @@
                             <button class="winner-link font-semibold text-yellow-400 underline hover:text-yellow-300" data-winner-id="${winnerId}">${game.winner}</button>
                         </div>`;
                     } else if (!game.isSolved && !APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                        summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos potenciales...</div>`;
-                        // Fetch async
-                        const _gameId = game.id;
-                        Promise.all([fetchScoringInfo(_gameId), getPodium(_gameId)]).then(([info, pod]) => {
-                            const el = document.getElementById(summaryScoreId);
-                            if (!el || !info) return;
-                            const nextPos  = (pod?.entries?.length || 0) + 1;
-                            const rankIdx  = Math.min(nextPos - 1, (info.rankPoints?.length || 0));
-                            const basePts  = rankIdx < (info.rankPoints?.length || 0) ? info.rankPoints[rankIdx] : (info.rankRest || 1);
-                            const term1    = basePts * (info.difficulty || 2);
-                            const now      = new Date();
-                            let savedCount = 0;
-                            (info.clueDates || []).forEach(d => { if (new Date(d) > now) savedCount++; });
-                            const term2    = savedCount * (info.ptsSaved || 2);
-                            let term3      = 0;
-                            if (info.lastClue && now > new Date(info.lastClue)) {
-                                const diffMs = now - new Date(info.lastClue);
-                                term3 = Math.max(0, Math.floor(diffMs / ((info.utdHours || 1) * 3600000)) - 1);
-                            }
-                            const pts = Math.max(1, term1 + term2 - term3);
-                            const posLabel = nextPos <= 3 ? ['🥇','🥈','🥉'][nextPos-1] + ` #${nextPos}` : `#${nextPos}`;
-                            el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
-                                <span class="text-indigo-300 font-bold">⭐ Puntos si aciertas ahora: <span class="text-white text-base">${pts}</span></span>
-                                <span class="text-gray-600">·</span>
-                                <span class="text-gray-400 text-xs">Posición esperada: <span class="font-semibold text-indigo-300">${posLabel}</span></span>
-                                ${savedCount > 0 ? `<span class="text-gray-600">·</span><span class="text-amber-400/80 text-xs">Esperando ${savedCount} pista${savedCount===1?'':'s'} más podrías perder <strong>${savedCount*(info.ptsSaved||2)}</strong> pts</span>` : ''}
-                            </div>`;
-                        });
+                    summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos...</div>`;
+
+                    const _gameId = game.id;
+                    const renderScorePanel = (info, solverCount) => {
+                        const el = document.getElementById(summaryScoreId);
+                        if (!el || !info) return;
+                        const nextPos = solverCount + 1;
+                        const rankIdx = Math.min(nextPos - 1, (info.rankPoints?.length || 0));
+                        const basePts = rankIdx < (info.rankPoints?.length || 0) ? info.rankPoints[rankIdx] : (info.rankRest || 1);
+                        const now = new Date();
+                        let savedCount = 0;
+                        (info.clueDates || []).forEach(d => { if (new Date(d) > now) savedCount++; });
+                        let term3 = 0;
+                        if (info.lastClue && now > new Date(info.lastClue)) {
+                            const diffMs = now - new Date(info.lastClue);
+                            term3 = Math.max(0, Math.floor(diffMs / ((info.utdHours || 1) * 3600000)) - 1);
+                        }
+                        const pts = Math.max(1, basePts * (info.difficulty || 2) + savedCount * (info.ptsSaved || 2) - term3);
+                        const posLabel = nextPos === 1 ? '🥇 1.º' : nextPos === 2 ? '🥈 2.º' : nextPos === 3 ? '🥉 3.º' : `#${nextPos}`;
+                        el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
+                            <span class="text-indigo-300 font-bold">⭐ Si aciertas ahora: <span class="text-white text-base">${pts} pts</span></span>
+                            <span class="text-gray-600">·</span>
+                            <span class="text-gray-400 text-xs">Serías el <span class="font-semibold text-indigo-300">${posLabel}</span></span>
+                            ${savedCount > 0 ? `<span class="text-gray-600">·</span><span class="text-amber-400/80 text-xs">Esperando ${savedCount} pista${savedCount===1?'':'s'} más: −<strong>${savedCount*(info.ptsSaved||2)}</strong> pts</span>` : ''}
+                        </div>`;
+                    };
+
+                    fetchScoringInfo(_gameId).then(info => {
+                        if (!info) return;
+                        // Usar podiumsCache si ya está; si no, estimación rápida y luego refinar
+                        if (podiumsCache[_gameId]) {
+                            renderScorePanel(info, podiumsCache[_gameId].entries?.length || 0);
+                        } else {
+                            // Mostrar estimación inmediata con leaderboard local
+                            const quickCount = leaderboardData.filter(u => (u.solvedGames||[]).includes(_gameId)).length;
+                            renderScorePanel(info, quickCount);
+                            // Refinar en background con el podio real (sin bloquear)
+                            getPodium(_gameId).then(pod => {
+                                renderScorePanel(info, pod?.entries?.length || quickCount);
+                            });
+                        }
+                    });
                     }
 
                     contentHTML = `<div class="space-y-4">${game.showMystery && game.mystery ? `<div class="bg-gray-700/50 p-4 rounded-lg"><p class="text-sm text-gray-400"><strong>Lo que buscamos es:</strong> ${game.mystery}</p></div>` : ''}<div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700"><p class="text-gray-300">${game.notes || 'Descripción del misterio...'}</p></div>${nextClueInfoHTML}${summaryScoreHTML ? `<div>${summaryScoreHTML}</div>` : ''}${cluesIndex}</div>`;
@@ -1819,13 +1833,19 @@
                 if (index === 1) rankDisplay = '🥈';
                 if (index === 2) rankDisplay = '🥉';
 
+                const streak = computeUserStreakFromSet(new Set(user.solvedGames || []));
+                const streakBadge = streak >= 1 ? `<span class="text-xs text-orange-400 font-semibold ml-1" title="Racha">🔥${streak}</span>` : '';
+
                 const tr = document.createElement('tr');
                 tr.className = `transition-colors cursor-pointer ${rowClass}`;
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-lg ${index < 3 ? 'text-yellow-400' : 'text-gray-500'}">${rankDisplay}</td>
-                    <td class="p-4 font-medium text-white flex items-center gap-2">
-                        ${user.name}
-                        ${isMe ? '<span class="text-xs bg-indigo-600 px-2 py-0.5 rounded text-white ml-2">Tú</span>' : ''}
+                    <td class="p-4 font-medium text-white">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            ${user.name}
+                            ${isMe ? '<span class="text-xs bg-indigo-600 px-2 py-0.5 rounded text-white">Tú</span>' : ''}
+                            ${streakBadge}
+                        </div>
                     </td>
                     <td class="p-4 text-right font-bold text-green-400">${user.points}</td>
                     <td class="p-4 text-center text-gray-400">${user.solvedGames.length}</td>
@@ -2223,7 +2243,16 @@
                 const selected = e.target.value;
                 currentPodiumSeasonId = selected;
 
-                if (selected === 'general') {
+                if (selected === '__streaks__') {
+                    dom.podiumTitle.textContent = '🔥 Podio de Rachas';
+                    dom.podiumDescription.textContent = 'Misterios consecutivos resueltos sin saltarse ninguno';
+                    // Asegurar que leaderboardData está cargado, luego renderizar
+                    if (leaderboardData.length > 0) {
+                        renderStreakPodium();
+                    } else {
+                        loadLeaderboard(null).then(() => renderStreakPodium());
+                    }
+                } else if (selected === 'general') {
                     dom.podiumTitle.textContent = "Clasificación General";
                     dom.podiumDescription.textContent = "Puntos sumados de todos los misterios resueltos";
                     loadLeaderboard(null);
@@ -2636,6 +2665,58 @@
                 }
             }
             return streak;
+        }
+
+        // Calcula racha de cualquier usuario dado su Set de juegos resueltos
+        function computeUserStreakFromSet(solvedSet) {
+            if (!allGames.length) return 0;
+            const sorted = [...allGames].filter(g => g.startDate).sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+            let streak = 0;
+            for (const g of sorted) {
+                if (solvedSet.has(g.id)) streak++;
+                else if (!g.isSolved) continue;
+                else break;
+            }
+            return streak;
+        }
+
+        // Renderiza el podio de rachas
+        function renderStreakPodium() {
+            dom.podiumBody.innerHTML = '';
+            if (!leaderboardData.length) {
+                dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No hay datos.</td></tr>`;
+                return;
+            }
+            const streakData = leaderboardData
+                .map(u => ({ ...u, streak: computeUserStreakFromSet(new Set(u.solvedGames || [])) }))
+                .filter(u => u.streak > 0)
+                .sort((a, b) => b.streak - a.streak || b.points - a.points);
+
+            if (!streakData.length) {
+                dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Nadie tiene racha activa aún.</td></tr>`;
+                return;
+            }
+            streakData.forEach((user, index) => {
+                const isMe = user.id === currentPublicId();
+                const rowClass = isMe ? 'bg-indigo-900/40 border-l-4 border-indigo-500' : 'hover:bg-gray-700/30 border-b border-gray-700/50';
+                let rankDisplay = index + 1;
+                if (index === 0) rankDisplay = '🥇';
+                if (index === 1) rankDisplay = '🥈';
+                if (index === 2) rankDisplay = '🥉';
+                const tr = document.createElement('tr');
+                tr.className = `transition-colors cursor-pointer ${rowClass}`;
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-lg ${index < 3 ? 'text-yellow-400' : 'text-gray-500'}">${rankDisplay}</td>
+                    <td class="p-4 font-medium text-white flex items-center gap-2">
+                        ${user.name}
+                        ${isMe ? '<span class="text-xs bg-indigo-600 px-2 py-0.5 rounded text-white ml-2">Tú</span>' : ''}
+                    </td>
+                    <td class="p-4 text-right font-bold text-orange-400">🔥 ${user.streak}</td>
+                    <td class="p-4 text-center text-gray-400">${user.solvedGames.length}</td>
+                `;
+                tr.addEventListener('click', () => openProfileModal(user));
+                dom.podiumBody.appendChild(tr);
+            });
         }
 
         function updateStreakBadge() {
