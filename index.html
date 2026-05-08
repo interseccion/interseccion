@@ -315,6 +315,9 @@
                     <button id="welcome-existing-btn" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition border border-gray-600 flex items-center justify-center gap-2">
                         <span>📂</span> ¿Ya tienes cuenta? Subir archivo
                     </button>
+                    <button id="welcome-recover-btn" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2 px-4 rounded-lg transition border border-gray-700 flex items-center justify-center gap-2 text-sm">
+                        <span>🌱</span> Recuperar con frase semilla
+                    </button>
                     <button id="welcome-close-btn" class="mt-4 text-sm text-gray-500 hover:text-gray-300 underline">
                         Cerrar (Jugar sin guardar)
                     </button>
@@ -343,6 +346,23 @@
                         ✅ Crear mi ID
                     </button>
                     <button id="welcome-back-btn" class="w-full text-sm text-gray-500 hover:text-gray-300 underline pt-1">
+                        ← Volver
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paso 3: Recuperar con frase semilla -->
+            <div id="welcome-step-3" class="hidden text-left">
+                <h2 class="text-2xl font-extrabold text-white mb-1 text-center">🌱 Recuperar cuenta</h2>
+                <p class="text-gray-400 mb-5 text-sm text-center">Escribe las tres palabras de tu frase semilla separadas por espacios.</p>
+                <div class="space-y-3">
+                    <input id="welcome-seed-input" type="text" placeholder="ej: Nebula Zorro Glaciar"
+                        class="w-full bg-gray-800 border border-gray-600 focus:border-green-500 rounded-lg p-3 text-white placeholder-gray-600 outline-none font-mono tracking-wide">
+                    <p id="welcome-recover-error" class="text-red-400 text-sm hidden"></p>
+                    <button id="welcome-recover-submit-btn" class="w-full bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition">
+                        🔓 Recuperar mi cuenta
+                    </button>
+                    <button id="welcome-back-btn-3" class="w-full text-sm text-gray-500 hover:text-gray-300 underline pt-1">
                         ← Volver
                     </button>
                 </div>
@@ -379,6 +399,21 @@
                 </div>
             </details>
 
+            <!-- Frase semilla -->
+            <details class="text-left mb-4 bg-green-900/20 rounded-lg border border-green-800/40">
+                <summary class="px-4 py-3 text-xs text-green-400 cursor-pointer hover:text-green-300 select-none uppercase tracking-widest">
+                    🌱 Mi frase semilla (recuperación)
+                </summary>
+                <div class="px-4 pb-3 space-y-2">
+                    <p class="text-xs text-gray-400">Si cambias de dispositivo o pierdes el archivo, estas tres palabras te permiten recuperar tu cuenta.</p>
+                    <div id="user-seed-phrase-display" class="bg-gray-900 p-3 rounded font-mono text-sm text-green-300 border border-green-800/50 tracking-widest text-center select-all">—</div>
+                    <div class="flex gap-3 items-center">
+                        <button id="seed-copy-btn" class="hidden text-xs text-gray-500 hover:text-green-400 transition">📋 Copiar</button>
+                        <button id="seed-generate-btn" class="hidden text-xs bg-green-900 hover:bg-green-800 text-green-300 border border-green-700 px-3 py-1 rounded transition">✨ Generar mi frase semilla</button>
+                    </div>
+                </div>
+            </details>
+
             <div class="text-left bg-yellow-900/30 p-4 rounded-lg border border-yellow-700/50 mb-5">
                 <h4 class="font-bold text-yellow-500 mb-1">¡Advertencia!</h4>
                 <p class="text-sm text-gray-300">Si pierdes o borras este archivo, perderás el acceso a tu progreso. Basta con ejecutarlo para volver a entrar.</p>
@@ -389,6 +424,7 @@
                     Subir ID Guardado
                     <input type="file" id="upload-id-input" accept=".html" class="hidden">
                 </label>
+                <button id="logout-btn" class="bg-red-900/40 hover:bg-red-900/70 text-red-400 border border-red-800/50 font-semibold py-2 px-4 rounded-lg transition text-sm">🚪 Cerrar sesión</button>
                 <button id="close-id-modal-btn" class="mt-2 text-gray-400 hover:text-white underline">Cerrar</button>
             </div>
         </div>
@@ -947,9 +983,22 @@
             dom.welcomeModal.classList.add('active');
         }
 
+        // ── Frase semilla ──────────────────────────────────────────────────────────
+        const SEED_WORDS = ['Abeja','Abismo','Acero','Aguila','Aire','Aldea','Aleta','Alga','Alma','Ambar','Ancla','Antena','Arbol','Arco','Arena','Arpa','Atomo','Aurora','Avena','Azul','Bahia','Balsa','Bambu','Barco','Bestia','Boca','Bolsa','Bosque','Brisa','Bruma','Bufon','Buho','Cabra','Calor','Campo','Canoa','Caoba','Cardo','Carta','Casco','Caudal','Cebra','Cedro','Ceniza','Chispa','Cima','Circo','Clave','Cobra','Cobre','Colina','Cometa','Concha','Coral','Corona','Cosmos','Crisol','Cuarzo','Cueva','Cuna','Daga','Delta','Delfin','Domo','Dragon','Duna','Eclipse','Eco','Elfo','Enigma','Espada','Espora','Estrella','Etapa','Fanal','Faro','Fenix','Fibra','Flecha','Flora','Flujo','Fondo','Fosil','Franja','Fuego','Fulgor','Garra','Gato','Gema','Glaciar','Globo','Golfo','Grillo','Gruta','Guarida','Helio','Helice','Hielo','Hongo','Horizonte','Hueso','Igloo','Indigo','Isla','Jungla','Karma','Kiwi','Lava','Lecho','Leyenda','Lima','Linea','Llama','Lluvia','Lobo','Luna','Madera','Magia','Mapa','Marea','Marmol','Medusa','Mente','Meteoro','Mina','Montana','Musgo','Nebula','Nieve','Norte','Nube','Oceano','Oleo','Olmo','Orca','Orquidea','Oso','Palma','Pantano','Panal','Piedra','Pilar','Pino','Pirata','Plasma','Polo','Portal','Proa','Pulso','Quasar','Rafaga','Rayo','Razon','Remo','Risco','Roca','Roble','Ruido','Runa','Sabana','Saeta','Sal','Salmon','Sauce','Selva','Senda','Sirena','Sol','Sombra','Soplo','Talud','Talon','Techo','Temblor','Tigre','Tiza','Topo','Tornado','Torre','Trigo','Trueno','Tunel','Umbral','Utopia','Valle','Vapor','Vela','Vena','Ventisca','Verano','Vertice','Viento','Vigilia','Volcan','Vortice','Yunque','Zafiro','Zarpa','Zona','Zorro'];
+        const generateSeedPhrase = () => { const p=()=>SEED_WORDS[Math.floor(Math.random()*SEED_WORDS.length)]; let w; do{w=[p(),p(),p()];}while(new Set(w).size<3); return w.join(' '); };
+        const getSeedPhrase     = () => userId ? (localStorage.getItem('mystery_seed_'+userId)||null) : null;
+        const saveSeedPhrase    = (phrase) => {
+            if (!userId) return;
+            localStorage.setItem('mystery_seed_'+userId, phrase);
+            if (!APPS_SCRIPT_URL.includes('PON_AQUI')) {
+                fetch(`${APPS_SCRIPT_URL}?action=saveSeed&privateId=${encodeURIComponent(userId)}&publicId=${encodeURIComponent(getPublicId(userId)||'')}&seed=${encodeURIComponent(phrase)}`).catch(()=>{});
+            }
+        };
+
         function createNewUser(username, displayName) {
             userId = generatePrivateId(username, displayName);
             localStorage.setItem('mystery_game_userid', userId);
+            saveSeedPhrase(generateSeedPhrase()); // generar frase automáticamente
             isNewUserSession = true;
             dom.welcomeModal.classList.remove('active');
             openIdModal();
@@ -960,13 +1009,79 @@
         }
 
         function openIdModal() {
-            const pubId   = getPublicId(userId) || 'Sin ID guardado';
+            const pubId    = getPublicId(userId) || 'Sin ID guardado';
             const dispName = userId ? getDisplayName(userId) : '';
             dom.userIdDisplay.textContent = pubId;
             dom.userDisplaynameDisplay.textContent = dispName || '—';
             if (dom.userPrivateIdDisplay) dom.userPrivateIdDisplay.textContent = userId || '—';
+            // Frase semilla
+            const seedEl  = document.getElementById('user-seed-phrase-display');
+            const copyBtn = document.getElementById('seed-copy-btn');
+            const genBtn  = document.getElementById('seed-generate-btn');
+            const phrase  = getSeedPhrase();
+            if (seedEl) {
+                seedEl.textContent = phrase || '(aún no tienes frase semilla)';
+                copyBtn?.classList.toggle('hidden', !phrase);
+                genBtn?.classList.toggle('hidden', !!phrase);
+            }
             dom.idModal.classList.add('active');
         }
+
+        // Botones frase semilla
+        document.getElementById('seed-generate-btn')?.addEventListener('click', () => {
+            const phrase = generateSeedPhrase();
+            saveSeedPhrase(phrase);
+            document.getElementById('user-seed-phrase-display').textContent = phrase;
+            document.getElementById('seed-copy-btn')?.classList.remove('hidden');
+            document.getElementById('seed-generate-btn')?.classList.add('hidden');
+            showToast('🌱 ¡Frase generada! Apúntala en un lugar seguro.', false);
+        });
+        document.getElementById('seed-copy-btn')?.addEventListener('click', () => {
+            const txt = document.getElementById('user-seed-phrase-display')?.textContent;
+            if (txt) navigator.clipboard?.writeText(txt).then(() => showToast('📋 Copiado', false));
+        });
+        // Cerrar sesión
+        document.getElementById('logout-btn')?.addEventListener('click', () => {
+            if (!confirm('¿Segur@ que quieres cerrar sesión? Asegúrate de tener el archivo descargado o tu frase semilla anotada.')) return;
+            localStorage.removeItem('mystery_game_userid');
+            dom.idModal.classList.remove('active');
+            location.reload();
+        });
+        // Botón recuperar en bienvenida
+        document.getElementById('welcome-recover-btn')?.addEventListener('click', () => {
+            dom.welcomeStep1?.classList.add('hidden');
+            document.getElementById('welcome-step-3')?.classList.remove('hidden');
+            document.getElementById('welcome-seed-input')?.focus();
+        });
+        document.getElementById('welcome-back-btn-3')?.addEventListener('click', () => {
+            document.getElementById('welcome-step-3')?.classList.add('hidden');
+            dom.welcomeStep1?.classList.remove('hidden');
+        });
+        document.getElementById('welcome-seed-input')?.addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('welcome-recover-submit-btn')?.click(); });
+        document.getElementById('welcome-recover-submit-btn')?.addEventListener('click', async () => {
+            const phrase  = (document.getElementById('welcome-seed-input')?.value||'').trim().replace(/\s+/g,' ');
+            const errEl   = document.getElementById('welcome-recover-error');
+            const btn     = document.getElementById('welcome-recover-submit-btn');
+            if (!phrase) { errEl.textContent='Escribe tu frase semilla.'; errEl.classList.remove('hidden'); return; }
+            errEl.classList.add('hidden');
+            btn.disabled=true; btn.textContent='⏳ Buscando...';
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=recover&phrase=${encodeURIComponent(phrase)}`);
+                const data = await res.json();
+                if (data.error) {
+                    errEl.textContent = '❌ ' + (data.error==='Frase no encontrada' ? 'No encontramos esa frase. Comprueba las palabras.' : data.error);
+                    errEl.classList.remove('hidden');
+                } else {
+                    userId = data.privateId;
+                    localStorage.setItem('mystery_game_userid', userId);
+                    localStorage.setItem('mystery_seed_'+userId, phrase);
+                    dom.welcomeModal.classList.remove('active');
+                    showToast(`✅ ¡Cuenta recuperada! Bienvenid@ de nuevo, ${data.name||'jugador@'}`, false);
+                    setTimeout(()=>location.reload(), 1500);
+                }
+            } catch(e) { errEl.textContent='❌ Error de conexión.'; errEl.classList.remove('hidden'); }
+            btn.disabled=false; btn.textContent='🔓 Recuperar mi cuenta';
+        });
 
         function downloadMyId() {
             if(!userId) return showToast("No tienes un ID para descargar", true);
@@ -1781,10 +1896,11 @@
                             .filter(([gid]) => filterGameIds.includes(gid))
                             .reduce((sum, [, pts]) => sum + pts, 0)
                         : u.points;
-                    const solvedGames = Object.keys(u.mysteryPoints).filter(gid =>
+                    const solvedGames    = Object.keys(u.mysteryPoints).filter(gid =>
                         !filterGameIds || filterGameIds.includes(gid)
                     );
-                    return { id: u.id, name: u.name, points: filteredPts, solvedGames };
+                    const allSolvedGames = Object.keys(u.mysteryPoints); // siempre completo para racha global
+                    return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames };
                 });
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
@@ -1838,7 +1954,7 @@
                 if (index === 1) rankDisplay = '🥈';
                 if (index === 2) rankDisplay = '🥉';
 
-                const streak = computeUserStreakFromSet(new Set(user.solvedGames || []));
+                const streak = computeUserStreakFromSet(new Set(user.allSolvedGames || user.solvedGames || []));
                 const streakBadge = streak >= 1 ? `<span class="text-xs text-orange-400 font-semibold ml-1" title="Racha">🔥${streak}</span>` : '';
 
                 const tr = document.createElement('tr');
@@ -1971,14 +2087,18 @@
                         return `<div class="text-xs text-gray-500 mt-1">📅 Miembro desde ${jdStr}</div>`;
                     })()}
                     ${(() => {
-                        // Racha: para el usuario propio usamos userStreak; para otros calculamos desde sus juegos
                         let streak = 0;
-                        if (userData.id === currentPublicId()) {
+                        const isMe = userData.id === currentPublicId() || (userId && userData.id === getPublicId(userId));
+                        if (isMe) {
                             streak = userStreak;
-                        } else if (userData.solvedGames && allGames.length) {
-                            const participated = new Set(userData.solvedGames);
+                        } else if (allGames.length) {
+                            const participated = new Set(userData.allSolvedGames || userData.solvedGames || []);
                             const sorted = [...allGames].filter(g => g.startDate).sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-                            for (const g of sorted) { if (participated.has(g.id)) streak++; else break; }
+                            for (const g of sorted) {
+                                if (participated.has(g.id)) streak++;
+                                else if (!g.isSolved) continue; // activo sin participar: no rompe racha
+                                else break;
+                            }
                         }
                         if (streak < 1) return '';
                         return `<div class="mt-2 text-orange-400 font-bold text-sm">🔥 Racha: ${streak} misterio${streak === 1 ? '' : 's'} seguido${streak === 1 ? '' : 's'}</div>`;
@@ -2249,15 +2369,16 @@
                 currentPodiumSeasonId = selected;
 
                 if (selected === '__streaks__') {
+                    dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = '🔥 Podio de Rachas';
                     dom.podiumDescription.textContent = 'Misterios consecutivos resueltos sin saltarse ninguno';
-                    // Asegurar que leaderboardData está cargado, luego renderizar
                     if (leaderboardData.length > 0) {
                         renderStreakPodium();
                     } else {
                         loadLeaderboard(null).then(() => renderStreakPodium());
                     }
                 } else if (selected === 'general') {
+                    dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = "Clasificación General";
                     dom.podiumDescription.textContent = "Puntos sumados de todos los misterios resueltos";
                     loadLeaderboard(null);
@@ -2363,6 +2484,11 @@
 
                 if (target.matches('.guess-btn')) {
                     if (!userId) return showToast('¡Necesitas crear un ID para jugar!', true);
+                    // Misterio de ejemplo: abrir modal en modo demo (no se envía)
+                    if (currentGameData?.type === 'Tutorial' || currentGameData?.id === 'game-1751112643982') {
+                        openResolverModal(currentGameData, true);
+                        return;
+                    }
                     if (userCorrectGames.has(currentGameData?.id)) return showToast('¡Ya acertaste este misterio! 🎉', false);
                     if (userPendingGames.has(currentGameData?.id)) return showToast('Ya tienes una respuesta enviada pendiente de revisión ⏳', false);
                     openResolverModal(currentGameData);
@@ -2428,9 +2554,13 @@
         // ═══════════════════════════════════════════════════════════════
         let resolverGameId = null;
 
-        function openResolverModal(game) {
-            resolverGameId = game.id;
-            dom.resolverGameTitle.textContent = game.title || game.id;
+        let resolverDemoMode = false;
+        function openResolverModal(game, demoMode = false) {
+            resolverGameId   = game.id;
+            resolverDemoMode = demoMode;
+            dom.resolverGameTitle.textContent = demoMode
+                ? `${game.title} — Modo ejemplo (no se enviará)`
+                : (game.title || game.id);
             dom.resolverSolucion.value   = '';
             dom.resolverExplicacion.value = '';
             dom.resolverOpinion.value    = '';
@@ -2442,6 +2572,16 @@
                 b.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-800', 'text-white');
                 b.classList.add('bg-gray-700', 'text-gray-300');
             });
+            // Barra de aviso demo
+            let demoBar = document.getElementById('resolver-demo-bar');
+            if (!demoBar) {
+                demoBar = document.createElement('div');
+                demoBar.id = 'resolver-demo-bar';
+                demoBar.className = 'mb-4 bg-amber-900/40 border border-amber-600/50 rounded-lg px-4 py-3 text-sm text-amber-300 text-center';
+                demoBar.innerHTML = '🎓 <strong>Modo ejemplo:</strong> Puedes rellenar el formulario para ver cómo funciona, pero <strong>no se enviará</strong> nada.';
+                dom.resolverForm.prepend(demoBar);
+            }
+            demoBar.classList.toggle('hidden', !demoMode);
             dom.resolverModal.classList.add('active');
             setTimeout(() => dom.resolverSolucion.focus(), 100);
         }
@@ -2463,6 +2603,13 @@
             const solucion = dom.resolverSolucion.value.trim();
             if (!solucion) { dom.resolverSolucion.focus(); dom.resolverSolucion.classList.add('border-red-500'); return; }
             dom.resolverSolucion.classList.remove('border-red-500');
+
+            // Modo demo: mostrar feedback sin enviar nada
+            if (resolverDemoMode) {
+                showToast('🎓 ¡Así se enviaría! En un misterio real, tu respuesta llegaría a revisión. ¡Buena suerte cuando juegues de verdad!', false);
+                dom.resolverModal.classList.remove('active');
+                return;
+            }
 
             dom.resolverSubmitBtn.disabled = true;
             dom.resolverSubmitBtn.innerHTML = '<svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span>Enviando...</span>';
@@ -2634,7 +2781,6 @@
                 renderNotifPanel(cachedNotifs);
             } catch(e) { console.warn('Error cargando notificaciones:', e); }
             // Cargar historial para saber qué misterios ya ha resuelto/enviado
-            showStreakBadgeLoading();
             try {
                 const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
                 const hist = await res.json();
@@ -2644,13 +2790,10 @@
                     if (r.correcto) userCorrectGames.add(r.misterio);
                     else if (!r.comentario) userPendingGames.add(r.misterio); // sin comentario = no revisado
                 });
+                // Calcular racha: misterios ordenados por fecha de inicio, consecutivos con participación. La verdad, toda la parte de la racha y esto me costó bastante (sobre todo un error tonto, porque cogía todos los misterios, y claro, también los que están abiertos; ya lo quité), pero creo que ha quedado relativamente bien :)
                 userStreak = computeStreak(hist);
                 updateStreakBadge();
-            } catch(e) {
-                console.warn('Error cargando historial de jugador:', e);
-                userStreak = 0;
-                updateStreakBadge(); // muestra 🔥 0 en gris en vez de desaparecer
-            }
+            } catch(e) { console.warn('Error cargando historial de jugador:', e); }
         }
 
         // Calcula la racha actual: número de misterios consecutivos (por orden de startDate) en los que el usuario ha participado
@@ -2698,7 +2841,7 @@
                 return;
             }
             const streakData = leaderboardData
-                .map(u => ({ ...u, streak: computeUserStreakFromSet(new Set(u.solvedGames || [])) }))
+                .map(u => ({ ...u, streak: computeUserStreakFromSet(new Set(u.allSolvedGames || u.solvedGames || [])) }))
                 .filter(u => u.streak > 0)
                 .sort((a, b) => b.streak - a.streak || b.points - a.points);
 
@@ -2734,23 +2877,11 @@
             if (!badge) return;
             if (userStreak >= 1) {
                 badge.textContent = `🔥 ${userStreak}`;
-                badge.title       = `Llevas ${userStreak} misterio${userStreak === 1 ? '' : 's'} seguido${userStreak === 1 ? '' : 's'} participando`;
-                badge.className   = 'text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40 px-2 py-1 rounded-full';
+                badge.title       = `Llevas ${userStreak} misterios seguidos participando`;
+                badge.classList.remove('hidden');
             } else {
-                badge.textContent = '🔥 0';
-                badge.title       = 'Sin racha activa aún';
-                badge.className   = 'text-xs font-bold bg-gray-700/40 text-gray-500 border border-gray-600/40 px-2 py-1 rounded-full';
+                badge.classList.add('hidden');
             }
-            badge.classList.remove('hidden');
-        }
-
-        function showStreakBadgeLoading() {
-            const badge = document.getElementById('streak-badge');
-            if (!badge) return;
-            badge.textContent = '🔥 …';
-            badge.title       = 'Calculando racha...';
-            badge.className   = 'text-xs font-bold bg-gray-700/40 text-gray-400 border border-gray-600/40 px-2 py-1 rounded-full animate-pulse';
-            badge.classList.remove('hidden');
         }
 
         // Obtiene (con caché) los parámetros de puntuación de un misterio
