@@ -66,7 +66,7 @@
             <!-- Botón campanita + Mi ID -->
             <div class="absolute top-[-2rem] right-0 md:top-2 md:right-2 flex items-center gap-2 z-20">
                 <!-- Racha -->
-                <span id="streak-badge" class="hidden text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40 px-2 py-1 rounded-full"></span>
+                <span id="streak-badge" class="text-xs font-bold bg-gray-700 text-gray-400 border border-gray-600 px-2 py-1 rounded-full transition-colors" data-loading="true">⏳ 0</span>
                 <!-- Campanita -->
                 <div class="relative" id="bell-wrapper">
                     <button id="bell-btn" class="bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 font-bold p-2 rounded-full border border-indigo-500/30 transition-all flex items-center justify-center" title="Notificaciones">
@@ -424,7 +424,7 @@
                     Subir ID Guardado
                     <input type="file" id="upload-id-input" accept=".html" class="hidden">
                 </label>
-                <button id="logout-btn" class="bg-red-900/40 hover:bg-red-900/70 text-red-400 border border-red-800/50 font-semibold py-2 px-4 rounded-lg transition text-sm">🚪 Cerrar sesión</button>
+                <button id="logout-btn" class="hidden bg-red-900/40 hover:bg-red-900/70 text-red-400 border border-red-800/50 font-semibold py-2 px-4 rounded-lg transition text-sm">🚪 Cerrar sesión</button>
                 <button id="close-id-modal-btn" class="mt-2 text-gray-400 hover:text-white underline">Cerrar</button>
             </div>
         </div>
@@ -1014,6 +1014,9 @@
             dom.userIdDisplay.textContent = pubId;
             dom.userDisplaynameDisplay.textContent = dispName || '—';
             if (dom.userPrivateIdDisplay) dom.userPrivateIdDisplay.textContent = userId || '—';
+            // Mostrar/ocultar botón de cerrar sesión
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) logoutBtn.classList.toggle('hidden', !userId);
             // Frase semilla
             const seedEl  = document.getElementById('user-seed-phrase-display');
             const copyBtn = document.getElementById('seed-copy-btn');
@@ -1041,6 +1044,11 @@
             if (txt) navigator.clipboard?.writeText(txt).then(() => showToast('📋 Copiado', false));
         });
         // Cerrar sesión
+        // Inicializar visibilidad del botón al cargar
+        (() => {
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) logoutBtn.classList.toggle('hidden', !userId);
+        })();
         document.getElementById('logout-btn')?.addEventListener('click', () => {
             if (!confirm('¿Segur@ que quieres cerrar sesión? Asegúrate de tener el archivo descargado o tu frase semilla anotada.')) return;
             localStorage.removeItem('mystery_game_userid');
@@ -2826,9 +2834,15 @@
             const sorted = [...allGames].filter(g => g.startDate).sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
             let streak = 0;
             for (const g of sorted) {
-                if (solvedSet.has(g.id)) streak++;
-                else if (!g.isSolved) continue;
-                else break;
+                if (solvedSet.has(g.id)) {
+                    streak++;
+                } else if (!g.isSolved) {
+                    // Misterio activo en el que aún no se ha participado: no rompe racha
+                    continue;
+                } else {
+                    // Misterio resuelto en el que no participó: racha rota
+                    break;
+                }
             }
             return streak;
         }
@@ -2875,12 +2889,15 @@
         function updateStreakBadge() {
             const badge = document.getElementById('streak-badge');
             if (!badge) return;
+            badge.removeAttribute('data-loading');
             if (userStreak >= 1) {
                 badge.textContent = `🔥 ${userStreak}`;
                 badge.title       = `Llevas ${userStreak} misterios seguidos participando`;
-                badge.classList.remove('hidden');
+                badge.className   = 'text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40 px-2 py-1 rounded-full transition-colors';
             } else {
-                badge.classList.add('hidden');
+                badge.textContent = '0';
+                badge.title       = 'Sin racha activa';
+                badge.className   = 'text-xs font-bold bg-gray-700 text-gray-400 border border-gray-600 px-2 py-1 rounded-full transition-colors';
             }
         }
 
