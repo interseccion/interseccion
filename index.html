@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <!-- Librerías para el calendario (Flatpickr) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
 
@@ -66,7 +68,7 @@
             <!-- Botón campanita + Mi ID -->
             <div class="absolute top-[-2rem] right-0 md:top-2 md:right-2 flex items-center gap-2 z-20">
                 <!-- Racha -->
-                <span id="streak-badge" class="text-xs font-bold bg-gray-700 text-gray-400 border border-gray-600 px-2 py-1 rounded-full transition-colors" data-loading="true">⏳ 0</span>
+                <span id="streak-badge" class="text-xs font-bold bg-gray-700/40 text-gray-400 border border-gray-600/40 px-2 py-1 rounded-full">🔥 …</span>
                 <!-- Campanita -->
                 <div class="relative" id="bell-wrapper">
                     <button id="bell-btn" class="bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 font-bold p-2 rounded-full border border-indigo-500/30 transition-all flex items-center justify-center" title="Notificaciones">
@@ -354,9 +356,11 @@
             <!-- Paso 3: Recuperar con frase semilla -->
             <div id="welcome-step-3" class="hidden text-left">
                 <h2 class="text-2xl font-extrabold text-white mb-1 text-center">🌱 Recuperar cuenta</h2>
-                <p class="text-gray-400 mb-5 text-sm text-center">Escribe las tres palabras de tu frase semilla separadas por espacios.</p>
+                <p class="text-gray-400 mb-5 text-sm text-center">Introduce tu nombre de usuario y las tres palabras de tu frase semilla.</p>
                 <div class="space-y-3">
-                    <input id="welcome-seed-input" type="text" placeholder="ej: Nebula Zorro Glaciar"
+                    <input id="welcome-recover-username" type="text" placeholder="Tu nombre de usuario (ej: beita)"
+                        class="w-full bg-gray-800 border border-gray-600 focus:border-green-500 rounded-lg p-3 text-white placeholder-gray-600 outline-none">
+                    <input id="welcome-seed-input" type="text" placeholder="Frase semilla (ej: Nebula Zorro Glaciar)"
                         class="w-full bg-gray-800 border border-gray-600 focus:border-green-500 rounded-lg p-3 text-white placeholder-gray-600 outline-none font-mono tracking-wide">
                     <p id="welcome-recover-error" class="text-red-400 text-sm hidden"></p>
                     <button id="welcome-recover-submit-btn" class="w-full bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition">
@@ -1066,18 +1070,22 @@
             dom.welcomeStep1?.classList.remove('hidden');
         });
         document.getElementById('welcome-seed-input')?.addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('welcome-recover-submit-btn')?.click(); });
+        document.getElementById('welcome-recover-username')?.addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('welcome-seed-input')?.focus(); });
         document.getElementById('welcome-recover-submit-btn')?.addEventListener('click', async () => {
-            const phrase  = (document.getElementById('welcome-seed-input')?.value||'').trim().replace(/\s+/g,' ');
-            const errEl   = document.getElementById('welcome-recover-error');
-            const btn     = document.getElementById('welcome-recover-submit-btn');
-            if (!phrase) { errEl.textContent='Escribe tu frase semilla.'; errEl.classList.remove('hidden'); return; }
+            const phrase    = (document.getElementById('welcome-seed-input')?.value||'').trim().replace(/\s+/g,' ');
+            const username  = (document.getElementById('welcome-recover-username')?.value||'').trim();
+            const errEl     = document.getElementById('welcome-recover-error');
+            const btn       = document.getElementById('welcome-recover-submit-btn');
+            if (!username) { errEl.textContent='Introduce tu nombre de usuario.'; errEl.classList.remove('hidden'); document.getElementById('welcome-recover-username')?.focus(); return; }
+            if (!phrase)   { errEl.textContent='Introduce tu frase semilla.'; errEl.classList.remove('hidden'); return; }
             errEl.classList.add('hidden');
             btn.disabled=true; btn.textContent='⏳ Buscando...';
             try {
-                const res  = await fetch(`${APPS_SCRIPT_URL}?action=recover&phrase=${encodeURIComponent(phrase)}`);
-                const data = await res.json();
+                const params = new URLSearchParams({ action:'recover', phrase, username });
+                const res    = await fetch(`${APPS_SCRIPT_URL}?${params}`);
+                const data   = await res.json();
                 if (data.error) {
-                    errEl.textContent = '❌ ' + (data.error==='Frase no encontrada' ? 'No encontramos esa frase. Comprueba las palabras.' : data.error);
+                    errEl.textContent = '❌ ' + (data.error.includes('no encontrado') ? 'No hemos encontrado esa combinación de usuario y frase. Comprueba que estén bien escritos.' : data.error);
                     errEl.classList.remove('hidden');
                 } else {
                     userId = data.privateId;
@@ -1248,12 +1256,16 @@
         };
 
         window.openProfileById = (id) => {
-            // Intentar encontrar en leaderboardData cargada
-            const user = leaderboardData.find(u => u.id === id);
-            if(user) {
+            if (!id) return;
+            // Si se pasa un ID privado (contiene ~), convertir a público primero
+            const publicId = id.includes('~') ? getPublicId(id) : id;
+            const user = leaderboardData.find(u => u.id === publicId);
+            if (user) {
                 openProfileModal(user);
             } else {
-                openProfileModal({ id: id, name: 'Usuario Desconocido', points: 0, solvedGames: [] });
+                // Fallback con datos mínimos pero ID correcto
+                const name = id.includes('~') ? (getDisplayName(id) || 'Tú') : 'Usuario Desconocido';
+                openProfileModal({ id: publicId || id, name, points: 0, solvedGames: [], allSolvedGames: [] });
             }
         };
 
@@ -1662,23 +1674,12 @@
                     const renderScorePanel = (info, solverCount) => {
                         const el = document.getElementById(summaryScoreId);
                         if (!el || !info) return;
-                        const nextPos = solverCount + 1;
-                        const rankIdx = Math.min(nextPos - 1, (info.rankPoints?.length || 0));
-                        const basePts = rankIdx < (info.rankPoints?.length || 0) ? info.rankPoints[rankIdx] : (info.rankRest || 1);
-                        const now = new Date();
-                        let savedCount = 0;
-                        (info.clueDates || []).forEach(d => { if (new Date(d) > now) savedCount++; });
-                        let term3 = 0;
-                        if (info.lastClue && now > new Date(info.lastClue)) {
-                            const diffMs = now - new Date(info.lastClue);
-                            term3 = Math.max(0, Math.floor(diffMs / ((info.utdHours || 1) * 3600000)) - 1);
-                        }
-                        const pts = Math.max(1, basePts * (info.difficulty || 2) + savedCount * (info.ptsSaved || 2) - term3);
+                        const { pts, savedCount, nextPos } = calcPoints(info, solverCount);
                         const posLabel = nextPos === 1 ? '🥇 1.º' : nextPos === 2 ? '🥈 2.º' : nextPos === 3 ? '🥉 3.º' : `#${nextPos}`;
                         el.innerHTML = `<div class="flex flex-wrap items-center gap-3">
                             <span class="text-indigo-300 font-bold">⭐ Si aciertas ahora: <span class="text-white text-base">${pts} pts</span></span>
                             <span class="text-gray-600">·</span>
-                            <span class="text-gray-400 text-xs">Serías #<span class="font-semibold text-indigo-300">${posLabel}</span></span>
+                            <span class="text-gray-400 text-xs">Serías <span class="font-semibold text-indigo-300">${posLabel}</span></span>
                             ${savedCount > 0 ? `<span class="text-gray-600">·</span><span class="text-amber-400/80 text-xs">Esperando ${savedCount} pista${savedCount===1?'':'s'} más: −<strong>${savedCount*(info.ptsSaved||2)}</strong> pts</span>` : ''}
                         </div>`;
                     };
@@ -1718,22 +1719,27 @@
                     })();
                     // Mostrar puntos potenciales si el misterio está activo y hay Apps Script
                     if (!game.isSolved && !userCorrectGames.has(_gid) && !userPendingGames.has(_gid) && !APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                        fetchScoringInfo(_gid).then(info => {
-                            const pts = calcPotentialPoints(info);
+                        const renderBanner = (info, solverCount) => {
                             const banner = document.getElementById('scoring-live-banner');
-                            if (!banner || !pts) return;
-                            const futureDates = (info.clueDates || []).filter(d => new Date(d) > new Date());
-                            const savedPts    = futureDates.length * (info.ptsSaved || 2);
-                            if (savedPts > 0) {
-                                banner.innerHTML = `<div class="bg-indigo-900/30 border border-indigo-700/50 rounded-lg px-4 py-2 flex flex-wrap items-center gap-3 text-sm">
-                                    <span class="text-indigo-300 font-bold">⭐ Puntos si aciertas ahora: <span class="text-white text-base">${pts}</span></span>
-                                    <span class="text-gray-500">·</span>
-                                    <span class="text-amber-400/80 text-xs">Esperando ${futureDates.length} pista${futureDates.length===1?'':'s'} más podrías perder <strong>${savedPts}</strong> pts</span>
-                                </div>`;
-                                banner.classList.remove('hidden');
+                            if (!banner || !info) return;
+                            const { pts, savedCount, nextPos } = calcPoints(info, solverCount);
+                            const posLabel = nextPos === 1 ? '🥇 1.º' : nextPos === 2 ? '🥈 2.º' : nextPos === 3 ? '🥉 3.º' : `#${nextPos}`;
+                            banner.innerHTML = `<div class="bg-indigo-900/30 border border-indigo-700/50 rounded-lg px-4 py-2 flex flex-wrap items-center gap-3 text-sm">
+                                <span class="text-indigo-300 font-bold">⭐ Si aciertas ahora: <span class="text-white text-base">${pts} pts</span></span>
+                                <span class="text-gray-500">·</span>
+                                <span class="text-gray-400 text-xs">Serías <span class="font-semibold text-indigo-300">${posLabel}</span></span>
+                                ${savedCount > 0 ? `<span class="text-gray-500">·</span><span class="text-amber-400/80 text-xs">Esperando ${savedCount} pista${savedCount===1?'':'s'} más: −<strong>${savedCount*(info.ptsSaved||2)}</strong> pts</span>` : ''}
+                            </div>`;
+                            banner.classList.remove('hidden');
+                        };
+                        fetchScoringInfo(_gid).then(info => {
+                            if (!info) return;
+                            if (podiumsCache[_gid]) {
+                                renderBanner(info, podiumsCache[_gid].entries?.length || 0);
                             } else {
-                                banner.innerHTML = `<div class="bg-indigo-900/30 border border-indigo-700/50 rounded-lg px-4 py-2 text-sm text-indigo-300 font-bold">⭐ Puntos si aciertas ahora: <span class="text-white text-base">${pts}</span></div>`;
-                                banner.classList.remove('hidden');
+                                const quickCount = leaderboardData.filter(u => (u.allSolvedGames||u.solvedGames||[]).includes(_gid)).length;
+                                renderBanner(info, quickCount);
+                                getPodium(_gid).then(pod => renderBanner(info, pod?.entries?.length || quickCount));
                             }
                         });
                     }
@@ -2100,13 +2106,7 @@
                         if (isMe) {
                             streak = userStreak;
                         } else if (allGames.length) {
-                            const participated = new Set(userData.allSolvedGames || userData.solvedGames || []);
-                            const sorted = [...allGames].filter(g => g.startDate).sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-                            for (const g of sorted) {
-                                if (participated.has(g.id)) streak++;
-                                else if (!g.isSolved) continue; // activo sin participar: no rompe racha
-                                else break;
-                            }
+                            streak = computeUserStreakFromSet(new Set(userData.allSolvedGames || userData.solvedGames || []));
                         }
                         if (streak < 1) return '';
                         return `<div class="mt-2 text-orange-400 font-bold text-sm">🔥 Racha: ${streak} misterio${streak === 1 ? '' : 's'} seguido${streak === 1 ? '' : 's'}</div>`;
@@ -2789,6 +2789,7 @@
                 renderNotifPanel(cachedNotifs);
             } catch(e) { console.warn('Error cargando notificaciones:', e); }
             // Cargar historial para saber qué misterios ya ha resuelto/enviado
+            showStreakBadgeLoading();
             try {
                 const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
                 const hist = await res.json();
@@ -2801,7 +2802,11 @@
                 // Calcular racha: misterios ordenados por fecha de inicio, consecutivos con participación. La verdad, toda la parte de la racha y esto me costó bastante (sobre todo un error tonto, porque cogía todos los misterios, y claro, también los que están abiertos; ya lo quité), pero creo que ha quedado relativamente bien :)
                 userStreak = computeStreak(hist);
                 updateStreakBadge();
-            } catch(e) { console.warn('Error cargando historial de jugador:', e); }
+            } catch(e) {
+                console.warn('Error cargando historial de jugador:', e);
+                userStreak = 0;
+                updateStreakBadge(); // muestra 🔥 0 en gris en vez de desaparecer
+            }
         }
 
         // Calcula la racha actual: número de misterios consecutivos (por orden de startDate) en los que el usuario ha participado
@@ -2886,18 +2891,26 @@
             });
         }
 
+        function showStreakBadgeLoading() {
+            const badge = document.getElementById('streak-badge');
+            if (!badge) return;
+            badge.textContent = '🔥 …';
+            badge.title       = 'Calculando racha...';
+            badge.className   = 'text-xs font-bold bg-gray-700/40 text-gray-400 border border-gray-600/40 px-2 py-1 rounded-full animate-pulse';
+        }
+
         function updateStreakBadge() {
             const badge = document.getElementById('streak-badge');
             if (!badge) return;
-            badge.removeAttribute('data-loading');
+            badge.classList.remove('animate-pulse');
             if (userStreak >= 1) {
                 badge.textContent = `🔥 ${userStreak}`;
-                badge.title       = `Llevas ${userStreak} misterios seguidos participando`;
-                badge.className   = 'text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40 px-2 py-1 rounded-full transition-colors';
+                badge.title       = `Llevas ${userStreak} misterio${userStreak===1?'':'s'} seguido${userStreak===1?'':'s'} participando`;
+                badge.className   = 'text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40 px-2 py-1 rounded-full';
             } else {
-                badge.textContent = '0';
-                badge.title       = 'Sin racha activa';
-                badge.className   = 'text-xs font-bold bg-gray-700 text-gray-400 border border-gray-600 px-2 py-1 rounded-full transition-colors';
+                badge.textContent = '🔥 0';
+                badge.title       = 'Sin racha activa aún';
+                badge.className   = 'text-xs font-bold bg-gray-700/40 text-gray-500 border border-gray-600/40 px-2 py-1 rounded-full';
             }
         }
 
@@ -2915,22 +2928,24 @@
         }
 
         // Calcula los puntos potenciales actuales para un misterio
-        function calcPotentialPoints(info) {
+        // Función unificada — usada tanto en el índice como en la vista de pistas
+        function calcPoints(info, solverCount = 0) {
             if (!info) return null;
-            const now       = new Date();
-            const basePts   = (info.rankPoints?.[0] || 5); // asumimos posición 1 (mejor caso)
-            const term1     = basePts * (info.difficulty || 2);
-            let savedCount  = 0;
+            const now      = new Date();
+            const nextPos  = solverCount + 1;
+            const rankIdx  = Math.min(nextPos - 1, (info.rankPoints?.length || 0));
+            const basePts  = rankIdx < (info.rankPoints?.length || 0) ? info.rankPoints[rankIdx] : (info.rankRest || 1);
+            let savedCount = 0;
             (info.clueDates || []).forEach(d => { if (new Date(d) > now) savedCount++; });
-            const term2     = savedCount * (info.ptsSaved || 2);
-            let term3       = 0;
+            let term3 = 0;
             if (info.lastClue && now > new Date(info.lastClue)) {
                 const diffMs = now - new Date(info.lastClue);
-                const utdMs  = (info.utdHours || 1) * 3600000;
-                term3        = Math.max(0, Math.floor(diffMs / utdMs) - 1);
+                term3 = Math.max(0, Math.floor(diffMs / ((info.utdHours || 1) * 3600000)) - 1);
             }
-            return Math.max(1, term1 + term2 - term3);
+            return { pts: Math.max(1, basePts * (info.difficulty || 2) + savedCount * (info.ptsSaved || 2) - term3), savedCount, nextPos };
         }
+        // Alias legacy por si queda alguna referencia
+        function calcPotentialPoints(info) { return calcPoints(info, 0).pts; }
         function openNotifDetailModal(notif) {
             const mystId  = getMysteryIdFromLink(notif.link);
             const titulo  = resolveNotifText(notif.titulo || '', mystId);
