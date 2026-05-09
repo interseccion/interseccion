@@ -1055,11 +1055,6 @@
             if (txt) navigator.clipboard?.writeText(txt).then(() => showToast('📋 Copiado', false));
         });
         // Cerrar sesión
-        // Inicializar visibilidad del botón al cargar
-        (() => {
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) logoutBtn.classList.toggle('hidden', !userId);
-        })();
         document.getElementById('logout-btn')?.addEventListener('click', () => {
             if (!confirm('¿Segur@ que quieres cerrar sesión? Asegúrate de tener el archivo descargado o tu frase semilla anotada.')) return;
             localStorage.removeItem('mystery_game_userid');
