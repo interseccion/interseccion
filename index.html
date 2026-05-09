@@ -985,6 +985,13 @@
 
             // CASO 3: No hay ID, mostrar bienvenida
             dom.welcomeModal.classList.add('active');
+            // Streak badge: sin sesión → gris apagado
+            const _badge = document.getElementById('streak-badge');
+            if (_badge) {
+                _badge.textContent = '🔥';
+                _badge.title = 'Inicia sesión para ver tu racha';
+                _badge.className = 'text-xs font-bold bg-gray-800/60 text-gray-600 border border-gray-700/40 px-2 py-1 rounded-full';
+            }
         }
 
         // ── Frase semilla ──────────────────────────────────────────────────────────
@@ -1659,16 +1666,22 @@
 
                     // Panel de puntos potenciales (si activo) o ganador (si resuelto) para el índice
                     const summaryScoreId = `summary-score-panel-${game.id}`;
+                    // Solver count from leaderboard (instantáneo)
+                    const _solverCount = leaderboardData.filter(u => (u.allSolvedGames||u.solvedGames||[]).includes(game.id)).length;
+                    const _statsBadge  = _solverCount > 0
+                        ? `<span class="text-xs bg-gray-800 border border-gray-700 text-gray-400 px-2 py-1 rounded-full">👥 ${_solverCount} jugador${_solverCount===1?'':'es'} ${game.isSolved?'participaron':'participan'}</span>`
+                        : '';
                     let summaryScoreHTML = '';
                     if (game.isSolved && game.winner) {
                         const winnerId = game.winnerId || '';
-                        summaryScoreHTML = `<div class="flex items-center gap-2 bg-yellow-900/20 border border-yellow-500/30 rounded-lg px-4 py-2 text-sm">
+                        summaryScoreHTML = `<div class="flex flex-wrap items-center gap-2 bg-yellow-900/20 border border-yellow-500/30 rounded-lg px-4 py-2 text-sm">
                             <span class="text-yellow-400">🏆</span>
                             <span class="text-gray-400">Resuelto por </span>
                             <button class="winner-link font-semibold text-yellow-400 underline hover:text-yellow-300" data-winner-id="${winnerId}">${game.winner}</button>
+                            ${_statsBadge}
                         </div>`;
                     } else if (!game.isSolved && !APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                    summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos...</div>`;
+                    summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos... ${_statsBadge}</div>`;
 
                     const _gameId = game.id;
                     const renderScorePanel = (info, solverCount) => {
@@ -1724,11 +1737,13 @@
                             if (!banner || !info) return;
                             const { pts, savedCount, nextPos } = calcPoints(info, solverCount);
                             const posLabel = nextPos === 1 ? '🥇 1.º' : nextPos === 2 ? '🥈 2.º' : nextPos === 3 ? '🥉 3.º' : `#${nextPos}`;
+                            const playersBadge = solverCount > 0 ? `<span class="text-gray-500">·</span><span class="text-gray-500 text-xs">👥 ${solverCount} ya lo resolvieron</span>` : '';
                             banner.innerHTML = `<div class="bg-indigo-900/30 border border-indigo-700/50 rounded-lg px-4 py-2 flex flex-wrap items-center gap-3 text-sm">
                                 <span class="text-indigo-300 font-bold">⭐ Si aciertas ahora: <span class="text-white text-base">${pts} pts</span></span>
                                 <span class="text-gray-500">·</span>
                                 <span class="text-gray-400 text-xs">Serías <span class="font-semibold text-indigo-300">${posLabel}</span></span>
                                 ${savedCount > 0 ? `<span class="text-gray-500">·</span><span class="text-amber-400/80 text-xs">Esperando ${savedCount} pista${savedCount===1?'':'s'} más: −<strong>${savedCount*(info.ptsSaved||2)}</strong> pts</span>` : ''}
+                                ${playersBadge}
                             </div>`;
                             banner.classList.remove('hidden');
                         };
@@ -1919,6 +1934,13 @@
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
                 leaderboardData = users.sort((a, b) => b.points - a.points);
+                // Racha del usuario actual — instantánea, misma fuente que el podio
+                const myPubId  = getPublicId(userId);
+                const meInLB   = leaderboardData.find(u => u.id === myPubId);
+                if (meInLB) {
+                    userStreak = computeUserStreakFromSet(new Set(meInLB.allSolvedGames || meInLB.solvedGames || []));
+                    updateStreakBadge();
+                }
                 renderPodium();
 
                 if (currentPodiumSeasonId !== 'general' && leaderboardData.length > 0) {
@@ -2438,7 +2460,10 @@
             dom.welcomeExistingBtn.addEventListener('click', triggerUpload);
             dom.welcomeCloseBtn.addEventListener('click', () => { dom.welcomeModal.classList.remove('active'); showToast('Jugando como invitado (sin guardar)'); });
 
-            dom.myIdBtn.addEventListener('click', openIdModal);
+            dom.myIdBtn.addEventListener('click', () => {
+                if (!userId) { dom.welcomeModal.classList.add('active'); }
+                else { openIdModal(); }
+            });
 
             // ABRIR TUTORIAL SI EL ID ES NUEVO
             dom.closeIdModalBtn.addEventListener('click', () => {
@@ -2783,13 +2808,21 @@
             if (!userId || APPS_SCRIPT_URL.includes('PON_AQUI')) return;
             const publicId = getPublicId(userId);
             if (!publicId) return;
+            // Mostrar notificaciones cacheadas inmediatamente
+            const cacheKey = 'notifs_cache_' + publicId;
+            try {
+                const cached = localStorage.getItem(cacheKey);
+                if (cached) { cachedNotifs = JSON.parse(cached); renderNotifPanel(cachedNotifs); }
+            } catch(e) {}
+            // Fetch fresco en background
             try {
                 const res  = await fetch(`${APPS_SCRIPT_URL}?action=notifs&user=${encodeURIComponent(publicId)}`);
                 cachedNotifs = await res.json();
+                localStorage.setItem(cacheKey, JSON.stringify(cachedNotifs));
                 renderNotifPanel(cachedNotifs);
             } catch(e) { console.warn('Error cargando notificaciones:', e); }
             // Cargar historial para saber qué misterios ya ha resuelto/enviado
-            showStreakBadgeLoading();
+            // (la racha ya se calcula en loadLeaderboard para ser instantánea)
             try {
                 const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
                 const hist = await res.json();
@@ -2797,16 +2830,11 @@
                 userPendingGames.clear();
                 hist.forEach(r => {
                     if (r.correcto) userCorrectGames.add(r.misterio);
-                    else if (!r.comentario) userPendingGames.add(r.misterio); // sin comentario = no revisado
+                    else if (!r.comentario) userPendingGames.add(r.misterio);
                 });
-                // Calcular racha: misterios ordenados por fecha de inicio, consecutivos con participación. La verdad, toda la parte de la racha y esto me costó bastante (sobre todo un error tonto, porque cogía todos los misterios, y claro, también los que están abiertos; ya lo quité), pero creo que ha quedado relativamente bien :)
-                userStreak = computeStreak(hist);
-                updateStreakBadge();
-            } catch(e) {
-                console.warn('Error cargando historial de jugador:', e);
-                userStreak = 0;
-                updateStreakBadge(); // muestra 🔥 0 en gris en vez de desaparecer
-            }
+                // Si el leaderboard aún no cargó, actualizar racha con historial completo
+                if (userStreak === 0) { userStreak = computeStreak(hist); updateStreakBadge(); }
+            } catch(e) { console.warn('Error cargando historial de jugador:', e); }
         }
 
         // Calcula la racha actual: número de misterios consecutivos (por orden de startDate) en los que el usuario ha participado
@@ -3002,9 +3030,19 @@
         dom.myResponsesBtn?.addEventListener('click', async () => {
             dom.notifPanel.classList.add('hidden');
             dom.myResponsesModal.classList.remove('hidden');
+            if (!userId) {
+                dom.myResponsesList.innerHTML = `<div class="p-8 text-center">
+                    <p class="text-gray-400 text-sm mb-3">Inicia sesión para ver tus respuestas enviadas</p>
+                    <button onclick="dom.myResponsesModal.classList.add('hidden'); dom.welcomeModal.classList.add('active');"
+                        class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
+                        Iniciar sesión
+                    </button>
+                </div>`;
+                return;
+            }
             dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">⏳ Cargando...</p>';
-            if (!userId || APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Necesitas un ID para ver tus respuestas.</p>';
+            if (APPS_SCRIPT_URL.includes('PON_AQUI')) {
+                dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Necesitas configurar el Apps Script.</p>';
                 return;
             }
             const publicId = getPublicId(userId);
@@ -3114,6 +3152,16 @@
         // Toggle panel
         dom.bellBtn.addEventListener('click', e => {
             e.stopPropagation();
+            if (!userId) {
+                // No hay sesión: mostrar aviso en el panel
+                dom.notifList.innerHTML = `<div class="p-6 text-center">
+                    <p class="text-gray-400 text-sm mb-3">Inicia sesión para ver tus notificaciones</p>
+                    <button onclick="dom.notifPanel.classList.add('hidden'); dom.welcomeModal.classList.add('active');"
+                        class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
+                        Iniciar sesión
+                    </button>
+                </div>`;
+            }
             dom.notifPanel.classList.toggle('hidden');
         });
 
