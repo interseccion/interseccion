@@ -893,30 +893,35 @@
                 try {
                     const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PRINCIPAL_SHEET)}`;
         
+                    // Tres peticiones en paralelo: cabeceras (fila 1), explicaciones (fila 2), datos (fila 3+)
+                    const [rHead, rExp, rData] = await Promise.all([
+                        fetch(`${base}&range=1:1`),
+                        fetch(`${base}&range=2:2`),
+                        fetch(`${base}&range=3:500`)  // límite razonable, evita miles de celdas vacías
+                    ]);
+        
                     const parseGviz = async (res) => {
                         const text = await res.text();
                         const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);\s*$/);
                         if (!m) throw new Error('Formato gviz inesperado');
                         return JSON.parse(m[1]).table;
                     };
-
-                    // OPTIMIZACIÓN: Una sola petición para todo el rango en lugar de tres
-                    const response = await fetch(`${base}&range=1:9999`);
-                    const table = await parseGviz(response);
-                    
-                    const tHead = { rows: [table.rows[0]] };
-                    const tExp  = { rows: [table.rows[1]] };
-                    const tData = { rows: table.rows.slice(2) };
         
-
+                    const [tHead, tExp, tData] = await Promise.all([
+                        parseGviz(rHead), parseGviz(rExp), parseGviz(rData)
+                    ]);
         
-                    // 1. Cabeceras → mapa gameId → índice de columna
+                    // 1. Cabeceras → detectar columnas de racha y misterios
                     const headerRow = tHead.rows[0]?.c || [];
                     const mysteryColMap = {};
-                    const MYSTERY_START = 3;
-                    for (let i = MYSTERY_START; i < headerRow.length; i++) {
+                    let RACHA_COL = -1, RACHA_PART_COL = -1;
+                    const MYSTERY_START = 5; // Después de migración: A=id, B=nombre, C=puntos, D=racha, E=racha_part
+                    for (let i = 3; i < headerRow.length; i++) {
                         const label = headerRow[i]?.v?.toString()?.trim();
-                        if (label) mysteryColMap[label] = i;
+                        if (!label) continue;
+                        if (label === 'RACHA')      { RACHA_COL      = i; continue; }
+                        if (label === 'RACHA_PART') { RACHA_PART_COL = i; continue; }
+                        if (i >= MYSTERY_START)     { mysteryColMap[label] = i; }
                     }
         
                     // 2. Explicaciones del ganador (fila 2)
@@ -934,13 +939,16 @@
                         if (!publicId) continue;
                         const name        = row.c[1]?.v?.toString()?.trim() || 'Anónimo';
                         const totalPoints = parseInt(row.c[2]?.v) || 0;
+                        // Rachas desde la hoja (si ya se migró)
+                        const streak      = RACHA_COL      >= 0 ? (parseInt(row.c[RACHA_COL]?.v)      || 0) : null;
+                        const streakPart  = RACHA_PART_COL >= 0 ? (parseInt(row.c[RACHA_PART_COL]?.v) || 0) : null;
         
                         const mysteryPoints = {};
                         for (const [mid, ci] of Object.entries(mysteryColMap)) {
                             const v = row.c[ci]?.v;
                             if (v != null && v !== '') mysteryPoints[mid] = parseInt(v) || 0;
                         }
-                        users.push({ id: publicId, name, points: totalPoints, mysteryPoints });
+                        users.push({ id: publicId, name, points: totalPoints, mysteryPoints, streak, streakPart });
                     }
         
                     return { users, mysteryColMap };
@@ -1927,17 +1935,22 @@
                     const solvedGames    = Object.keys(u.mysteryPoints).filter(gid =>
                         !filterGameIds || filterGameIds.includes(gid)
                     );
-                    const allSolvedGames = Object.keys(u.mysteryPoints); // siempre completo para racha global
-                    return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames };
+                    const allSolvedGames = Object.keys(u.mysteryPoints);
+                    return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames,
+                             streak: u.streak ?? null, streakPart: u.streakPart ?? null };
                 });
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
                 leaderboardData = users.sort((a, b) => b.points - a.points);
-                // Racha del usuario actual — instantánea, misma fuente que el podio
-                const myPubId  = getPublicId(userId);
-                const meInLB   = leaderboardData.find(u => u.id === myPubId);
+
+                // Racha del usuario actual — desde la hoja (ya no requiere computación)
+                const myPubId = getPublicId(userId);
+                const meInLB  = leaderboardData.find(u => u.id === myPubId);
                 if (meInLB) {
-                    userStreak = computeUserStreakFromSet(new Set(meInLB.allSolvedGames || meInLB.solvedGames || []));
+                    // Si la hoja tiene rachas → directo; si no → calcular (pre-migración)
+                    userStreak = meInLB.streak !== null
+                        ? meInLB.streak
+                        : computeUserStreakFromSet(new Set(meInLB.allSolvedGames || []));
                     updateStreakBadge();
                 }
                 renderPodium();
@@ -2359,57 +2372,46 @@
         }
 
         async function loadGames() {
-            const loadingHTML = '<p class="text-center text-gray-400 col-span-full">Cargando misterios...</p>';
-            dom.enCursoContainer.innerHTML = loadingHTML; dom.archivoGrid.innerHTML = loadingHTML;
+            dom.enCursoContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">Cargando misterios...</p>';
+            dom.archivoGrid.innerHTML      = '<p class="text-center text-gray-400 col-span-full">Cargando...</p>';
             try {
-                // Cargar Temporadas Primero
                 await loadSeasons();
-
-                const response = await fetch(`${GAMES_INDEX_PATH}?v=${Date.now()}`);
-                if (!response.ok) throw new Error(`Error índice`);
+                const response  = await fetch(`${GAMES_INDEX_PATH}?v=${Date.now()}`);
+                if (!response.ok) throw new Error('Error índice');
                 const gameFiles = await response.json();
-                // OPTIMIZACIÓN: Cargar juegos en lotes para no saturar el navegador
-                const games = [];
-                const batchSize = 10;
-                for (let i = 0; i < gameFiles.length; i += batchSize) {
-                    const batch = gameFiles.slice(i, i + batchSize);
-                    const batchPromises = batch.map(async (file) => {
-                        try {
-                            // Usar caché del navegador si es posible, quitando el timestamp agresivo
-                            const res = await fetch(`games/${file}`);
-                            if (!res.ok) throw new Error();
-                            return await res.json();
-                        } catch (error) { return null; }
-                    });
-                    const batchResults = await Promise.all(batchPromises);
-                    games.push(...batchResults.filter(Boolean));
-                    
-                    // Renderizado parcial para que el usuario vea contenido rápido
-                    if (i === 0) {
-                        allGames = [...games];
-                        renderGames();
-                    }
-                }
+                // Ficheros de juego: estáticos → el navegador los cachea (sin Date.now)
+                const gamePromises = gameFiles.map(async (file) => {
+                    try {
+                        const res = await fetch(`games/${file}`);
+                        if (!res.ok) throw new Error();
+                        return await res.json();
+                    } catch { return null; }
+                });
+                const games = (await Promise.all(gamePromises)).filter(Boolean);
                 allGames = games.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-                renderGames();
+                renderGames();          // Una sola llamada al renderizar
                 handleUrlSharing();
-                // loadLeaderboard(); // OPTIMIZACIÓN: No cargar el podio al inicio, solo cuando se necesite
-                checkAds(); // Comprobar anuncios al cargar juegos
+                checkAds();
             } catch (error) {
-                const errorHTML = `<p class="text-center text-red-500 col-span-full">Error de carga.</p>`;
-                dom.enCursoContainer.innerHTML = errorHTML; dom.archivoGrid.innerHTML = '';
+                dom.enCursoContainer.innerHTML = '<p class="text-center text-red-500 col-span-full">Error de carga.</p>';
+                dom.archivoGrid.innerHTML = '';
             }
         }
+
+        let _leaderboardLoaded = false;
 
         function initEventListeners() {
             dom.tabs.forEach(tab => tab.addEventListener('click', (event) => {
                 const targetId = event.currentTarget.dataset.tab;
                 dom.tabs.forEach(t => t.classList.remove('active')); event.currentTarget.classList.add('active');
                 dom.tabContents.forEach(content => content.id === targetId ? content.classList.remove('hidden') : content.classList.add('hidden'));
-                if(targetId === 'podio') {
-                    // Recargar podio si cambió la selección o si no se ha cargado nunca
-                    if (leaderboardData.length === 0 || currentPodiumSeasonId !== 'general') {
-                        loadLeaderboard(currentPodiumSeasonId === 'general' ? null : allSeasons.find(s=>s.id === currentPodiumSeasonId).gameIds);
+                if (targetId === 'podio') {
+                    // Solo recargar si cambió la temporada o es la primera vez
+                    const filterIds = currentPodiumSeasonId === 'general' ? null
+                        : allSeasons.find(s => s.id === currentPodiumSeasonId)?.gameIds;
+                    if (!_leaderboardLoaded) {
+                        _leaderboardLoaded = true;
+                        loadLeaderboard(filterIds);
                     }
                 }
             }));
@@ -2835,25 +2837,27 @@
                 const cached = localStorage.getItem(cacheKey);
                 if (cached) { cachedNotifs = JSON.parse(cached); renderNotifPanel(cachedNotifs); }
             } catch(e) {}
-            // OPTIMIZACIÓN: Cargar notificaciones e historial en paralelo
-            Promise.all([
-                fetch(`${APPS_SCRIPT_URL}?action=notifs&user=${encodeURIComponent(publicId)}`).then(res => res.json()),
-                fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`).then(res => res.json())
-            ]).then(([notifs, hist]) => {
-                // Procesar notificaciones
-                cachedNotifs = notifs;
+            // Fetch fresco en background
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=notifs&user=${encodeURIComponent(publicId)}`);
+                cachedNotifs = await res.json();
                 localStorage.setItem(cacheKey, JSON.stringify(cachedNotifs));
                 renderNotifPanel(cachedNotifs);
-
-                // Procesar historial
+            } catch(e) { console.warn('Error cargando notificaciones:', e); }
+            // Cargar historial para saber qué misterios ya ha resuelto/enviado
+            // (la racha ya se calcula en loadLeaderboard para ser instantánea)
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
+                const hist = await res.json();
                 userCorrectGames.clear();
                 userPendingGames.clear();
                 hist.forEach(r => {
                     if (r.correcto) userCorrectGames.add(r.misterio);
                     else if (!r.comentario) userPendingGames.add(r.misterio);
                 });
+                // Si el leaderboard aún no cargó, actualizar racha con historial completo
                 if (userStreak === 0) { userStreak = computeStreak(hist); updateStreakBadge(); }
-            }).catch(e => console.warn('Error en carga de background:', e));
+            } catch(e) { console.warn('Error cargando historial de jugador:', e); }
         }
 
         // Calcula la racha actual: número de misterios consecutivos (por orden de startDate) en los que el usuario ha participado
@@ -3201,8 +3205,8 @@
             initUserIdentity();
             initEventListeners();
             datePicker = flatpickr(dom.searchDate, { mode: "range", dateFormat: "d/m/Y", locale: "es", altInput: true, altFormat: "j F, Y", onClose: renderGames, onReady: (_, __, instance) => instance.calendarContainer.classList.add('dark') });
-            loadGames();
-            loadNotifications();
+            // Lanzar en paralelo
+            Promise.all([loadGames(), loadNotifications()]).catch(console.error);
         }
 
         init();
