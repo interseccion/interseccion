@@ -613,7 +613,7 @@
     <script>
         // ─── CONFIGURACIÓN ────────────────────────────────────────────────────
         // URL del Apps Script desplegado como Web App
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzWxNV_zyNIUveSDunEUXHCuHIkWmbtLiosFHEHwJYvpprn9_Rsg4OkLZ-pLjXiiO2EbA/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwAqgt-GMEDzqufZTEoUPmazscqZHzzLPFTwf1_juJu59EnFBDOPOm0wp-BHe0gkBRN5A/exec';
         // URL de envío del formulario unificado
         const FORM_SUBMIT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdT7aKWYEIVDyh1TKUalD6JcbAG0FydIrP5LBF2ueTAUdbCqw/formResponse';
         // Entry IDs del formulario
@@ -765,8 +765,31 @@
         // Sets de misterios del usuario actual
         let userCorrectGames = new Set(); // IDs de misterios con respuesta correcta
         let userPendingGames = new Set(); // IDs con respuesta enviada pero pendiente de revisión
-        let userStreak = 0;              // Racha de misterios consecutivos con participación
+        let userStreak     = 0;  // Racha de correctas consecutivas
+        let userStreakPart = 0;  // Racha de participaciones consecutivas (sin necesidad de acertar)
         const scoringInfoCache = {};     // mysteryId → scoring params
+
+        // Caché agresiva de notificaciones en localStorage
+        const NOTIF_CACHE_KEY = 'mystery_notifs_cache';
+        const NOTIF_CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+        function getNotifCache() {
+            try {
+                const stored = JSON.parse(localStorage.getItem(NOTIF_CACHE_KEY) || 'null');
+                if (!stored) return null;
+                if (Date.now() - stored.ts > NOTIF_CACHE_TTL) return null;
+                if (stored.userId !== (currentPublicId() || '')) return null;
+                return stored.data;
+            } catch(e) { return null; }
+        }
+        function setNotifCache(data) {
+            try {
+                localStorage.setItem(NOTIF_CACHE_KEY, JSON.stringify({
+                    ts: Date.now(), userId: currentPublicId() || '', data
+                }));
+            } catch(e) {}
+        }
+        function clearNotifCache() { localStorage.removeItem(NOTIF_CACHE_KEY); }
 
         // Caché para podios de juegos (Sheets)
         const podiumsCache = {};
@@ -897,7 +920,7 @@
                     const [rHead, rExp, rData] = await Promise.all([
                         fetch(`${base}&range=1:1`),
                         fetch(`${base}&range=2:2`),
-                        fetch(`${base}&range=3:500`)  // límite razonable, evita miles de celdas vacías
+                        fetch(`${base}&range=3:9999`)
                     ]);
         
                     const parseGviz = async (res) => {
@@ -911,17 +934,13 @@
                         parseGviz(rHead), parseGviz(rExp), parseGviz(rData)
                     ]);
         
-                    // 1. Cabeceras → detectar columnas de racha y misterios
+                    // 1. Cabeceras → mapa gameId → índice de columna
                     const headerRow = tHead.rows[0]?.c || [];
                     const mysteryColMap = {};
-                    let RACHA_COL = -1, RACHA_PART_COL = -1;
-                    const MYSTERY_START = 5; // Después de migración: A=id, B=nombre, C=puntos, D=racha, E=racha_part
-                    for (let i = 3; i < headerRow.length; i++) {
+                    const MYSTERY_START = 3;
+                    for (let i = MYSTERY_START; i < headerRow.length; i++) {
                         const label = headerRow[i]?.v?.toString()?.trim();
-                        if (!label) continue;
-                        if (label === 'RACHA')      { RACHA_COL      = i; continue; }
-                        if (label === 'RACHA_PART') { RACHA_PART_COL = i; continue; }
-                        if (i >= MYSTERY_START)     { mysteryColMap[label] = i; }
+                        if (label) mysteryColMap[label] = i;
                     }
         
                     // 2. Explicaciones del ganador (fila 2)
@@ -939,16 +958,13 @@
                         if (!publicId) continue;
                         const name        = row.c[1]?.v?.toString()?.trim() || 'Anónimo';
                         const totalPoints = parseInt(row.c[2]?.v) || 0;
-                        // Rachas desde la hoja (si ya se migró)
-                        const streak      = RACHA_COL      >= 0 ? (parseInt(row.c[RACHA_COL]?.v)      || 0) : null;
-                        const streakPart  = RACHA_PART_COL >= 0 ? (parseInt(row.c[RACHA_PART_COL]?.v) || 0) : null;
         
                         const mysteryPoints = {};
                         for (const [mid, ci] of Object.entries(mysteryColMap)) {
                             const v = row.c[ci]?.v;
                             if (v != null && v !== '') mysteryPoints[mid] = parseInt(v) || 0;
                         }
-                        users.push({ id: publicId, name, points: totalPoints, mysteryPoints, streak, streakPart });
+                        users.push({ id: publicId, name, points: totalPoints, mysteryPoints });
                     }
         
                     return { users, mysteryColMap };
@@ -992,13 +1008,6 @@
 
             // CASO 3: No hay ID, mostrar bienvenida
             dom.welcomeModal.classList.add('active');
-            // Streak badge: sin sesión → gris apagado
-            const _badge = document.getElementById('streak-badge');
-            if (_badge) {
-                _badge.textContent = '🔥';
-                _badge.title = 'Inicia sesión para ver tu racha';
-                _badge.className = 'text-xs font-bold bg-gray-800/60 text-gray-600 border border-gray-700/40 px-2 py-1 rounded-full';
-            }
         }
 
         // ── Frase semilla ──────────────────────────────────────────────────────────
@@ -1481,6 +1490,14 @@
             const isFav = getFavorites().includes(game.id);
             const starIcon = getStarIconSVG(isFav);
 
+            // Obtener estadísticas del misterio desde la hoja PRINCIPAL
+            let statsHTML = '';
+            const podiumData = podiumsCache[game.id];
+            if (podiumData && podiumData.entries) {
+                const playerCount = podiumData.entries.length;
+                statsHTML = `<p class="text-xs text-indigo-400 mt-2">👥 ${playerCount} jugador${playerCount !== 1 ? 'es' : ''}</p>`;
+            }
+
             const card = document.createElement('div');
             card.className = 'bg-gray-800/80 hover:bg-gray-800 transition-colors cursor-pointer rounded-xl shadow-lg p-5 flex flex-col justify-between fade-in relative group';
             card.innerHTML = `
@@ -1499,6 +1516,7 @@
                     </div>
                     ${descriptionHTML}
                     <p class="text-sm text-gray-500 mt-3">Pistas reveladas: ${getVisibleClues(game).length}/${game.clues.length}</p>
+                    ${statsHTML}
                 </div>
                 <div class="mt-4 border-t border-gray-700 pt-3 flex justify-between items-end">
                     <p class="text-xs text-gray-500">${game.isSolved ? 'Finalizado' : 'Iniciado'}: ${startDate}</p>
@@ -1673,22 +1691,16 @@
 
                     // Panel de puntos potenciales (si activo) o ganador (si resuelto) para el índice
                     const summaryScoreId = `summary-score-panel-${game.id}`;
-                    // Solver count from leaderboard (instantáneo)
-                    const _solverCount = leaderboardData.filter(u => (u.allSolvedGames||u.solvedGames||[]).includes(game.id)).length;
-                    const _statsBadge  = _solverCount > 0
-                        ? `<span class="text-xs bg-gray-800 border border-gray-700 text-gray-400 px-2 py-1 rounded-full">👥 ${_solverCount} jugador${_solverCount===1?'':'es'} ${game.isSolved?'participaron':'participan'}</span>`
-                        : '';
                     let summaryScoreHTML = '';
                     if (game.isSolved && game.winner) {
                         const winnerId = game.winnerId || '';
-                        summaryScoreHTML = `<div class="flex flex-wrap items-center gap-2 bg-yellow-900/20 border border-yellow-500/30 rounded-lg px-4 py-2 text-sm">
+                        summaryScoreHTML = `<div class="flex items-center gap-2 bg-yellow-900/20 border border-yellow-500/30 rounded-lg px-4 py-2 text-sm">
                             <span class="text-yellow-400">🏆</span>
                             <span class="text-gray-400">Resuelto por </span>
                             <button class="winner-link font-semibold text-yellow-400 underline hover:text-yellow-300" data-winner-id="${winnerId}">${game.winner}</button>
-                            ${_statsBadge}
                         </div>`;
                     } else if (!game.isSolved && !APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                    summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos... ${_statsBadge}</div>`;
+                    summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos...</div>`;
 
                     const _gameId = game.id;
                     const renderScorePanel = (info, solverCount) => {
@@ -1744,13 +1756,11 @@
                             if (!banner || !info) return;
                             const { pts, savedCount, nextPos } = calcPoints(info, solverCount);
                             const posLabel = nextPos === 1 ? '🥇 1.º' : nextPos === 2 ? '🥈 2.º' : nextPos === 3 ? '🥉 3.º' : `#${nextPos}`;
-                            const playersBadge = solverCount > 0 ? `<span class="text-gray-500">·</span><span class="text-gray-500 text-xs">👥 ${solverCount} ya lo resolvieron</span>` : '';
                             banner.innerHTML = `<div class="bg-indigo-900/30 border border-indigo-700/50 rounded-lg px-4 py-2 flex flex-wrap items-center gap-3 text-sm">
                                 <span class="text-indigo-300 font-bold">⭐ Si aciertas ahora: <span class="text-white text-base">${pts} pts</span></span>
                                 <span class="text-gray-500">·</span>
                                 <span class="text-gray-400 text-xs">Serías <span class="font-semibold text-indigo-300">${posLabel}</span></span>
                                 ${savedCount > 0 ? `<span class="text-gray-500">·</span><span class="text-amber-400/80 text-xs">Esperando ${savedCount} pista${savedCount===1?'':'s'} más: −<strong>${savedCount*(info.ptsSaved||2)}</strong> pts</span>` : ''}
-                                ${playersBadge}
                             </div>`;
                             banner.classList.remove('hidden');
                         };
@@ -1935,24 +1945,12 @@
                     const solvedGames    = Object.keys(u.mysteryPoints).filter(gid =>
                         !filterGameIds || filterGameIds.includes(gid)
                     );
-                    const allSolvedGames = Object.keys(u.mysteryPoints);
-                    return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames,
-                             streak: u.streak ?? null, streakPart: u.streakPart ?? null };
+                    const allSolvedGames = Object.keys(u.mysteryPoints); // siempre completo para racha global
+                    return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames };
                 });
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
                 leaderboardData = users.sort((a, b) => b.points - a.points);
-
-                // Racha del usuario actual — desde la hoja (ya no requiere computación)
-                const myPubId = getPublicId(userId);
-                const meInLB  = leaderboardData.find(u => u.id === myPubId);
-                if (meInLB) {
-                    // Si la hoja tiene rachas → directo; si no → calcular (pre-migración)
-                    userStreak = meInLB.streak !== null
-                        ? meInLB.streak
-                        : computeUserStreakFromSet(new Set(meInLB.allSolvedGames || []));
-                    updateStreakBadge();
-                }
                 renderPodium();
 
                 if (currentPodiumSeasonId !== 'general' && leaderboardData.length > 0) {
@@ -2372,47 +2370,52 @@
         }
 
         async function loadGames() {
-            dom.enCursoContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">Cargando misterios...</p>';
-            dom.archivoGrid.innerHTML      = '<p class="text-center text-gray-400 col-span-full">Cargando...</p>';
+            const loadingHTML = '<p class="text-center text-gray-400 col-span-full">Cargando misterios...</p>';
+            dom.enCursoContainer.innerHTML = loadingHTML; dom.archivoGrid.innerHTML = loadingHTML;
             try {
+                // Cargar Temporadas Primero
                 await loadSeasons();
-                const response  = await fetch(`${GAMES_INDEX_PATH}?v=${Date.now()}`);
-                if (!response.ok) throw new Error('Error índice');
+
+                const response = await fetch(`${GAMES_INDEX_PATH}?v=${Date.now()}`);
+                if (!response.ok) throw new Error(`Error índice`);
                 const gameFiles = await response.json();
-                // Ficheros de juego: estáticos → el navegador los cachea (sin Date.now)
-                const gamePromises = gameFiles.map(async (file) => {
-                    try {
-                        const res = await fetch(`games/${file}`);
-                        if (!res.ok) throw new Error();
-                        return await res.json();
-                    } catch { return null; }
-                });
+                const gamePromises = gameFiles.map(async (file) => { try { const res = await fetch(`games/${file}?v=${Date.now()}`); if (!res.ok) throw new Error(); return await res.json(); } catch (error) { return null; } });
                 const games = (await Promise.all(gamePromises)).filter(Boolean);
                 allGames = games.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-                renderGames();          // Una sola llamada al renderizar
+                
+                // Cargar estadísticas de misterios (podios) en paralelo para optimizar
+                const sheetsData = await loadSheetsData();
+                if (sheetsData && sheetsData.users) {
+                    // Pre-calcular podios para cada misterio desde la hoja PRINCIPAL
+                    for (const game of allGames) {
+                        if (!podiumsCache[game.id]) {
+                            const entries = sheetsData.users
+                                .filter(u => u.mysteryPoints[game.id] !== undefined)
+                                .map(u => ({ id: u.id, name: u.name, points: u.mysteryPoints[game.id] }))
+                                .sort((a, b) => b.points - a.points);
+                            podiumsCache[game.id] = { gameId: game.id, entries };
+                        }
+                    }
+                }
+                
+                renderGames();
                 handleUrlSharing();
-                checkAds();
+                loadLeaderboard(); // Carga podio general por defecto
+                checkAds(); // Comprobar anuncios al cargar juegos
             } catch (error) {
-                dom.enCursoContainer.innerHTML = '<p class="text-center text-red-500 col-span-full">Error de carga.</p>';
-                dom.archivoGrid.innerHTML = '';
+                const errorHTML = `<p class="text-center text-red-500 col-span-full">Error de carga.</p>`;
+                dom.enCursoContainer.innerHTML = errorHTML; dom.archivoGrid.innerHTML = '';
             }
         }
-
-        let _leaderboardLoaded = false;
 
         function initEventListeners() {
             dom.tabs.forEach(tab => tab.addEventListener('click', (event) => {
                 const targetId = event.currentTarget.dataset.tab;
                 dom.tabs.forEach(t => t.classList.remove('active')); event.currentTarget.classList.add('active');
                 dom.tabContents.forEach(content => content.id === targetId ? content.classList.remove('hidden') : content.classList.add('hidden'));
-                if (targetId === 'podio') {
-                    // Solo recargar si cambió la temporada o es la primera vez
-                    const filterIds = currentPodiumSeasonId === 'general' ? null
-                        : allSeasons.find(s => s.id === currentPodiumSeasonId)?.gameIds;
-                    if (!_leaderboardLoaded) {
-                        _leaderboardLoaded = true;
-                        loadLeaderboard(filterIds);
-                    }
+                if(targetId === 'podio') {
+                    // Recargar podio si cambió la selección
+                     loadLeaderboard(currentPodiumSeasonId === 'general' ? null : allSeasons.find(s=>s.id === currentPodiumSeasonId).gameIds);
                 }
             }));
 
@@ -2484,9 +2487,13 @@
             dom.welcomeCloseBtn.addEventListener('click', () => { dom.welcomeModal.classList.remove('active'); showToast('Jugando como invitado (sin guardar)'); });
 
             dom.myIdBtn.addEventListener('click', () => {
-                if (!userId) { dom.welcomeModal.classList.add('active'); }
-                else { openIdModal(); }
-            });
+            if (!userId) {
+                // Si no hay usuario, mostrar el popup de bienvenida en lugar del modal de ID
+                dom.welcomeModal.classList.add('active');
+            } else {
+                openIdModal();
+            }
+        });
 
             // ABRIR TUTORIAL SI EL ID ES NUEVO
             dom.closeIdModalBtn.addEventListener('click', () => {
@@ -2710,6 +2717,8 @@
             dom.resolverSuccess.classList.remove('hidden');
             // Marcar localmente como pendiente para que el botón cambie sin recargar
             if (resolverGameId) userPendingGames.add(resolverGameId);
+            // Invalidar caché de notificaciones para que la próxima apertura refresque
+            clearNotifCache();
         }
 
         dom.resolverSubmitBtn.addEventListener('click', submitResolver);
@@ -2780,7 +2789,11 @@
             }
 
             if (!notifs.length) {
-                dom.notifList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Sin notificaciones aún 🔕</p>';
+                if (!userId) {
+                    dom.notifList.innerHTML = '<div class="text-gray-500 text-sm text-center py-8"><p>Inicia sesión para ver tus notificaciones</p><button onclick="(function(){document.getElementById(\'welcome-modal\').classList.add(\'active\');document.getElementById(\'notif-panel\').classList.add(\'hidden\');})()" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">Iniciar sesión</button></div>';
+                } else {
+                    dom.notifList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Sin notificaciones aún 🔕</p>';
+                }
                 return;
             }
 
@@ -2828,79 +2841,112 @@
         let cachedNotifs = [];
 
         async function loadNotifications() {
-            if (!userId || APPS_SCRIPT_URL.includes('PON_AQUI')) return;
-            const publicId = getPublicId(userId);
-            if (!publicId) return;
-            // Mostrar notificaciones cacheadas inmediatamente
-            const cacheKey = 'notifs_cache_' + publicId;
-            try {
-                const cached = localStorage.getItem(cacheKey);
-                if (cached) { cachedNotifs = JSON.parse(cached); renderNotifPanel(cachedNotifs); }
-            } catch(e) {}
-            // Fetch fresco en background
-            try {
-                const res  = await fetch(`${APPS_SCRIPT_URL}?action=notifs&user=${encodeURIComponent(publicId)}`);
-                cachedNotifs = await res.json();
-                localStorage.setItem(cacheKey, JSON.stringify(cachedNotifs));
+            // Sin usuario → mostrar racha 0 y mensaje de login
+            if (!userId || APPS_SCRIPT_URL.includes('PON_AQUI')) {
+                userStreak = 0; userStreakPart = 0;
+                updateStreakBadge();
+                cachedNotifs = [];
                 renderNotifPanel(cachedNotifs);
-            } catch(e) { console.warn('Error cargando notificaciones:', e); }
-            // Cargar historial para saber qué misterios ya ha resuelto/enviado
-            // (la racha ya se calcula en loadLeaderboard para ser instantánea)
+                return;
+            }
+            const publicId = getPublicId(userId);
+            if (!publicId) { userStreak = 0; userStreakPart = 0; updateStreakBadge(); return; }
+
+            // 1) Intentar caché local (respuesta inmediata)
+            const cached = getNotifCache();
+            if (cached) {
+                cachedNotifs = cached;
+                renderNotifPanel(cachedNotifs);
+            }
+
+            // 2) Fetch en paralelo: notificaciones + historial
             try {
-                const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
-                const hist = await res.json();
+                const [resNotifs, resHist] = await Promise.all([
+                    fetch(`${APPS_SCRIPT_URL}?action=notifs&user=${encodeURIComponent(publicId)}`),
+                    fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`)
+                ]);
+                cachedNotifs = await resNotifs.json();
+                setNotifCache(cachedNotifs);          // guardar en caché local
+                renderNotifPanel(cachedNotifs);
+
+                const hist = await resHist.json();
                 userCorrectGames.clear();
                 userPendingGames.clear();
                 hist.forEach(r => {
                     if (r.correcto) userCorrectGames.add(r.misterio);
                     else if (!r.comentario) userPendingGames.add(r.misterio);
                 });
-                // Si el leaderboard aún no cargó, actualizar racha con historial completo
-                if (userStreak === 0) { userStreak = computeStreak(hist); updateStreakBadge(); }
-            } catch(e) { console.warn('Error cargando historial de jugador:', e); }
+                const { streak, streakPart } = computeStreakFull(hist);
+                userStreak     = streak;
+                userStreakPart = streakPart;
+                updateStreakBadge();
+            } catch(e) {
+                console.warn('Error cargando notificaciones/historial:', e);
+                if (!cached) { cachedNotifs = []; renderNotifPanel([]); }
+                userStreak = 0; userStreakPart = 0;
+                updateStreakBadge();
+            }
         }
 
-        // Calcula la racha actual: número de misterios consecutivos (por orden de startDate) en los que el usuario ha participado
-        function computeStreak(hist) {
-            if (!allGames.length) return 0;
-            const participated = new Set(hist.map(r => r.misterio));
-            // Ordenar misterios del más reciente al más antiguo
+        // Calcula las dos rachas del usuario a partir de su historial:
+        //   streak:     misterios RESUELTOS consecutivos (correcto=true), del más reciente al más antiguo
+        //   streakPart: misterios con CUALQUIER participación consecutiva
+        // Los misterios activos no resueltos NO rompen la racha.
+        function computeStreakFull(hist) {
+            if (!allGames.length) return { streak: 0, streakPart: 0 };
+            const solvedSet      = new Set(hist.filter(r => r.correcto).map(r => r.misterio));
+            const participatedSet = new Set(hist.map(r => r.misterio));
+
             const sorted = [...allGames]
                 .filter(g => g.startDate)
                 .sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-            let streak = 0;
+
+            let streak = 0, streakPart = 0;
+            let streakDone = false, streakPartDone = false;
+
             for (const g of sorted) {
-                if (participated.has(g.id)) {
-                    streak++;
-                } else if (!g.isSolved) {
-                    // Misterio activo en el que aún no se ha participado: no rompe racha
-                    // Eso, lo que decía antes. En esta parte me atasqué un pelín, pero ya funciona bien
-                    continue;
-                } else {
-                    // Misterio resuelto en el que no participó: racha rota
-                    break;
+                const hasSolved      = solvedSet.has(g.id);
+                const hasParticipated = participatedSet.has(g.id);
+
+                if (!streakDone) {
+                    if (hasSolved)       { streak++; }
+                    else if (!g.isSolved) { /* activo, no rompe */ }
+                    else                  { streakDone = true; }
                 }
+                if (!streakPartDone) {
+                    if (hasParticipated)  { streakPart++; }
+                    else if (!g.isSolved) { /* activo, no rompe */ }
+                    else                  { streakPartDone = true; }
+                }
+                if (streakDone && streakPartDone) break;
             }
-            return streak;
+            return { streak, streakPart };
         }
 
-        // Calcula racha de cualquier usuario dado su Set de juegos resueltos
-        function computeUserStreakFromSet(solvedSet) {
-            if (!allGames.length) return 0;
+        // Alias: usada por loadNotifications y otros sitios que solo quieran la racha de correctas
+        function computeStreak(hist) { return computeStreakFull(hist).streak; }
+
+        // Calcula racha de cualquier usuario dado su Set de juegos resueltos (para el podio)
+        function computeUserStreakFromSet(solvedSet, participatedSet) {
+            if (!allGames.length) return { streak: 0, streakPart: 0 };
             const sorted = [...allGames].filter(g => g.startDate).sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-            let streak = 0;
+            let streak = 0, streakPart = 0;
+            let streakDone = false, streakPartDone = false;
             for (const g of sorted) {
-                if (solvedSet.has(g.id)) {
-                    streak++;
-                } else if (!g.isSolved) {
-                    // Misterio activo en el que aún no se ha participado: no rompe racha
-                    continue;
-                } else {
-                    // Misterio resuelto en el que no participó: racha rota
-                    break;
+                if (!streakDone) {
+                    if (solvedSet.has(g.id))      { streak++; }
+                    else if (!g.isSolved)           { /* activo */ }
+                    else                            { streakDone = true; }
                 }
+                if (!streakPartDone) {
+                    const inPart = participatedSet ? participatedSet.has(g.id) : solvedSet.has(g.id);
+                    if (inPart)                     { streakPart++; }
+                    else if (!g.isSolved)           { /* activo */ }
+                    else                            { streakPartDone = true; }
+                }
+                if (streakDone && streakPartDone) break;
             }
-            return streak;
+            return { streak, streakPart };
         }
 
         // Renderiza el podio de rachas
@@ -2911,7 +2957,11 @@
                 return;
             }
             const streakData = leaderboardData
-                .map(u => ({ ...u, streak: computeUserStreakFromSet(new Set(u.allSolvedGames || u.solvedGames || [])) }))
+                .map(u => {
+                    const solvedSet = new Set(u.allSolvedGames || u.solvedGames || []);
+                    const { streak, streakPart } = computeUserStreakFromSet(solvedSet);
+                    return { ...u, streak, streakPart };
+                })
                 .filter(u => u.streak > 0)
                 .sort((a, b) => b.streak - a.streak || b.points - a.points);
 
@@ -2934,7 +2984,7 @@
                         ${user.name}
                         ${isMe ? '<span class="text-xs bg-indigo-600 px-2 py-0.5 rounded text-white ml-2">Tú</span>' : ''}
                     </td>
-                    <td class="p-4 text-right font-bold text-orange-400">🔥 ${user.streak}</td>
+                    <td class="p-4 text-right font-bold text-orange-400" title="${user.streakPart > 0 ? `Participaciones seguidas: ${user.streakPart}` : ''}">🔥 ${user.streak}</td>
                     <td class="p-4 text-center text-gray-400">${user.solvedGames.length}</td>
                 `;
                 tr.addEventListener('click', () => openProfileModal(user));
@@ -2956,12 +3006,20 @@
             badge.classList.remove('animate-pulse');
             if (userStreak >= 1) {
                 badge.textContent = `🔥 ${userStreak}`;
-                badge.title       = `Llevas ${userStreak} misterio${userStreak===1?'':'s'} seguido${userStreak===1?'':'s'} participando`;
-                badge.className   = 'text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40 px-2 py-1 rounded-full';
+                const partTip = userStreakPart > userStreak
+                    ? ` · ${userStreakPart} participando seguido${userStreakPart===1?'':'s'}`
+                    : '';
+                badge.title = `Llevas ${userStreak} misterio${userStreak===1?'':'s'} resuelto${userStreak===1?'':'s'} seguido${userStreak===1?'':'s'}${partTip}`;
+                badge.className = 'text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/40 px-2 py-1 rounded-full';
+            } else if (userStreakPart >= 1) {
+                // Participa pero aún no acertó: mostrar racha de participación en amarillo tenue
+                badge.textContent = `🔥 0`;
+                badge.title = `Sin racha de aciertos aún — llevas ${userStreakPart} misterio${userStreakPart===1?'':'s'} participando seguido${userStreakPart===1?'':'s'}`;
+                badge.className = 'text-xs font-bold bg-yellow-500/10 text-yellow-600 border border-yellow-600/30 px-2 py-1 rounded-full';
             } else {
                 badge.textContent = '🔥 0';
-                badge.title       = 'Sin racha activa aún';
-                badge.className   = 'text-xs font-bold bg-gray-700/40 text-gray-500 border border-gray-600/40 px-2 py-1 rounded-full';
+                badge.title = 'Sin racha activa aún';
+                badge.className = 'text-xs font-bold bg-gray-700/40 text-gray-500 border border-gray-600/40 px-2 py-1 rounded-full';
             }
         }
 
@@ -3053,19 +3111,9 @@
         dom.myResponsesBtn?.addEventListener('click', async () => {
             dom.notifPanel.classList.add('hidden');
             dom.myResponsesModal.classList.remove('hidden');
-            if (!userId) {
-                dom.myResponsesList.innerHTML = `<div class="p-8 text-center">
-                    <p class="text-gray-400 text-sm mb-3">Inicia sesión para ver tus respuestas enviadas</p>
-                    <button onclick="dom.myResponsesModal.classList.add('hidden'); dom.welcomeModal.classList.add('active');"
-                        class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
-                        Iniciar sesión
-                    </button>
-                </div>`;
-                return;
-            }
             dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">⏳ Cargando...</p>';
-            if (APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Necesitas configurar el Apps Script.</p>';
+            if (!userId || APPS_SCRIPT_URL.includes('PON_AQUI')) {
+                dom.myResponsesList.innerHTML = '<div class="text-gray-500 text-sm text-center py-8"><p>Necesitas iniciar sesión para ver tus respuestas.</p><button onclick="openIdModal()" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">Iniciar sesión</button></div>';
                 return;
             }
             const publicId = getPublicId(userId);
@@ -3175,16 +3223,6 @@
         // Toggle panel
         dom.bellBtn.addEventListener('click', e => {
             e.stopPropagation();
-            if (!userId) {
-                // No hay sesión: mostrar aviso en el panel
-                dom.notifList.innerHTML = `<div class="p-6 text-center">
-                    <p class="text-gray-400 text-sm mb-3">Inicia sesión para ver tus notificaciones</p>
-                    <button onclick="dom.notifPanel.classList.add('hidden'); dom.welcomeModal.classList.add('active');"
-                        class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition">
-                        Iniciar sesión
-                    </button>
-                </div>`;
-            }
             dom.notifPanel.classList.toggle('hidden');
         });
 
@@ -3205,8 +3243,8 @@
             initUserIdentity();
             initEventListeners();
             datePicker = flatpickr(dom.searchDate, { mode: "range", dateFormat: "d/m/Y", locale: "es", altInput: true, altFormat: "j F, Y", onClose: renderGames, onReady: (_, __, instance) => instance.calendarContainer.classList.add('dark') });
-            // Lanzar en paralelo
-            Promise.all([loadGames(), loadNotifications()]).catch(console.error);
+            loadGames();
+            loadNotifications();
         }
 
         init();
