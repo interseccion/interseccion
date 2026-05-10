@@ -2370,40 +2370,30 @@
 
         async function loadGames() {
             dom.enCursoContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">Cargando misterios...</p>';
-            dom.archivoGrid.innerHTML     = '<p class="text-center text-gray-400 col-span-full">Haz clic en "Archivo" para cargar</p>';
+            dom.archivoGrid.innerHTML      = '<p class="text-center text-gray-400 col-span-full">Cargando...</p>';
             try {
                 await loadSeasons();
+                // index.json sí lleva cache-buster (cambia al añadir juegos)
                 const response  = await fetch(`${GAMES_INDEX_PATH}?v=${Date.now()}`);
                 if (!response.ok) throw new Error('Error índice');
                 const gameFiles = await response.json();
-
-                // Cargar activos primero (isSolved === false), archivo después al hacer clic
-                const activeFiles  = [];
-                const archiveFiles = [];
-                // No sabemos si están resueltos sin fetchear — precarga paralela de todos
-                // pero renderizamos en cuanto lleguen los activos
-                const allPromises  = gameFiles.map(async (file) => {
+                // Los archivos de juego son estáticos — el navegador los cachea
+                const gamePromises = gameFiles.map(async (file) => {
                     try {
-                        const res = await fetch(`games/${file}?v=${Date.now()}`);
+                        const res = await fetch(`games/${file}`);
                         if (!res.ok) throw new Error();
-                        const g = await res.json();
-                        // En cuanto llega un activo lo mostramos sin esperar al resto
-                        if (!g.isSolved) {
-                            allGames.push(g);
-                            _sortedGamesForStreak = null; // invalidar caché
-                            renderGames();
-                        }
-                        return g;
+                        return await res.json();
                     } catch { return null; }
                 });
-                const games = (await Promise.all(allPromises)).filter(Boolean);
+                const games = (await Promise.all(gamePromises)).filter(Boolean);
                 allGames = games.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
                 _sortedGamesForStreak = null;
-                renderGames();
+                renderGames();       // Una sola llamada
                 handleUrlSharing();
                 checkAds();
             } catch (error) {
                 dom.enCursoContainer.innerHTML = '<p class="text-center text-red-500 col-span-full">Error de carga.</p>';
+                dom.archivoGrid.innerHTML = '';
             }
         }
 
