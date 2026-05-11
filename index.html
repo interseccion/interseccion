@@ -935,12 +935,17 @@
                     ]);
         
                     // 1. Cabeceras → mapa gameId → índice de columna
+                    // Estructura esperada: A=ID_PUBLICO, B=Nombre, C=Puntos_Total,
+                    //                     D=Racha_Actual, E=Racha_Participaciones, F+=misterios
                     const headerRow = tHead.rows[0]?.c || [];
                     const mysteryColMap = {};
-                    const MYSTERY_START = 3;
+                    const MYSTERY_START = 5; // columna F (0-based)
+                    const STREAK_COL      = 3; // columna D
+                    const STREAK_PART_COL = 4; // columna E
                     for (let i = MYSTERY_START; i < headerRow.length; i++) {
                         const label = headerRow[i]?.v?.toString()?.trim();
-                        if (label) mysteryColMap[label] = i;
+                        // Ignorar marcadores especiales que no sean IDs de misterio
+                        if (label && !label.startsWith('_')) mysteryColMap[label] = i;
                     }
         
                     // 2. Explicaciones del ganador (fila 2)
@@ -964,7 +969,9 @@
                             const v = row.c[ci]?.v;
                             if (v != null && v !== '') mysteryPoints[mid] = parseInt(v) || 0;
                         }
-                        users.push({ id: publicId, name, points: totalPoints, mysteryPoints });
+                        const streak     = parseInt(row.c[STREAK_COL]?.v)      || 0;
+                        const streakPart = parseInt(row.c[STREAK_PART_COL]?.v) || 0;
+                        users.push({ id: publicId, name, points: totalPoints, mysteryPoints, streak, streakPart });
                     }
         
                     return { users, mysteryColMap };
@@ -1945,8 +1952,10 @@
                     const solvedGames    = Object.keys(u.mysteryPoints).filter(gid =>
                         !filterGameIds || filterGameIds.includes(gid)
                     );
-                    const allSolvedGames = Object.keys(u.mysteryPoints); // siempre completo para racha global
-                    return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames };
+                    const allSolvedGames = Object.keys(u.mysteryPoints);
+                    // Las rachas vienen ya calculadas desde la hoja PRINCIPAL (cols D y E)
+                    return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames,
+                             sheetStreak: u.streak || 0, sheetStreakPart: u.streakPart || 0 };
                 });
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
@@ -2382,25 +2391,9 @@
                 const gamePromises = gameFiles.map(async (file) => { try { const res = await fetch(`games/${file}?v=${Date.now()}`); if (!res.ok) throw new Error(); return await res.json(); } catch (error) { return null; } });
                 const games = (await Promise.all(gamePromises)).filter(Boolean);
                 allGames = games.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
-                
-                // Cargar estadísticas de misterios (podios) en paralelo para optimizar
-                const sheetsData = await loadSheetsData();
-                if (sheetsData && sheetsData.users) {
-                    // Pre-calcular podios para cada misterio desde la hoja PRINCIPAL
-                    for (const game of allGames) {
-                        if (!podiumsCache[game.id]) {
-                            const entries = sheetsData.users
-                                .filter(u => u.mysteryPoints[game.id] !== undefined)
-                                .map(u => ({ id: u.id, name: u.name, points: u.mysteryPoints[game.id] }))
-                                .sort((a, b) => b.points - a.points);
-                            podiumsCache[game.id] = { gameId: game.id, entries };
-                        }
-                    }
-                }
-                
                 renderGames();
                 handleUrlSharing();
-                loadLeaderboard(); // Carga podio general por defecto
+                loadLeaderboard(); // Carga podio + podiumsCache en background, sin bloquear
                 checkAds(); // Comprobar anuncios al cargar juegos
             } catch (error) {
                 const errorHTML = `<p class="text-center text-red-500 col-span-full">Error de carga.</p>`;
@@ -2956,10 +2949,16 @@
                 dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No hay datos.</td></tr>`;
                 return;
             }
+            // Usar las rachas ya calculadas en PRINCIPAL (cols D y E), con fallback a cálculo local
             const streakData = leaderboardData
                 .map(u => {
-                    const solvedSet = new Set(u.allSolvedGames || u.solvedGames || []);
-                    const { streak, streakPart } = computeUserStreakFromSet(solvedSet);
+                    let streak = u.sheetStreak ?? 0;
+                    let streakPart = u.sheetStreakPart ?? 0;
+                    // Fallback: calcular localmente si la hoja aún no tiene la migración
+                    if (streak === 0 && u.solvedGames?.length > 0) {
+                        const r = computeUserStreakFromSet(new Set(u.allSolvedGames || u.solvedGames || []));
+                        streak = r.streak; streakPart = r.streakPart;
+                    }
                     return { ...u, streak, streakPart };
                 })
                 .filter(u => u.streak > 0)
