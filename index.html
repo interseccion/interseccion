@@ -1960,6 +1960,23 @@
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
                 leaderboardData = users.sort((a, b) => b.points - a.points);
+
+                // Poblar podiumsCache de forma gratuita (ya tenemos todos los datos de la hoja)
+                // Esto permite que renderSummaryCard muestre "👥 X jugadores" sin peticiones extra
+                const freshCache = {};
+                data.users.forEach(u => {
+                    Object.entries(u.mysteryPoints).forEach(([gid, pts]) => {
+                        if (!freshCache[gid]) freshCache[gid] = { gameId: gid, entries: [] };
+                        freshCache[gid].entries.push({ id: u.id, name: u.name, points: pts });
+                    });
+                });
+                Object.entries(freshCache).forEach(([gid, pod]) => {
+                    pod.entries.sort((a, b) => b.points - a.points);
+                    podiumsCache[gid] = pod;
+                });
+                // Re-renderizar tarjetas ahora que tenemos los conteos de jugadores
+                if (allGames.length) renderGames();
+
                 renderPodium();
 
                 if (currentPodiumSeasonId !== 'general' && leaderboardData.length > 0) {
@@ -2009,8 +2026,8 @@
                 if (index === 1) rankDisplay = '🥈';
                 if (index === 2) rankDisplay = '🥉';
 
-                const streak = computeUserStreakFromSet(new Set(user.allSolvedGames || user.solvedGames || []));
-                const streakBadge = streak >= 1 ? `<span class="text-xs text-orange-400 font-semibold ml-1" title="Racha">🔥${streak}</span>` : '';
+                const streak = user.sheetStreak ?? 0;
+                const streakBadge = streak >= 1 ? `<span class="text-xs text-orange-400 font-semibold ml-1" title="Racha de aciertos">🔥${streak}</span>` : '';
 
                 const tr = document.createElement('tr');
                 tr.className = `transition-colors cursor-pointer ${rowClass}`;
@@ -2146,8 +2163,9 @@
                         const isMe = userData.id === currentPublicId() || (userId && userData.id === getPublicId(userId));
                         if (isMe) {
                             streak = userStreak;
-                        } else if (allGames.length) {
-                            streak = computeUserStreakFromSet(new Set(userData.allSolvedGames || userData.solvedGames || []));
+                        } else {
+                            // Preferir racha de la hoja (ya calculada en PRINCIPAL), fallback a cálculo local
+                            streak = userData.sheetStreak ?? computeUserStreakFromSet(new Set(userData.allSolvedGames || userData.solvedGames || [])).streak;
                         }
                         if (streak < 1) return '';
                         return `<div class="mt-2 text-orange-400 font-bold text-sm">🔥 Racha: ${streak} misterio${streak === 1 ? '' : 's'} seguido${streak === 1 ? '' : 's'}</div>`;
