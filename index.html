@@ -1456,7 +1456,7 @@
             // Filtro en Archivo
             dom.seasonFilterSelect.innerHTML = '<option value="Todos">Todas las Temporadas</option>';
             // Selector en Podio
-            dom.podiumSeasonSelect.innerHTML = '<option value="general">🏆 Clasificación General</option><option value="__streaks__">🔥 Rachas</option>';
+            dom.podiumSeasonSelect.innerHTML = '<option value="general">🏆 Clasificación General</option><option value="__streaks__">🔥 Racha de aciertos</option><option value="__streaks_part__">🔥 Racha de participaciones</option>';
 
             allSeasons.forEach(season => {
                 // Filtro
@@ -2437,12 +2437,21 @@
 
                 if (selected === '__streaks__') {
                     dom.seasonWinnersDisplay?.classList.add('hidden');
-                    dom.podiumTitle.textContent = '🔥 Podio de Rachas';
-                    dom.podiumDescription.textContent = 'Misterios consecutivos resueltos sin saltarse ninguno';
+                    dom.podiumTitle.textContent = '🔥 Racha de aciertos';
+                    dom.podiumDescription.textContent = 'Misterios consecutivos resueltos correctamente';
                     if (leaderboardData.length > 0) {
-                        renderStreakPodium();
+                        renderStreakPodium('streak');
                     } else {
-                        loadLeaderboard(null).then(() => renderStreakPodium());
+                        loadLeaderboard(null).then(() => renderStreakPodium('streak'));
+                    }
+                } else if (selected === '__streaks_part__') {
+                    dom.seasonWinnersDisplay?.classList.add('hidden');
+                    dom.podiumTitle.textContent = '🔥 Racha de participaciones';
+                    dom.podiumDescription.textContent = 'Misterios consecutivos en los que has participado (aunque no acertaras)';
+                    if (leaderboardData.length > 0) {
+                        renderStreakPodium('streakPart');
+                    } else {
+                        loadLeaderboard(null).then(() => renderStreakPodium('streakPart'));
                     }
                 } else if (selected === 'general') {
                     dom.seasonWinnersDisplay?.classList.add('hidden');
@@ -2960,33 +2969,38 @@
             return { streak, streakPart };
         }
 
-        // Renderiza el podio de rachas
-        function renderStreakPodium() {
+        // Renderiza el podio de rachas — mode: 'streak' (aciertos) o 'streakPart' (participaciones)
+        function renderStreakPodium(mode = 'streak') {
             dom.podiumBody.innerHTML = '';
             if (!leaderboardData.length) {
                 dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No hay datos.</td></tr>`;
                 return;
             }
-            // Usar las rachas ya calculadas en PRINCIPAL (cols D y E), con fallback a cálculo local
+            const isPartMode = mode === 'streakPart';
             const streakData = leaderboardData
                 .map(u => {
                     let streak = u.sheetStreak ?? 0;
                     let streakPart = u.sheetStreakPart ?? 0;
-                    // Fallback: calcular localmente si la hoja aún no tiene la migración
-                    if (streak === 0 && u.solvedGames?.length > 0) {
+                    if (streak === 0 && streakPart === 0 && u.solvedGames?.length > 0) {
                         const r = computeUserStreakFromSet(new Set(u.allSolvedGames || u.solvedGames || []));
                         streak = r.streak; streakPart = r.streakPart;
                     }
                     return { ...u, streak, streakPart };
                 })
-                .filter(u => u.streak > 0)
-                .sort((a, b) => b.streak - a.streak || b.points - a.points);
+                .filter(u => isPartMode ? u.streakPart > 0 : u.streak > 0)
+                .sort((a, b) => {
+                    const va = isPartMode ? b.streakPart : b.streak;
+                    const vb = isPartMode ? a.streakPart : a.streak;
+                    return va - vb || b.points - a.points;
+                });
 
             if (!streakData.length) {
                 dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Nadie tiene racha activa aún.</td></tr>`;
                 return;
             }
+            const colHeader = isPartMode ? 'Participaciones seguidas' : 'Aciertos seguidos';
             streakData.forEach((user, index) => {
+                const val  = isPartMode ? user.streakPart : user.streak;
                 const isMe = user.id === currentPublicId();
                 const rowClass = isMe ? 'bg-indigo-900/40 border-l-4 border-indigo-500' : 'hover:bg-gray-700/30 border-b border-gray-700/50';
                 let rankDisplay = index + 1;
@@ -3001,7 +3015,7 @@
                         ${user.name}
                         ${isMe ? '<span class="text-xs bg-indigo-600 px-2 py-0.5 rounded text-white ml-2">Tú</span>' : ''}
                     </td>
-                    <td class="p-4 text-right font-bold text-orange-400" title="${user.streakPart > 0 ? `Participaciones seguidas: ${user.streakPart}` : ''}">🔥 ${user.streak}</td>
+                    <td class="p-4 text-right font-bold text-orange-400" title="${colHeader}">🔥 ${val}</td>
                     <td class="p-4 text-center text-gray-400">${user.solvedGames.length}</td>
                 `;
                 tr.addEventListener('click', () => openProfileModal(user));
