@@ -2159,16 +2159,20 @@
                         return `<div class="text-xs text-gray-500 mt-1">📅 Miembro desde ${jdStr}</div>`;
                     })()}
                     ${(() => {
-                        let streak = 0;
+                        let streak = 0, streakPart = 0;
                         const isMe = userData.id === currentPublicId() || (userId && userData.id === getPublicId(userId));
                         if (isMe) {
                             streak = userStreak;
+                            streakPart = userStreakPart;
                         } else {
-                            // Preferir racha de la hoja (ya calculada en PRINCIPAL), fallback a cálculo local
-                            streak = userData.sheetStreak ?? computeUserStreakFromSet(new Set(userData.allSolvedGames || userData.solvedGames || [])).streak;
+                            streak     = userData.sheetStreak     ?? computeUserStreakFromSet(new Set(userData.allSolvedGames || userData.solvedGames || [])).streak;
+                            streakPart = userData.sheetStreakPart ?? 0;
                         }
-                        if (streak < 1) return '';
-                        return `<div class="mt-2 text-orange-400 font-bold text-sm">🔥 Racha: ${streak} misterio${streak === 1 ? '' : 's'} seguido${streak === 1 ? '' : 's'}</div>`;
+                        const parts = [];
+                        if (streak >= 1)     parts.push(`🔥 ${streak} acierto${streak===1?'':'s'} seguido${streak===1?'':'s'}`);
+                        if (streakPart > streak) parts.push(`🔥 ${streakPart} participación${streakPart===1?'':'es'} seguida${streakPart===1?'':'s'}`);
+                        if (!parts.length) return '';
+                        return `<div class="mt-2 text-orange-400 font-bold text-sm">${parts.join(' · ')}</div>`;
                     })()}
                     <div class="mt-2 text-yellow-400 font-bold">Ranking General: ${rankDisplay}</div>
                 </div>
