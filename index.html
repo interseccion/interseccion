@@ -1018,21 +1018,57 @@
         }
 
         // ── Frase semilla ──────────────────────────────────────────────────────────
-        const SEED_WORDS = ['Abeja','Abismo','Acero','Aguila','Aire','Aldea','Aleta','Alga','Alma','Ambar','Ancla','Antena','Arbol','Arco','Arena','Arpa','Atomo','Aurora','Avena','Azul','Bahia','Balsa','Bambu','Barco','Bestia','Boca','Bolsa','Bosque','Brisa','Bruma','Bufon','Buho','Cabra','Calor','Campo','Canoa','Caoba','Cardo','Carta','Casco','Caudal','Cebra','Cedro','Ceniza','Chispa','Cima','Circo','Clave','Cobra','Cobre','Colina','Cometa','Concha','Coral','Corona','Cosmos','Crisol','Cuarzo','Cueva','Cuna','Daga','Delta','Delfin','Domo','Dragon','Duna','Eclipse','Eco','Elfo','Enigma','Espada','Espora','Estrella','Etapa','Fanal','Faro','Fenix','Fibra','Flecha','Flora','Flujo','Fondo','Fosil','Franja','Fuego','Fulgor','Garra','Gato','Gema','Glaciar','Globo','Golfo','Grillo','Gruta','Guarida','Helio','Helice','Hielo','Hongo','Horizonte','Hueso','Igloo','Indigo','Isla','Jungla','Karma','Kiwi','Lava','Lecho','Leyenda','Lima','Linea','Llama','Lluvia','Lobo','Luna','Madera','Magia','Mapa','Marea','Marmol','Medusa','Mente','Meteoro','Mina','Montana','Musgo','Nebula','Nieve','Norte','Nube','Oceano','Oleo','Olmo','Orca','Orquidea','Oso','Palma','Pantano','Panal','Piedra','Pilar','Pino','Pirata','Plasma','Polo','Portal','Proa','Pulso','Quasar','Rafaga','Rayo','Razon','Remo','Risco','Roca','Roble','Ruido','Runa','Sabana','Saeta','Sal','Salmon','Sauce','Selva','Senda','Sirena','Sol','Sombra','Soplo','Talud','Talon','Techo','Temblor','Tigre','Tiza','Topo','Tornado','Torre','Trigo','Trueno','Tunel','Umbral','Utopia','Valle','Vapor','Vela','Vena','Ventisca','Verano','Vertice','Viento','Vigilia','Volcan','Vortice','Yunque','Zafiro','Zarpa','Zona','Zorro'];
-        const generateSeedPhrase = () => { const p=()=>SEED_WORDS[Math.floor(Math.random()*SEED_WORDS.length)]; let w; do{w=[p(),p(),p()];}while(new Set(w).size<3); return w.join(' '); };
-        const getSeedPhrase     = () => userId ? (localStorage.getItem('mystery_seed_'+userId)||null) : null;
-        const saveSeedPhrase    = (phrase) => {
-            if (!userId) return;
-            localStorage.setItem('mystery_seed_'+userId, phrase);
-            if (!APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                fetch(`${APPS_SCRIPT_URL}?action=saveSeed&privateId=${encodeURIComponent(userId)}&publicId=${encodeURIComponent(getPublicId(userId)||'')}&seed=${encodeURIComponent(phrase)}`).catch(()=>{});
-            }
+        // ── Frase semilla ── generada en el servidor (lista de palabras nunca llega al cliente)
+        const SEED_RATE_KEY = 'mystery_seed_attempts';
+        const SEED_RATE_WIN = 5 * 60 * 1000;
+        const SEED_RATE_MAX = 3;
+
+        function checkSeedRateLimit() {
+            try {
+                const s = JSON.parse(localStorage.getItem(SEED_RATE_KEY) || '{"a":[]}');
+                const now = Date.now();
+                s.a = (s.a || []).filter(t => now - t < SEED_RATE_WIN);
+                if (s.a.length >= SEED_RATE_MAX) {
+                    const wait = Math.ceil((SEED_RATE_WIN - (now - Math.min(...s.a))) / 60000);
+                    return { blocked: true, wait };
+                }
+                return { blocked: false };
+            } catch(e) { return { blocked: false }; }
+        }
+        function recordSeedAttempt() {
+            try {
+                const s = JSON.parse(localStorage.getItem(SEED_RATE_KEY) || '{"a":[]}');
+                const now = Date.now();
+                s.a = (s.a || []).filter(t => now - t < SEED_RATE_WIN);
+                s.a.push(now);
+                localStorage.setItem(SEED_RATE_KEY, JSON.stringify(s));
+            } catch(e) {}
+        }
+
+        const getSeedPhrase = () => userId ? (localStorage.getItem('mystery_seed_'+userId)||null) : null;
+
+        const generateSeedPhrase = async () => {
+            if (APPS_SCRIPT_URL.includes('PON_AQUI')) return null;
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=generateSeedPhrase&privateId=${encodeURIComponent(userId||'')}`);
+                const data = await res.json();
+                if (data.ok) { localStorage.setItem('mystery_seed_'+(userId||''), data.phrase); return data.phrase; }
+                return null;
+            } catch(e) { return null; }
         };
 
-        function createNewUser(username, displayName) {
+        const saveSeedPhrase = (phrase) => {
+            if (!phrase || !userId) return;
+            localStorage.setItem('mystery_seed_'+userId, phrase);
+            if (!APPS_SCRIPT_URL.includes('PON_AQUI'))
+                fetch(`${APPS_SCRIPT_URL}?action=saveSeed&privateId=${encodeURIComponent(userId)}&publicId=${encodeURIComponent(getPublicId(userId)||'')}&seed=${encodeURIComponent(phrase)}`).catch(()=>{});
+        };
+
+        async function createNewUser(username, displayName) {
             userId = generatePrivateId(username, displayName);
             localStorage.setItem('mystery_game_userid', userId);
-            saveSeedPhrase(generateSeedPhrase()); // generar frase automáticamente
+            const phrase = await generateSeedPhrase(); // generada en servidor
+            if (phrase) saveSeedPhrase(phrase);
             isNewUserSession = true;
             dom.welcomeModal.classList.remove('active');
             openIdModal();
@@ -1065,13 +1101,20 @@
         }
 
         // Botones frase semilla
-        document.getElementById('seed-generate-btn')?.addEventListener('click', () => {
-            const phrase = generateSeedPhrase();
-            saveSeedPhrase(phrase);
-            document.getElementById('user-seed-phrase-display').textContent = phrase;
-            document.getElementById('seed-copy-btn')?.classList.remove('hidden');
-            document.getElementById('seed-generate-btn')?.classList.add('hidden');
-            showToast('🌱 ¡Frase generada! Apúntala en un lugar seguro.', false);
+        document.getElementById('seed-generate-btn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('seed-generate-btn');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Generando…'; }
+            const phrase = await generateSeedPhrase();
+            if (phrase) {
+                saveSeedPhrase(phrase);
+                document.getElementById('user-seed-phrase-display').textContent = phrase;
+                document.getElementById('seed-copy-btn')?.classList.remove('hidden');
+                btn?.classList.add('hidden');
+                showToast('🌱 ¡Frase generada! Apúntala en un lugar seguro.', false);
+            } else {
+                if (btn) { btn.disabled = false; btn.textContent = '✨ Generar mi frase semilla'; }
+                showToast('No se pudo generar la frase. Inténtalo de nuevo.', false);
+            }
         });
         document.getElementById('seed-copy-btn')?.addEventListener('click', () => {
             const txt = document.getElementById('user-seed-phrase-display')?.textContent;
@@ -1108,8 +1151,18 @@
             const btn       = document.getElementById('welcome-recover-submit-btn');
             if (!username) { errEl.textContent='Introduce tu nombre de usuario.'; errEl.classList.remove('hidden'); document.getElementById('welcome-recover-username')?.focus(); return; }
             if (!phrase)   { errEl.textContent='Introduce tu frase semilla.'; errEl.classList.remove('hidden'); return; }
+
+            // Rate limiting: máximo 3 intentos cada 5 minutos por dispositivo
+            const rl = checkSeedRateLimit();
+            if (rl.blocked) {
+                errEl.textContent = `⏳ Demasiados intentos. Espera ${rl.wait} minuto${rl.wait===1?'':'s'} antes de intentarlo de nuevo.`;
+                errEl.classList.remove('hidden');
+                return;
+            }
+
             errEl.classList.add('hidden');
             btn.disabled=true; btn.textContent='⏳ Buscando...';
+            recordSeedAttempt();
             try {
                 const params = new URLSearchParams({ action:'recover', phrase, username });
                 const res    = await fetch(`${APPS_SCRIPT_URL}?${params}`);
