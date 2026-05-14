@@ -837,15 +837,35 @@
             return Array.from(arr, b => chars[b % 36]).join('');
         }
 
-        // Genera el ID privado completo
+        // Genera el ID privado completo (fallback local si el servidor no responde)
         function generatePrivateId(username, displayName) {
             const user    = username.toLowerCase().trim();
             const nameEnc = encodeDisplayName(displayName.trim());
             const today   = new Date();
             const yyyymmdd= today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
             const dateB36 = yyyymmdd.toString(36);
-            const rand    = randomBase36(8);
+            const rand    = randomBase36(32); // 32 chars con crypto.getRandomValues
             return `${user}~${nameEnc}~${dateB36}~${rand}`;
+        }
+
+        // Crea cuenta en el servidor (ID generado en GAS, no en el cliente)
+        async function createAccountOnServer(username, displayName) {
+            if (APPS_SCRIPT_URL.includes('PON_AQUI')) return null;
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=createAccount` +
+                    `&username=${encodeURIComponent(username)}&displayName=${encodeURIComponent(displayName)}`);
+                const data = await res.json();
+                return data.ok ? data : null;
+            } catch(e) { return null; }
+        }
+
+        // Comprueba si un nombre de usuario ya existe
+        async function checkUsernameAvailable(username) {
+            if (APPS_SCRIPT_URL.includes('PON_AQUI')) return { available: true };
+            try {
+                const res  = await fetch(`${APPS_SCRIPT_URL}?action=checkUsername&username=${encodeURIComponent(username)}`);
+                return await res.json();
+            } catch(e) { return { available: true }; }
         }
 
         // Detecta si es el nuevo formato
@@ -992,18 +1012,21 @@
         let userId = localStorage.getItem('mystery_game_userid');
 
         function initUserIdentity() {
-            const params = new URLSearchParams(window.location.search);
-            // CASO 1: Viene de un archivo de ID ejecutado
-            if(params.has('restore_id')) {
-                const restoredId = decodeURIComponent(params.get('restore_id'));
-                // Acepta tanto UUIDs clásicos (36 chars) como el nuevo formato (~63 chars)
-                if(restoredId && restoredId.length >= 10) {
+            // CASO 1: Viene de un archivo de ID ejecutado (soporta # y ? por compatibilidad)
+            const hashStr   = window.location.hash.replace(/^#/, '');
+            const searchStr = window.location.search.replace(/^\?/, '');
+            const hashParams   = new URLSearchParams(hashStr);
+            const searchParams = new URLSearchParams(searchStr);
+            const rawRestored  = hashParams.get('restore_id') || searchParams.get('restore_id');
+            if (rawRestored) {
+                const restoredId = decodeURIComponent(rawRestored);
+                if (restoredId && restoredId.length >= 10) {
                     userId = restoredId;
                     localStorage.setItem('mystery_game_userid', userId);
-                    const newUrl = window.location.pathname;
-                    window.history.replaceState({}, document.title, newUrl);
-                    setTimeout(() => showToast('ID de Jugador Restaurado'), 1000);
-                    return; // Entra directo
+                    // Limpiar URL sin dejar rastro en el historial
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    setTimeout(() => showToast('✅ Sesión restaurada'), 1000);
+                    return;
                 }
             }
 
@@ -1065,9 +1088,29 @@
         };
 
         async function createNewUser(username, displayName) {
-            userId = generatePrivateId(username, displayName);
+            // 1) Comprobar duplicados antes de crear
+            const availCheck = await checkUsernameAvailable(username);
+            if (availCheck && !availCheck.available) {
+                const suggestion = availCheck.suggestion || (username + '2');
+                const errEl = document.getElementById('welcome-username-error') || 
+                              document.querySelector('#welcome-form .error-msg');
+                const msg = `El nombre "${username}" ya está registrado. ¿Quizá quisiste decir "${suggestion}"?`;
+                if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
+                else showToast('⚠️ ' + msg, false);
+                return;
+            }
+
+            // 2) Crear cuenta en el servidor
+            const serverResult = await createAccountOnServer(username, displayName);
+            if (serverResult && serverResult.privateId) {
+                userId = serverResult.privateId;
+            } else {
+                // Fallback local si el servidor no responde
+                userId = generatePrivateId(username, displayName);
+            }
+
             localStorage.setItem('mystery_game_userid', userId);
-            const phrase = await generateSeedPhrase(); // generada en servidor
+            const phrase = await generateSeedPhrase();
             if (phrase) saveSeedPhrase(phrase);
             isNewUserSession = true;
             dom.welcomeModal.classList.remove('active');
@@ -1214,10 +1257,10 @@
                     <div class="label">ID privado completo (no compartir)</div>
                     <div class="code small">${userId}</div>
                     <div class="note">Tu acceso completo está integrado en este archivo.<br>Guárdalo en un lugar seguro.<br>Si no se redirige automáticamente, pulsa el botón.</div>
-                    <a href="${baseUrl}?restore_id=${encodeURIComponent(userId)}" id="login-link" class="btn">Entrar al Juego</a>
+                    <a href="${baseUrl}#restore_id=${encodeURIComponent(userId)}" id="login-link" class="btn">Entrar al Juego</a>
                 </div>
                 <script>
-                    const targetUrl = "${baseUrl}?restore_id=${encodeURIComponent(userId)}";
+                    const targetUrl = "${baseUrl}#restore_id=${encodeURIComponent(userId)}";
                     setTimeout(() => { window.location.href = targetUrl; }, 1200);
                 <\/script>
                 </body></html>`;
@@ -1237,7 +1280,7 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const content = e.target.result;
-                const matchNew = content.match(/restore_id=([A-Za-z0-9~_\-]{10,120})/);
+                const matchNew = content.match(/[?#]restore_id=([A-Za-z0-9~_\-]{10,200})/) || content.match(/restore_id=([A-Za-z0-9~_\-]{10,200})/);
                 const matchOld = content.match(/localStorage\.setItem\('mystery_game_userid', '([a-f0-9-]+)'\)/);
                 let foundId = matchNew ? decodeURIComponent(matchNew[1]) : (matchOld ? matchOld[1] : null);
 
@@ -2751,8 +2794,26 @@
                 return;
             }
 
-            dom.resolverSubmitBtn.disabled = true;
-            dom.resolverSubmitBtn.innerHTML = '<svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg><span>Enviando...</span>';
+            // Validar que el ID privado existe en el servidor (anti-falsificación)
+            if (!APPS_SCRIPT_URL.includes('PON_AQUI') && userId) {
+                try {
+                    const vRes  = await fetch(`${APPS_SCRIPT_URL}?action=validateId&privateId=${encodeURIComponent(userId)}`);
+                    const vData = await vRes.json();
+                    if (!vData.valid) {
+                        dom.resolverSubmitBtn.disabled = false;
+                        dom.resolverSubmitBtn.innerHTML = '<span>Enviar respuesta</span>';
+                        dom.resolverForm.innerHTML = `
+                            <div class="p-4 text-center">
+                                <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
+                                <p class="text-gray-400 text-sm mb-4">Tu cuenta parece estar corrupta o no está registrada. Si crees que es un error, contacta a través del formulario de incidencias.</p>
+                                <button onclick="reportIdBug()" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>
+                            </div>`;
+                        return;
+                    }
+                } catch(e) { /* si falla la validación, permitir el envío igualmente */ }
+            }
+
+
 
             const body = new URLSearchParams();
             body.append(FORM_ENTRIES.id_misterio,         resolverGameId || '');
@@ -2796,6 +2857,14 @@
             if (resolverGameId) userPendingGames.add(resolverGameId);
             // Invalidar caché de notificaciones para que la próxima apertura refresque
             clearNotifCache();
+        }
+
+        function reportIdBug() {
+            const bugText = `Incidencia de ID: ${userId || 'sin ID'}`;
+            if (!APPS_SCRIPT_URL.includes('PON_AQUI')) {
+                fetch(`${APPS_SCRIPT_URL}?action=saveFeedback&idPublico=${encodeURIComponent(getPublicId(userId)||'anon')}&texto=${encodeURIComponent(bugText)}&tipo=bug`).catch(()=>{});
+            }
+            showToast('📩 Incidencia enviada. Gracias por avisarnos.', false);
         }
 
         dom.resolverSubmitBtn.addEventListener('click', submitResolver);
