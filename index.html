@@ -1042,7 +1042,14 @@
 
         // ── Frase semilla ──────────────────────────────────────────────────────────
         // ── Frase semilla ── generada en el servidor (lista de palabras nunca llega al cliente)
-        const SEED_RATE_KEY = 'mystery_seed_attempts';
+        const SUBMIT_TIMEOUT_MS = 8 * 60 * 1000;
+        function getSubmitTimeoutSecs(gameId) {
+            const key  = `mystery_submit_${gameId}_${getPublicId(userId||'')}`;
+            const last = parseInt(localStorage.getItem(key) || '0');
+            if (!last) return 0;
+            const rem = SUBMIT_TIMEOUT_MS - (Date.now() - last);
+            return rem > 0 ? Math.ceil(rem / 1000) : 0;
+        }
         const SEED_RATE_WIN = 5 * 60 * 1000;
         const SEED_RATE_MAX = 3;
 
@@ -1094,21 +1101,25 @@
                 const suggestion = availCheck.suggestion || (username + '2');
                 const errEl = document.getElementById('welcome-username-error') || 
                               document.querySelector('#welcome-form .error-msg');
-                const msg = `El nombre "${username}" ya está registrado. ¿Quizá quisiste decir "${suggestion}"?`;
-                if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); }
-                else showToast('⚠️ ' + msg, false);
+                const msg = `El nombre de usuario "${username}" ya está registrado. ¿Quizá quisiste decir "${suggestion}"?`;
+                if (errEl) {
+                    errEl.textContent = msg;
+                    errEl.style.color = '#f87171';
+                    errEl.classList.remove('hidden');
+                } else {
+                    showToast('❌ ' + msg, false);
+                }
                 return;
             }
 
             // 2) Crear cuenta en el servidor
             const serverResult = await createAccountOnServer(username, displayName);
-            if (serverResult && serverResult.privateId) {
-                userId = serverResult.privateId;
-            } else {
-                // Fallback local si el servidor no responde
-                userId = generatePrivateId(username, displayName);
-            }
+            userId = serverResult.privateId;
 
+            if (!serverResult || !serverResult.privateId) {
+                showToast('❌ No se pudo contactar con el servidor. Inténtalo de nuevo en unos momentos.', false);
+                return;
+            }
             localStorage.setItem('mystery_game_userid', userId);
             const phrase = await generateSeedPhrase();
             if (phrase) saveSeedPhrase(phrase);
@@ -1850,6 +1861,11 @@
                             return `<span class="inline-flex items-center gap-2 bg-green-900/50 text-green-400 font-bold py-2 px-4 rounded-lg border border-green-700/50 text-sm">✅ Ya acertaste este misterio</span>`;
                         if (userPendingGames.has(_gid))
                             return `<span class="inline-flex items-center gap-2 bg-amber-900/50 text-amber-400 font-bold py-2 px-4 rounded-lg border border-amber-700/50 text-sm">⏳ Respuesta enviada — pendiente de revisión</span>`;
+                        const secsLeft = getSubmitTimeoutSecs(_gid);
+                        if (secsLeft > 0) {
+                            const m = Math.floor(secsLeft/60), s = secsLeft % 60;
+                            return `<span class="inline-flex items-center gap-2 bg-gray-800/60 text-gray-400 font-bold py-2 px-4 rounded-lg border border-gray-700 text-sm" title="Espera antes de volver a enviar">⏱ ${m}:${String(s).padStart(2,'0')} restantes</span>`;
+                        }
                         return `<button class="guess-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">¡Adivina aquí!</button>`;
                     })();
                     // Mostrar puntos potenciales si el misterio está activo y hay Apps Script
@@ -2787,10 +2803,37 @@
             if (!solucion) { dom.resolverSolucion.focus(); dom.resolverSolucion.classList.add('border-red-500'); return; }
             dom.resolverSolucion.classList.remove('border-red-500');
 
-            // Modo demo: mostrar feedback sin enviar nada
+            // Modo demo
             if (resolverDemoMode) {
-                showToast('🎓 ¡Así se enviaría! En un misterio real, tu respuesta llegaría a revisión. ¡Buena suerte cuando juegues de verdad!', false);
+                showToast('🎓 ¡Así se enviaría! En un misterio real, tu respuesta llegaría a revisión.', false);
                 dom.resolverModal.classList.remove('active');
+                return;
+            }
+
+            // Bloquear si la cuenta está marcada como corrupta
+            if (localStorage.getItem('mystery_id_corrupted')) {
+                const alreadySent = localStorage.getItem('mystery_id_bug_sent');
+                dom.resolverForm.innerHTML = `
+                    <div class="p-4 text-center">
+                        <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
+                        <p class="text-gray-400 text-sm mb-4">Tu cuenta está marcada como no válida. No puedes enviar respuestas hasta que se resuelva la incidencia.</p>
+                        ${alreadySent
+                            ? '<p class="text-gray-500 text-xs">✓ Incidencia ya enviada.</p>'
+                            : '<button onclick="reportIdBug(this)" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>'}
+                    </div>`;
+                return;
+            }
+
+            // Comprobar timeout de envío (8 minutos entre envíos del mismo misterio)
+            const SUBMIT_TIMEOUT = 8 * 60 * 1000;
+            const submitKey = `mystery_submit_${resolverGameId}_${getPublicId(userId||'')}`;
+            const lastSubmit = parseInt(localStorage.getItem(submitKey) || '0');
+            const elapsed   = Date.now() - lastSubmit;
+            if (lastSubmit && elapsed < SUBMIT_TIMEOUT) {
+                const secsLeft = Math.ceil((SUBMIT_TIMEOUT - elapsed) / 1000);
+                const minsLeft = Math.floor(secsLeft / 60);
+                const sLeft    = secsLeft % 60;
+                showToast(`⏳ Espera ${minsLeft}:${String(sLeft).padStart(2,'0')} antes de volver a enviar`, false);
                 return;
             }
 
@@ -2802,11 +2845,15 @@
                     if (!vData.valid) {
                         dom.resolverSubmitBtn.disabled = false;
                         dom.resolverSubmitBtn.innerHTML = '<span>Enviar respuesta</span>';
+                        localStorage.setItem('mystery_id_corrupted', '1');
+                        const alreadySent = localStorage.getItem('mystery_id_bug_sent');
                         dom.resolverForm.innerHTML = `
                             <div class="p-4 text-center">
                                 <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
-                                <p class="text-gray-400 text-sm mb-4">Tu cuenta parece estar corrupta o no está registrada. Si crees que es un error, contacta a través del formulario de incidencias.</p>
-                                <button onclick="reportIdBug()" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>
+                                <p class="text-gray-400 text-sm mb-4">Tu cuenta parece estar corrupta o no está registrada en el sistema. Si crees que es un error, usa el botón de abajo.</p>
+                                ${alreadySent
+                                    ? '<p class="text-gray-500 text-xs mt-2">✓ Incidencia ya enviada — te responderemos pronto.</p>'
+                                    : '<button onclick="reportIdBug(this)" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>'}
                             </div>`;
                         return;
                     }
@@ -2853,21 +2900,32 @@
             dom.resolverSubmitBtn.innerHTML = '<span>Enviar respuesta</span>';
             dom.resolverForm.classList.add('hidden');
             dom.resolverSuccess.classList.remove('hidden');
+            // Guardar timestamp del envío para el timeout
+            localStorage.setItem(submitKey, String(Date.now()));
             // Marcar localmente como pendiente para que el botón cambie sin recargar
             if (resolverGameId) userPendingGames.add(resolverGameId);
             // Invalidar caché de notificaciones para que la próxima apertura refresque
             clearNotifCache();
         }
 
-        function reportIdBug() {
-            const bugText = `Incidencia de ID: ${userId || 'sin ID'}`;
+        function reportIdBug(btn) {
+            const bugText = `ID corrupto reportado: ${userId || 'sin ID'}`;
             if (!APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                fetch(`${APPS_SCRIPT_URL}?action=saveFeedback&idPublico=${encodeURIComponent(getPublicId(userId)||'anon')}&texto=${encodeURIComponent(bugText)}&tipo=bug`).catch(()=>{});
+                fetch(`${APPS_SCRIPT_URL}?action=saveFeedback&idPublico=${encodeURIComponent(getPublicId(userId)||'anon')}&texto=${encodeURIComponent(bugText)}&tipo=corrupto&valoracion=0`).catch(()=>{});
+            }
+            localStorage.setItem('mystery_id_bug_sent', '1');
+            // Reemplazar botón por confirmación
+            if (btn) {
+                btn.outerHTML = '<p class="text-gray-500 text-xs mt-2">✓ Incidencia enviada — te responderemos pronto.</p>';
             }
             showToast('📩 Incidencia enviada. Gracias por avisarnos.', false);
         }
 
-        dom.resolverSubmitBtn.addEventListener('click', submitResolver);
+        // Actualizar los contadores de timeout cada segundo si hay alguno activo
+        setInterval(() => {
+            const inModal = document.querySelector('.guess-btn, [title*="restantes"]');
+            if (inModal) renderModal(currentGameData, currentModalMode);
+        }, 30000); // cada 30 seg es suficiente (no hace falta segundo a segundo)
         dom.resolverCancelBtn.addEventListener('click', () => dom.resolverModal.classList.remove('active'));
         dom.resolverCloseBtn.addEventListener('click',  () => dom.resolverModal.classList.remove('active'));
         dom.resolverDoneBtn.addEventListener('click',   () => dom.resolverModal.classList.remove('active'));
