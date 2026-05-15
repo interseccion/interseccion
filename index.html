@@ -2862,6 +2862,9 @@
 
 
 
+            dom.resolverSubmitBtn.disabled = true;
+            dom.resolverSubmitBtn.innerHTML = '<span>⏳ Enviando…</span>';
+
             const body = new URLSearchParams();
             body.append(FORM_ENTRIES.id_misterio,         resolverGameId || '');
             body.append(FORM_ENTRIES.id_privado,          userId || '');
@@ -2909,16 +2912,21 @@
         }
 
         function reportIdBug(btn) {
-            const bugText = `ID corrupto reportado: ${userId || 'sin ID'}`;
+            if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Enviando…'; }
+            const bugText = `ID corrupto: ${userId || 'sin ID'}`;
+            const doSend = () => {
+                localStorage.setItem('mystery_id_bug_sent', '1');
+                if (btn) btn.outerHTML = '<p class="text-green-600 text-xs mt-2">✓ Incidencia enviada — te responderemos pronto.</p>';
+                showToast('📩 Incidencia enviada. Gracias.', false);
+            };
             if (!APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                fetch(`${APPS_SCRIPT_URL}?action=saveFeedback&idPublico=${encodeURIComponent(getPublicId(userId)||'anon')}&texto=${encodeURIComponent(bugText)}&tipo=corrupto&valoracion=0`).catch(()=>{});
-            }
-            localStorage.setItem('mystery_id_bug_sent', '1');
-            // Reemplazar botón por confirmación
-            if (btn) {
-                btn.outerHTML = '<p class="text-gray-500 text-xs mt-2">✓ Incidencia enviada — te responderemos pronto.</p>';
-            }
-            showToast('📩 Incidencia enviada. Gracias por avisarnos.', false);
+                fetch(`${APPS_SCRIPT_URL}?action=saveFeedback&idPublico=${encodeURIComponent(getPublicId(userId)||'anon')}&texto=${encodeURIComponent(bugText)}&tipo=corrupto&valoracion=0`)
+                    .then(doSend)
+                    .catch(() => {
+                        if (btn) { btn.disabled = false; btn.innerHTML = '📩 Reportar incidencia'; }
+                        showToast('❌ Error al enviar. Inténtalo de nuevo.', false);
+                    });
+            } else { doSend(); }
         }
 
         // Actualizar los contadores de timeout cada segundo si hay alguno activo
@@ -3297,10 +3305,28 @@
                 openMysteryBtn.classList.add('hidden');
             }
 
-            // Botón de enlace externo (solo si el link no es interno #mystery=...)
-            if (notif.link && !notif.link.startsWith('#mystery=')) {
-                dom.notifDetailLinkBtn.href = notif.link;
-                // Intentar mostrar el dominio como label en lugar de la URL completa
+            // Botón especial para tipo 'reparar_id' — restaura la sesión con el nuevo ID
+            if (notif.tipo === 'reparar_id' && notif.link?.startsWith('#restore_id=')) {
+                dom.notifDetailLinkBtn.href      = 'javascript:void(0)';
+                dom.notifDetailLinkBtn.textContent = '🔧 Restaurar mi sesión con el ID reparado';
+                dom.notifDetailLinkBtn.classList.remove('hidden');
+                dom.notifDetailLinkBtn.onclick = (e) => {
+                    e.preventDefault();
+                    const confirmed = confirm('¿Quieres restaurar tu sesión con el ID reparado? Tu ID actual se sustituirá por el nuevo.\n\nSi no lo tienes claro, pulsa Cancelar.');
+                    if (!confirmed) return;
+                    const newId = decodeURIComponent(notif.link.replace('#restore_id=', ''));
+                    if (!newId || newId.length < 10) { showToast('❌ ID inválido en la notificación', false); return; }
+                    localStorage.setItem('mystery_game_userid', newId);
+                    localStorage.removeItem('mystery_id_corrupted');
+                    localStorage.removeItem('mystery_id_bug_sent');
+                    dom.notifDetailModal.classList.add('hidden');
+                    showToast('✅ Sesión restaurada. Recargando…', false);
+                    setTimeout(() => location.reload(), 1500);
+                };
+            // Botón de enlace externo (solo si el link no es interno)
+            } else if (notif.link && !notif.link.startsWith('#mystery=') && !notif.link.startsWith('#restore_id=')) {
+                dom.notifDetailLinkBtn.onclick    = null;
+                dom.notifDetailLinkBtn.href       = notif.link;
                 try {
                     const domain = new URL(notif.link).hostname.replace(/^www\./, '');
                     dom.notifDetailLinkBtn.textContent = `Abrir enlace → ${domain}`;
