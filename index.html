@@ -3084,8 +3084,10 @@
                 userCorrectGames.clear();
                 userPendingGames.clear();
                 hist.forEach(r => {
-                    if (r.correcto) userCorrectGames.add(r.misterio);
-                    else if (!r.comentario) userPendingGames.add(r.misterio);
+                    if (r.correcto === true)  userCorrectGames.add(r.misterio);
+                    // Solo pendiente si correcto es null/undefined (sin revisar aún)
+                    // correcto === false significa incorrecta → el usuario SÍ puede reintentar
+                    else if (r.correcto !== false) userPendingGames.add(r.misterio);
                 });
                 const { streak, streakPart } = computeStreakFull(hist);
                 userStreak     = streak;
@@ -3105,7 +3107,7 @@
         // Los misterios activos no resueltos NO rompen la racha.
         function computeStreakFull(hist) {
             if (!allGames.length) return { streak: 0, streakPart: 0 };
-            const solvedSet      = new Set(hist.filter(r => r.correcto).map(r => r.misterio));
+            const solvedSet      = new Set(hist.filter(r => r.correcto === true).map(r => r.misterio));
             const participatedSet = new Set(hist.map(r => r.misterio));
 
             const sorted = [...allGames]
@@ -3365,8 +3367,8 @@
                 const difLabels = { '1':'😄 Muy fácil','2':'🙂 Fácil','3':'😐 Normal','4':'😓 Difícil','5':'😵 Muy difícil' };
                 dom.myResponsesList.innerHTML = data.map(r => {
                     const fecha = (() => { try { return new Date(r.fecha).toLocaleDateString('es', {day:'numeric',month:'short',year:'numeric'}); } catch(e){ return ''; }})();
-                    const estadoColor = r.correcto ? 'text-green-400' : (r.comentario ? 'text-red-400' : 'text-amber-400');
-                    const estadoTxt   = r.correcto ? '✅ Correcta' : (r.comentario ? '❌ Incorrecta' : '⏳ Pendiente');
+                    const estadoColor = r.correcto === true ? 'text-green-400' : (r.correcto === false ? 'text-red-400' : 'text-amber-400');
+                    const estadoTxt   = r.correcto === true ? '✅ Correcta' : (r.correcto === false ? '❌ Incorrecta' : '⏳ Pendiente');
                     return `<div class="bg-gray-900/60 rounded-xl p-4 border border-gray-700/50">
                         <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
                             <button class="text-indigo-300 hover:text-indigo-200 font-bold text-sm text-left" onclick="(function(){const g=allGames.find(x=>x.id==='${r.misterio?.replace(/'/g,"\\'")}');if(g){document.getElementById('my-responses-modal').classList.add('hidden');openModalWithGame(g);}})()">
