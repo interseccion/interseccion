@@ -2814,43 +2814,9 @@
                 return;
             }
 
-            // Comprobar si la cuenta está marcada como corrupta
-            // Si el formato del ID es válido, borrar el flag (puede haber quedado de una validación antigua errónea)
-            if (localStorage.getItem('mystery_id_corrupted') && userId) {
-                const _p = userId.split('~');
-                const _formatOk = (_p.length === 4 && _p[0].length >= 2 && _p[3].length >= 8)
-                                  || userId.length >= 30;
-                if (_formatOk) {
-                    localStorage.removeItem('mystery_id_corrupted');
-                    localStorage.removeItem('mystery_id_bug_sent');
-                } else {
-                    const alreadySent = localStorage.getItem('mystery_id_bug_sent');
-                    dom.resolverForm.innerHTML = `
-                        <div class="p-4 text-center">
-                            <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
-                            <p class="text-gray-400 text-sm mb-4">Tu ID parece estar corrupto. Si crees que es un error, usa el botón de abajo.</p>
-                            ${alreadySent
-                                ? '<p class="text-gray-500 text-xs mt-2">✓ Incidencia ya enviada — te responderemos pronto.</p>'
-                                : '<button onclick="reportIdBug(this)" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>'}
-                        </div>`;
-                    return;
-                }
-            }
+            // Sin bloqueos por ID — todos pueden enviar.
+            // Tras el envío se valida en background y se auto-reporta si no está en PRIVADO.
 
-            // Comprobar timeout de envío (8 minutos entre envíos del mismo misterio)
-            const SUBMIT_TIMEOUT = 8 * 60 * 1000;
-            const submitKey = `mystery_submit_${resolverGameId}_${getPublicId(userId||'')}`;
-            const lastSubmit = parseInt(localStorage.getItem(submitKey) || '0');
-            const elapsed   = Date.now() - lastSubmit;
-            if (lastSubmit && elapsed < SUBMIT_TIMEOUT) {
-                const secsLeft = Math.ceil((SUBMIT_TIMEOUT - elapsed) / 1000);
-                const minsLeft = Math.floor(secsLeft / 60);
-                const sLeft    = secsLeft % 60;
-                showToast(`⏳ Espera ${minsLeft}:${String(sLeft).padStart(2,'0')} antes de volver a enviar`, false);
-                return;
-            }
-
-            // (validación de formato ya realizada en el bloque anterior)
 
 
 
@@ -2897,10 +2863,27 @@
             dom.resolverSuccess.classList.remove('hidden');
             // Guardar timestamp del envío para el timeout
             localStorage.setItem(submitKey, String(Date.now()));
-            // Marcar localmente como pendiente para que el botón cambie sin recargar
+            // Marcar localmente como pendiente
             if (resolverGameId) userPendingGames.add(resolverGameId);
-            // Invalidar caché de notificaciones para que la próxima apertura refresque
+            // Invalidar caché de notificaciones
             clearNotifCache();
+
+            // Validación silenciosa en background: si el ID no está en PRIVADO,
+            // se auto-reporta al admin como incidencia — el usuario no ve nada
+            if (!APPS_SCRIPT_URL.includes('PON_AQUI') && userId) {
+                fetch(`${APPS_SCRIPT_URL}?action=validateId&privateId=${encodeURIComponent(userId)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.valid) {
+                            const texto = `ID no encontrado en PRIVADO al enviar respuesta. ID: ${userId}`;
+                            fetch(`${APPS_SCRIPT_URL}?action=saveFeedback` +
+                                `&idPublico=${encodeURIComponent(getPublicId(userId)||'anon')}` +
+                                `&texto=${encodeURIComponent(texto)}&tipo=corrupto&valoracion=0`
+                            ).catch(() => {});
+                        }
+                    })
+                    .catch(() => {});
+            }
         }
 
         function reportIdBug(btn) {
