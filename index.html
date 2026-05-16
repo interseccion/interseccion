@@ -76,7 +76,8 @@
                     </button>
                     <span id="bell-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center leading-none">0</span>
                     <!-- Panel de notificaciones -->
-                    <div id="notif-panel" class="hidden absolute right-0 top-10 w-80 bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+                    <div id="notif-panel" class="hidden absolute right-0 top-10 w-80 max-w-[calc(100vw-1rem)] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden"
+                         style="max-width: min(320px, calc(100vw - 16px))">
                         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700">
                             <span class="font-bold text-white text-sm">Notificaciones</span>
                             <div class="flex items-center gap-3">
@@ -376,8 +377,9 @@
     </div>
 
     <!-- ID Management Modal -->
-    <div id="id-modal" class="modal fixed inset-0 bg-black bg-opacity-90 items-center justify-center p-4 z-[60]">
-        <div class="bg-gray-900 border border-indigo-500 rounded-2xl shadow-2xl w-full max-w-md p-6 text-center">
+    <div id="id-modal" class="modal fixed inset-0 bg-black bg-opacity-90 items-center justify-center p-4 z-[60] overflow-y-auto">
+        <div class="bg-gray-900 border border-indigo-500 rounded-2xl shadow-2xl w-full max-w-md p-6 text-center my-auto"
+             style="max-height: calc(100dvh - 2rem); overflow-y: auto;">
             <h2 class="text-2xl font-bold text-white mb-4">Tu Identidad de Jugador</h2>
 
             <!-- ID Público -->
@@ -1095,37 +1097,44 @@
         };
 
         async function createNewUser(username, displayName) {
-            // 1) Comprobar duplicados antes de crear
+            // Mostrar estado de carga en el botón
+            const createBtn = document.querySelector('#welcome-new-form button[type="submit"], #welcome-new-form .create-btn, #welcome-form button');
+            if (createBtn) { createBtn.disabled = true; createBtn.innerHTML = '⏳ Creando tu cuenta…'; }
+
+            // 1) Comprobar duplicados
             const availCheck = await checkUsernameAvailable(username);
             if (availCheck && !availCheck.available) {
                 const suggestion = availCheck.suggestion || (username + '2');
-                const errEl = document.getElementById('welcome-username-error') || 
-                              document.querySelector('#welcome-form .error-msg');
+                const errEl = document.getElementById('welcome-username-error');
                 const msg = `El nombre de usuario "${username}" ya está registrado. ¿Quizá quisiste decir "${suggestion}"?`;
-                if (errEl) {
-                    errEl.textContent = msg;
-                    errEl.style.color = '#f87171';
-                    errEl.classList.remove('hidden');
-                } else {
-                    showToast('❌ ' + msg, false);
-                }
+                if (errEl) { errEl.textContent = msg; errEl.style.color = '#f87171'; errEl.classList.remove('hidden'); }
+                else showToast('❌ ' + msg, false);
+                if (createBtn) { createBtn.disabled = false; createBtn.innerHTML = 'Crear cuenta'; }
                 return;
             }
 
-            // 2) Crear cuenta en el servidor
+            // 2) Crear cuenta en el servidor (nunca en el cliente)
             const serverResult = await createAccountOnServer(username, displayName);
-            userId = serverResult.privateId;
-
             if (!serverResult || !serverResult.privateId) {
-                showToast('❌ No se pudo contactar con el servidor. Inténtalo de nuevo en unos momentos.', false);
+                showToast('❌ No se pudo contactar con el servidor. Inténtalo de nuevo.', false);
+                if (createBtn) { createBtn.disabled = false; createBtn.innerHTML = 'Crear cuenta'; }
                 return;
             }
+
+            userId = serverResult.privateId;
             localStorage.setItem('mystery_game_userid', userId);
             const phrase = await generateSeedPhrase();
             if (phrase) saveSeedPhrase(phrase);
             isNewUserSession = true;
-            dom.welcomeModal.classList.remove('active');
-            openIdModal();
+
+            // Solo abrir el modal de ID si el usuario sigue en bienvenida
+            if (dom.welcomeModal.classList.contains('active')) {
+                dom.welcomeModal.classList.remove('active');
+                openIdModal();
+            } else {
+                showToast('✅ Cuenta creada. Pulsa "Mi ID" en la barra para ver tu llave.', false);
+                loadNotifications();
+            }
         }
 
         function triggerUpload() {
@@ -1861,11 +1870,6 @@
                             return `<span class="inline-flex items-center gap-2 bg-green-900/50 text-green-400 font-bold py-2 px-4 rounded-lg border border-green-700/50 text-sm">✅ Ya acertaste este misterio</span>`;
                         if (userPendingGames.has(_gid))
                             return `<span class="inline-flex items-center gap-2 bg-amber-900/50 text-amber-400 font-bold py-2 px-4 rounded-lg border border-amber-700/50 text-sm">⏳ Respuesta enviada — pendiente de revisión</span>`;
-                        const secsLeft = getSubmitTimeoutSecs(_gid);
-                        if (secsLeft > 0) {
-                            const m = Math.floor(secsLeft/60), s = secsLeft % 60;
-                            return `<span class="inline-flex items-center gap-2 bg-gray-800/60 text-gray-400 font-bold py-2 px-4 rounded-lg border border-gray-700 text-sm" title="Espera antes de volver a enviar">⏱ ${m}:${String(s).padStart(2,'0')} restantes</span>`;
-                        }
                         return `<button class="guess-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">¡Adivina aquí!</button>`;
                     })();
                     // Mostrar puntos potenciales si el misterio está activo y hay Apps Script
@@ -2837,27 +2841,26 @@
                 return;
             }
 
-            // Validar que el ID privado existe en el servidor (anti-falsificación)
-            if (!APPS_SCRIPT_URL.includes('PON_AQUI') && userId) {
-                try {
-                    const vRes  = await fetch(`${APPS_SCRIPT_URL}?action=validateId&privateId=${encodeURIComponent(userId)}`);
-                    const vData = await vRes.json();
-                    if (!vData.valid) {
-                        dom.resolverSubmitBtn.disabled = false;
-                        dom.resolverSubmitBtn.innerHTML = '<span>Enviar respuesta</span>';
-                        localStorage.setItem('mystery_id_corrupted', '1');
-                        const alreadySent = localStorage.getItem('mystery_id_bug_sent');
-                        dom.resolverForm.innerHTML = `
-                            <div class="p-4 text-center">
-                                <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
-                                <p class="text-gray-400 text-sm mb-4">Tu cuenta parece estar corrupta o no está registrada en el sistema. Si crees que es un error, usa el botón de abajo.</p>
-                                ${alreadySent
-                                    ? '<p class="text-gray-500 text-xs mt-2">✓ Incidencia ya enviada — te responderemos pronto.</p>'
-                                    : '<button onclick="reportIdBug(this)" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>'}
-                            </div>`;
-                        return;
-                    }
-                } catch(e) { /* si falla la validación, permitir el envío igualmente */ }
+            // Validación del ID: solo bloquea si el formato es claramente inválido.
+            // Si el ID tiene formato correcto pero no está en PRIVADO (usuarios pre-migración),
+            // el GAS lo registra automáticamente y permite el envío.
+            if (localStorage.getItem('mystery_id_corrupted') !== '1' && userId) {
+                // Formato mínimo: user~nameEnc~dateB36~rand (al menos 4 partes con ~)
+                const parts = userId.split('~');
+                const formatOk = (parts.length === 4 && parts[0].length >= 2
+                    && parts[1].length >= 1 && parts[2].length >= 1 && parts[3].length >= 8)
+                    || userId.length >= 30; // v1 UUID también válido
+                if (!formatOk) {
+                    dom.resolverForm.innerHTML = `
+                        <div class="p-4 text-center">
+                            <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
+                            <p class="text-gray-400 text-sm mb-4">Tu ID parece estar corrupto. Si crees que es un error, usa el botón de abajo.</p>
+                            ${localStorage.getItem('mystery_id_bug_sent')
+                                ? '<p class="text-gray-500 text-xs mt-2">✓ Incidencia ya enviada.</p>'
+                                : '<button onclick="reportIdBug(this)" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>'}
+                        </div>`;
+                    return;
+                }
             }
 
 
@@ -2930,10 +2933,6 @@
         }
 
         // Actualizar los contadores de timeout cada segundo si hay alguno activo
-        setInterval(() => {
-            const inModal = document.querySelector('.guess-btn, [title*="restantes"]');
-            if (inModal) renderModal(currentGameData, currentModalMode);
-        }, 30000); // cada 30 seg es suficiente (no hace falta segundo a segundo)
         dom.resolverCancelBtn.addEventListener('click', () => dom.resolverModal.classList.remove('active'));
         dom.resolverCloseBtn.addEventListener('click',  () => dom.resolverModal.classList.remove('active'));
         dom.resolverDoneBtn.addEventListener('click',   () => dom.resolverModal.classList.remove('active'));
