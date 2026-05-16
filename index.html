@@ -2814,18 +2814,27 @@
                 return;
             }
 
-            // Bloquear si la cuenta está marcada como corrupta
-            if (localStorage.getItem('mystery_id_corrupted')) {
-                const alreadySent = localStorage.getItem('mystery_id_bug_sent');
-                dom.resolverForm.innerHTML = `
-                    <div class="p-4 text-center">
-                        <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
-                        <p class="text-gray-400 text-sm mb-4">Tu cuenta está marcada como no válida. No puedes enviar respuestas hasta que se resuelva la incidencia.</p>
-                        ${alreadySent
-                            ? '<p class="text-gray-500 text-xs">✓ Incidencia ya enviada.</p>'
-                            : '<button onclick="reportIdBug(this)" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>'}
-                    </div>`;
-                return;
+            // Comprobar si la cuenta está marcada como corrupta
+            // Si el formato del ID es válido, borrar el flag (puede haber quedado de una validación antigua errónea)
+            if (localStorage.getItem('mystery_id_corrupted') && userId) {
+                const _p = userId.split('~');
+                const _formatOk = (_p.length === 4 && _p[0].length >= 2 && _p[3].length >= 8)
+                                  || userId.length >= 30;
+                if (_formatOk) {
+                    localStorage.removeItem('mystery_id_corrupted');
+                    localStorage.removeItem('mystery_id_bug_sent');
+                } else {
+                    const alreadySent = localStorage.getItem('mystery_id_bug_sent');
+                    dom.resolverForm.innerHTML = `
+                        <div class="p-4 text-center">
+                            <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
+                            <p class="text-gray-400 text-sm mb-4">Tu ID parece estar corrupto. Si crees que es un error, usa el botón de abajo.</p>
+                            ${alreadySent
+                                ? '<p class="text-gray-500 text-xs mt-2">✓ Incidencia ya enviada — te responderemos pronto.</p>'
+                                : '<button onclick="reportIdBug(this)" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>'}
+                        </div>`;
+                    return;
+                }
             }
 
             // Comprobar timeout de envío (8 minutos entre envíos del mismo misterio)
@@ -2841,27 +2850,7 @@
                 return;
             }
 
-            // Validación del ID: solo bloquea si el formato es claramente inválido.
-            // Si el ID tiene formato correcto pero no está en PRIVADO (usuarios pre-migración),
-            // el GAS lo registra automáticamente y permite el envío.
-            if (localStorage.getItem('mystery_id_corrupted') !== '1' && userId) {
-                // Formato mínimo: user~nameEnc~dateB36~rand (al menos 4 partes con ~)
-                const parts = userId.split('~');
-                const formatOk = (parts.length === 4 && parts[0].length >= 2
-                    && parts[1].length >= 1 && parts[2].length >= 1 && parts[3].length >= 8)
-                    || userId.length >= 30; // v1 UUID también válido
-                if (!formatOk) {
-                    dom.resolverForm.innerHTML = `
-                        <div class="p-4 text-center">
-                            <p class="text-yellow-400 font-bold mb-2">⚠️ Cuenta no reconocida</p>
-                            <p class="text-gray-400 text-sm mb-4">Tu ID parece estar corrupto. Si crees que es un error, usa el botón de abajo.</p>
-                            ${localStorage.getItem('mystery_id_bug_sent')
-                                ? '<p class="text-gray-500 text-xs mt-2">✓ Incidencia ya enviada.</p>'
-                                : '<button onclick="reportIdBug(this)" class="bg-indigo-700 hover:bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg">📩 Reportar incidencia</button>'}
-                        </div>`;
-                    return;
-                }
-            }
+            // (validación de formato ya realizada en el bloque anterior)
 
 
 
