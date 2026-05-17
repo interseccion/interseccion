@@ -474,8 +474,9 @@
                         <input type="text" id="resolver-solucion" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition" placeholder="¿Cuál crees que es la intersección?">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-300 mb-1">Explicación <span class="text-gray-500 font-normal">(opcional)</span></label>
-                        <textarea id="resolver-explicacion" rows="3" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none" placeholder="¿Cómo llegaste a esa conclusión?"></textarea>
+                        <label class="block text-sm font-bold text-gray-300 mb-1">Explicación <span class="text-red-400">*</span></label>
+                        <textarea id="resolver-explicacion" rows="3" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none" placeholder="¿Cómo llegaste a esa conclusión? Cuéntanos tu razonamiento."></textarea>
+                        <p id="explicacion-error" class="hidden text-red-400 text-xs mt-1">Debes explicar tu razonamiento para poder enviar.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-300 mb-2">¿Cómo te ha parecido de difícil? <span class="text-gray-500 font-normal">(opcional)</span></label>
@@ -2817,10 +2818,11 @@
             if (!explicacion) {
                 dom.resolverExplicacion?.focus();
                 dom.resolverExplicacion?.classList.add('border-red-500');
-                showToast('Por favor explica tu razonamiento antes de enviar.', false);
+                document.getElementById('explicacion-error')?.classList.remove('hidden');
                 return;
             }
             dom.resolverExplicacion?.classList.remove('border-red-500');
+            document.getElementById('explicacion-error')?.classList.add('hidden');
 
             // Modo demo
             if (resolverDemoMode) {
