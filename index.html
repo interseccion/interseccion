@@ -2770,6 +2770,9 @@
             dom.resolverDificultad.value = '';
             dom.resolverForm.classList.remove('hidden');
             dom.resolverSuccess.classList.add('hidden');
+            // Resetear botón siempre al abrir (por si quedó disabled de una ejecución anterior)
+            dom.resolverSubmitBtn.disabled = false;
+            dom.resolverSubmitBtn.innerHTML = '<span>Enviar respuesta</span>';
             // Resetear botones de dificultad
             document.querySelectorAll('.dif-btn').forEach(b => {
                 b.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-800', 'text-white');
@@ -2803,9 +2806,21 @@
         });
 
         async function submitResolver() {
-            const solucion = dom.resolverSolucion.value.trim();
-            if (!solucion) { dom.resolverSolucion.focus(); dom.resolverSolucion.classList.add('border-red-500'); return; }
+            const solucion    = dom.resolverSolucion.value.trim();
+            const explicacion = dom.resolverExplicacion?.value?.trim() || '';
+            if (!solucion) {
+                dom.resolverSolucion.focus();
+                dom.resolverSolucion.classList.add('border-red-500');
+                return;
+            }
             dom.resolverSolucion.classList.remove('border-red-500');
+            if (!explicacion) {
+                dom.resolverExplicacion?.focus();
+                dom.resolverExplicacion?.classList.add('border-red-500');
+                showToast('Por favor explica tu razonamiento antes de enviar.', false);
+                return;
+            }
+            dom.resolverExplicacion?.classList.remove('border-red-500');
 
             // Modo demo
             if (resolverDemoMode) {
@@ -2816,6 +2831,16 @@
 
             // Sin bloqueos por ID — todos pueden enviar.
             // Tras el envío se valida en background y se auto-reporta si no está en PRIVADO.
+
+            // Timeout entre envíos del mismo misterio (8 min) para evitar spam
+            const SUBMIT_TIMEOUT = 8 * 60 * 1000;
+            const submitKey      = `mystery_submit_${resolverGameId}_${getPublicId(userId||'')}`;
+            const lastSubmit     = parseInt(localStorage.getItem(submitKey) || '0');
+            if (lastSubmit && (Date.now() - lastSubmit) < SUBMIT_TIMEOUT) {
+                const secsLeft = Math.ceil((SUBMIT_TIMEOUT - (Date.now() - lastSubmit)) / 1000);
+                showToast(`⏳ Espera ${Math.floor(secsLeft/60)}:${String(secsLeft%60).padStart(2,'0')} antes de volver a enviar.`, false);
+                return;
+            }
 
 
 
