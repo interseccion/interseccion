@@ -2932,6 +2932,7 @@
         }
 
         // Actualizar los contadores de timeout cada segundo si hay alguno activo
+        dom.resolverSubmitBtn.addEventListener('click', submitResolver);
         dom.resolverCancelBtn.addEventListener('click', () => dom.resolverModal.classList.remove('active'));
         dom.resolverCloseBtn.addEventListener('click',  () => dom.resolverModal.classList.remove('active'));
         dom.resolverDoneBtn.addEventListener('click',   () => dom.resolverModal.classList.remove('active'));
