@@ -3320,7 +3320,11 @@
                     localStorage.setItem('mystery_game_userid', newId);
                     localStorage.removeItem('mystery_id_corrupted');
                     localStorage.removeItem('mystery_id_bug_sent');
+                    userId = newId;  // actualizar var global para downloadMyId
                     dom.notifDetailModal.classList.add('hidden');
+                    // Ofrecer descarga del nuevo archivo de ID
+                    const wantsDownload = confirm('✅ Sesión restaurada.\n\n¿Descargar también tu nuevo archivo de ID?\n(Muy recomendable para no perder el acceso)');
+                    if (wantsDownload) downloadMyId();
                     showToast('✅ Sesión restaurada. Recargando…', false);
                     setTimeout(() => location.reload(), 1500);
                 };
