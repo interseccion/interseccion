@@ -1618,8 +1618,10 @@
             let statsHTML = '';
             const podiumData = podiumsCache[game.id];
             if (podiumData && podiumData.entries) {
-                const playerCount = podiumData.entries.length;
-                statsHTML = `<p class="text-xs text-indigo-400 mt-2">👥 ${playerCount} jugador${playerCount !== 1 ? 'es' : ''}</p>`;
+                const solvers = podiumData.entries.length;
+                const ms      = (mysteryStats || {})[game.id];
+                const total   = ms ? ms.participants : solvers;
+                statsHTML = `<p class="text-xs text-indigo-400 mt-2">👥 ${total} jugador${total !== 1 ? 'es' : ''}</p>`;
             }
 
             const card = document.createElement('div');
@@ -1818,13 +1820,19 @@
                     let summaryScoreHTML = '';
                     if (game.isSolved && game.winner) {
                         const winnerId = game.winnerId || '';
-                        summaryScoreHTML = `<div class="flex items-center gap-2 bg-yellow-900/20 border border-yellow-500/30 rounded-lg px-4 py-2 text-sm">
+                        const _msS = (mysteryStats||{})[game.id];
+                    const _phS = _msS
+                        ? `<div class="flex gap-3 text-xs text-gray-500 mt-1"><span>👥 <b class="text-gray-400">${_msS.participants}</b> participante${_msS.participants!==1?'s':''}</span><span class="text-gray-700">·</span><span>✅ <b class="text-gray-400">${_msS.solvers}</b> resuelto${_msS.solvers!==1?'s':''}</span></div>` : '';
+                    summaryScoreHTML = `<div class="flex items-center gap-2 bg-yellow-900/20 border border-yellow-500/30 rounded-lg px-4 py-2 text-sm">
                             <span class="text-yellow-400">🏆</span>
                             <span class="text-gray-400">Resuelto por </span>
                             <button class="winner-link font-semibold text-yellow-400 underline hover:text-yellow-300" data-winner-id="${winnerId}">${game.winner}</button>
-                        </div>`;
+                        </div>${_phS}`;
                     } else if (!game.isSolved && !APPS_SCRIPT_URL.includes('PON_AQUI')) {
-                    summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos...</div>`;
+                    const _ms = (mysteryStats||{})[game.id];
+                    const _ph = _ms
+                        ? `<div class="flex gap-3 text-xs text-gray-500 mt-1"><span>👥 <b class="text-gray-400">${_ms.participants}</b> participante${_ms.participants!==1?'s':''}</span><span class="text-gray-700">·</span><span>✅ <b class="text-gray-400">${_ms.solvers}</b> resuelto${_ms.solvers!==1?'s':''}</span></div>` : '';
+                    summaryScoreHTML = `<div id="${summaryScoreId}" class="bg-indigo-900/20 border border-indigo-700/40 rounded-lg px-4 py-2 text-sm text-gray-500 italic">⭐ Calculando puntos...</div>${_ph}`;
 
                     const _gameId = game.id;
                     const renderScorePanel = (info, solverCount) => {
@@ -2049,6 +2057,7 @@
 
         // --- CÁLCULO INTELIGENTE DEL PODIO (FILTRABLE) ---
         async function loadLeaderboard(filterGameIds = null) {
+            loadMysteryStats(); // carga en paralelo, sin bloquear
              dom.podiumLoading.style.display = 'block';
              dom.podiumBody.innerHTML = '';
              dom.seasonWinnersDisplay.classList.add('hidden');
