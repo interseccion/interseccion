@@ -336,7 +336,7 @@
                         <label class="block text-sm font-semibold text-indigo-300 mb-1">Nombre de usuario <span class="text-gray-500 font-normal">(aparece en el podio)</span></label>
                         <input id="welcome-username" type="text" maxlength="12" placeholder="ej: nekro99" autocomplete="off" spellcheck="false"
                             class="w-full bg-gray-800 border border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg p-3 text-white font-mono placeholder-gray-600 transition outline-none">
-                        <p class="text-xs text-gray-500 mt-1">3–12 caracteres. Letras (con tildes), números y guion bajo. Sin espacios.</p>
+                        <p class="text-xs text-gray-500 mt-1">3–12 caracteres. Solo minúsculas (con tildes), números y guion bajo. Sin espacios.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-indigo-300 mb-1">Nombre para mostrar <span class="text-gray-500 font-normal">(como quieres que te llamen)</span></label>
@@ -2650,11 +2650,11 @@
                 dom.welcomeFormError.classList.add('hidden');
             });
             dom.welcomeSubmitBtn.addEventListener('click', () => {
-                const username    = dom.welcomeUsername.value.trim();
+                const username    = dom.welcomeUsername.value.trim().toLowerCase(); // forzar minúsculas
                 const displayName = dom.welcomeDisplayname.value.trim();
-                const usernameOk  = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9_]{3,12}$/.test(username);
+                const usernameOk  = /^[a-zà-öø-ÿ0-9_]{3,12}$/.test(username); // solo minúsculas
                 if (!usernameOk) {
-                    dom.welcomeFormError.textContent = 'El nombre de usuario debe tener 3–12 caracteres. Puede contener letras (incluyendo tildes), números y guion bajo, pero sin espacios.';
+                    dom.welcomeFormError.textContent = 'El nombre de usuario debe tener 3–12 caracteres, solo minúsculas (tildes sí), números y guion bajo. Sin espacios ni mayúsculas.';
                     dom.welcomeFormError.classList.remove('hidden');
                     return;
                 }
@@ -2669,6 +2669,12 @@
             // Permitir Enter en los inputs del formulario
             [dom.welcomeUsername, dom.welcomeDisplayname].forEach(input => {
                 input.addEventListener('keydown', (e) => { if (e.key === 'Enter') dom.welcomeSubmitBtn.click(); });
+            });
+            // Auto-convertir username a minúsculas mientras escribe
+            dom.welcomeUsername.addEventListener('input', () => {
+                const pos = dom.welcomeUsername.selectionStart;
+                dom.welcomeUsername.value = dom.welcomeUsername.value.toLowerCase();
+                dom.welcomeUsername.setSelectionRange(pos, pos);
             });
             dom.welcomeExistingBtn.addEventListener('click', triggerUpload);
             dom.welcomeCloseBtn.addEventListener('click', () => { dom.welcomeModal.classList.remove('active'); showToast('Jugando como invitado (sin guardar)'); });
