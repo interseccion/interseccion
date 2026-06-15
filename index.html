@@ -336,7 +336,7 @@
                         <label class="block text-sm font-semibold text-indigo-300 mb-1">Nombre de usuario <span class="text-gray-500 font-normal">(aparece en el podio)</span></label>
                         <input id="welcome-username" type="text" maxlength="12" placeholder="ej: nekro99" autocomplete="off" spellcheck="false"
                             class="w-full bg-gray-800 border border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg p-3 text-white font-mono placeholder-gray-600 transition outline-none">
-                        <p class="text-xs text-gray-500 mt-1">3–12 caracteres. Solo minúsculas (con tildes), números y guion bajo. Sin espacios.</p>
+                        <p class="text-xs text-gray-500 mt-1">3–12 caracteres. Solo minúsculas (a-z), números y guion bajo. Sin espacios.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-indigo-300 mb-1">Nombre para mostrar <span class="text-gray-500 font-normal">(como quieres que te llamen)</span></label>
@@ -1897,8 +1897,8 @@
                     let mysteryStatsHTML = '';
                     if (_solvers > 0 || _players > 0) {
                         const _playersDisplay = _players > _solvers ? _players : _solvers;
-                        const solverPart  = _solvers > 0 ? `<span class="text-green-400 font-semibold">🏅 ${_solvers} acertaron</span>` : '';
-                        const playerPart  = _playersDisplay > 0 ? `<span class="text-indigo-400 font-semibold">👥 ${_playersDisplay} jugaron</span>` : '';
+                        const solverPart  = _solvers > 0 ? `<span class="text-green-400 font-semibold">🏅 ${_solvers} ${_solvers === 1 ? 'acierto' : 'aciertos'}</span>` : '';
+                        const playerPart  = _playersDisplay > 0 ? `<span class="text-indigo-400 font-semibold">👥 ${_playersDisplay} ${_playersDisplay === 1 ? 'jugador' : 'jugadores'}</span>` : '';
                         const sep         = (solverPart && playerPart) ? `<span class="text-gray-600 mx-1">·</span>` : '';
                         mysteryStatsHTML = `<div class="flex items-center gap-1 flex-wrap text-sm bg-gray-900/40 border border-gray-700/50 rounded-lg px-4 py-2">${solverPart}${sep}${playerPart}</div>`;
                     }
@@ -2652,9 +2652,9 @@
             dom.welcomeSubmitBtn.addEventListener('click', () => {
                 const username    = dom.welcomeUsername.value.trim().toLowerCase(); // forzar minúsculas
                 const displayName = dom.welcomeDisplayname.value.trim();
-                const usernameOk  = /^[a-zà-öø-ÿ0-9_]{3,12}$/.test(username); // solo minúsculas
+                const usernameOk  = /^[a-z0-9_]{3,12}$/.test(username); // solo a-z, 0-9 y guion bajo
                 if (!usernameOk) {
-                    dom.welcomeFormError.textContent = 'El nombre de usuario debe tener 3–12 caracteres, solo minúsculas (tildes sí), números y guion bajo. Sin espacios ni mayúsculas.';
+                    dom.welcomeFormError.textContent = 'El nombre de usuario debe tener 3–12 caracteres: solo letras a-z, números y guion bajo. Sin espacios ni tildes.';
                     dom.welcomeFormError.classList.remove('hidden');
                     return;
                 }
