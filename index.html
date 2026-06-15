@@ -1002,31 +1002,34 @@
                     }
         
                     // 4. Hoja PARTICIPADOS: leer quién ha jugado cada misterio
+                    // Estructura: fila 1=cabeceras, fila 2=totales (SALTAR), fila 3+=usuarios
+                    // Cols: A=ID | B=Total | C=Racha | D+=misterios (valor numérico, >0 = participó)
                     try {
                         const partBase = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PARTICIPADOS_SHEET)}`;
                         const rPart  = await fetch(partBase);
                         const tPart  = await parseGviz(rPart);
-                        if (tPart && tPart.rows && tPart.rows.length > 1) {
+                        if (tPart && tPart.rows && tPart.rows.length > 2) {
                             const partHeaderRow = tPart.rows[0]?.c || [];
+                            // Misterios empiezan en col índice 3 (D en adelante)
                             const partColMap = {};
-                            for (let i = 2; i < partHeaderRow.length; i++) {
+                            for (let i = 3; i < partHeaderRow.length; i++) {
                                 const label = partHeaderRow[i]?.v?.toString()?.trim();
                                 if (label) partColMap[label] = i;
                             }
-                            for (let ri = 1; ri < tPart.rows.length; ri++) {
+                            // Filas de usuarios empiezan en índice 2 (fila 3), saltamos la fila de totales (índice 1)
+                            for (let ri = 2; ri < tPart.rows.length; ri++) {
                                 const row = tPart.rows[ri];
                                 if (!row?.c) continue;
                                 for (const [mid, ci] of Object.entries(partColMap)) {
-                                    const v = row.c[ci]?.v;
-                                    if (v === true || v === 'TRUE') {
+                                    const v = parseFloat(row.c[ci]?.v) || 0;
+                                    if (v > 0) {
                                         participationCountMap[mid] = (participationCountMap[mid] || 0) + 1;
                                     }
                                 }
                             }
                         }
                     } catch(ep) {
-                        // PARTICIPADOS aún no existe — no es un error crítico
-                        console.log('[Sheets] Hoja PARTICIPADOS no disponible todavía (se crea al marcar la primera respuesta).');
+                        console.log('[Sheets] Hoja PARTICIPADOS no disponible todavía.');
                     }
 
                     return { users, mysteryColMap };
