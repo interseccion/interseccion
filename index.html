@@ -1004,19 +1004,23 @@
                     // 4. Hoja PARTICIPADOS → fila 2 = JUGADORES (participantes únicos por misterio)
                     // Estructura: Fila1=cabeceras | Fila2=JUGADORES(CONTAR.SI) | Fila3=TOTAL(SUMA) | Fila4+=usuarios
                     // Cols: A=ID | B=Total_Part | C=Mist_Part | D=Racha | E+=misterios
-                    // El index solo necesita leer la fila 2 (índice 1) para obtener el nº de jugadores por misterio
+                    // IMPORTANTE: pedimos fila 1 y fila 2 por SEPARADO con range=N:N (igual que tHead/tExp arriba).
+                    // Si se pide la hoja entera sin range, gviz auto-detecta cabeceras y puede desalinear las filas.
                     try {
                         const partBase = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PARTICIPADOS_SHEET)}`;
-                        const rPart  = await fetch(partBase);
-                        const tPart  = await parseGviz(rPart);
-                        if (tPart && tPart.rows && tPart.rows.length > 1) {
-                            const headerRow   = tPart.rows[0]?.c || []; // fila 1: IDs de misterio en col E+ (índice 4+)
-                            const jugadoresRow = tPart.rows[1]?.c || []; // fila 2: CONTAR.SI = nº jugadores únicos
-                            for (let i = 4; i < headerRow.length; i++) {
-                                const mid   = headerRow[i]?.v?.toString()?.trim();
-                                const count = Math.round(parseFloat(jugadoresRow[i]?.v) || 0);
-                                if (mid && count > 0) participationCountMap[mid] = count;
-                            }
+                        const [rPartHead, rPartJug] = await Promise.all([
+                            fetch(`${partBase}&range=1:1`),
+                            fetch(`${partBase}&range=2:2`)
+                        ]);
+                        const [tPartHead, tPartJug] = await Promise.all([
+                            parseGviz(rPartHead), parseGviz(rPartJug)
+                        ]);
+                        const partHeaderRow = tPartHead.rows?.[0]?.c || []; // fila 1: IDs de misterio en col E+ (índice 4+)
+                        const jugadoresRow  = tPartJug.rows?.[0]?.c  || []; // fila 2: CONTAR.SI = nº jugadores únicos
+                        for (let i = 4; i < partHeaderRow.length; i++) {
+                            const mid   = partHeaderRow[i]?.v?.toString()?.trim();
+                            const count = Math.round(parseFloat(jugadoresRow[i]?.v) || 0);
+                            if (mid) participationCountMap[mid] = count; // incluso 0 es un dato válido y real
                         }
                     } catch(ep) {
                         console.log('[Sheets] PARTICIPADOS no disponible:', ep);
@@ -1639,14 +1643,12 @@
             const isFav = getFavorites().includes(game.id);
             const starIcon = getStarIconSVG(isFav);
 
-            // Obtener estadísticas del misterio desde la hoja PRINCIPAL
+            // Nº real de jugadores (desde la hoja PARTICIPADOS, fila JUGADORES). Sin fallback a aciertos:
+            // si aún no ha cargado, no mostramos nada en vez de mostrar un número erróneo.
             let statsHTML = '';
-            const podiumData  = podiumsCache[game.id];
-            const partCount   = participationCountMap[game.id] || 0;
-            const solverCount = podiumData?.entries?.length || 0;
-            const displayCount = partCount > 0 ? partCount : solverCount;
-            if (displayCount > 0) {
-                statsHTML = `<p class="text-xs text-indigo-400 mt-2">👥 ${displayCount} jugador${displayCount !== 1 ? 'es' : ''}</p>`;
+            const playerCount = participationCountMap[game.id];
+            if (playerCount !== undefined && playerCount > 0) {
+                statsHTML = `<p class="text-xs text-indigo-400 mt-2">👥 ${playerCount} jugador${playerCount !== 1 ? 'es' : ''}</p>`;
             }
 
             const card = document.createElement('div');
@@ -1884,15 +1886,20 @@
                     });
                     }
 
-                    // ── Stats: acertadores vs. jugadores ──
-                    const _solvers  = podiumsCache[game.id]?.entries?.length || 0;
-                    const _players  = participationCountMap[game.id] || 0;
+                    // ── Stats: aciertos (PRINCIPAL) vs. jugadores reales (PARTICIPADOS) ──
+                    const _solvers = podiumsCache[game.id]?.entries?.length || 0;
+                    const _playersRaw = participationCountMap[game.id]; // undefined si PARTICIPADOS no ha cargado todavía
                     let mysteryStatsHTML = '';
-                    if (_solvers > 0 || _players > 0) {
-                        const _playersDisplay = _players > _solvers ? _players : _solvers;
-                        const solverPart  = _solvers > 0 ? `<span class="text-green-400 font-semibold">🏅 ${_solvers} ${_solvers === 1 ? 'acierto' : 'aciertos'}</span>` : '';
-                        const playerPart  = _playersDisplay > 0 ? `<span class="text-indigo-400 font-semibold">👥 ${_playersDisplay} ${_playersDisplay === 1 ? 'jugador' : 'jugadores'}</span>` : '';
-                        const sep         = (solverPart && playerPart) ? `<span class="text-gray-600 mx-1">·</span>` : '';
+                    if (_solvers > 0 || (_playersRaw !== undefined && _playersRaw > 0)) {
+                        const solverPart = _solvers > 0
+                            ? `<span class="text-green-400 font-semibold">🏅 ${_solvers} ${_solvers === 1 ? 'acierto' : 'aciertos'}</span>`
+                            : '';
+                        // jugadores = SOLO el dato real de PARTICIPADOS. Si aún no ha cargado, no se muestra
+                        // (nunca se sustituye por el nº de aciertos, sería un dato falso).
+                        const playerPart = (_playersRaw !== undefined && _playersRaw > 0)
+                            ? `<span class="text-indigo-400 font-semibold">👥 ${_playersRaw} ${_playersRaw === 1 ? 'jugador' : 'jugadores'}</span>`
+                            : '';
+                        const sep = (solverPart && playerPart) ? `<span class="text-gray-600 mx-1">·</span>` : '';
                         mysteryStatsHTML = `<div class="flex items-center gap-1 flex-wrap text-sm bg-gray-900/40 border border-gray-700/50 rounded-lg px-4 py-2">${solverPart}${sep}${playerPart}</div>`;
                     }
 
