@@ -1001,35 +1001,25 @@
                         users.push({ id: publicId, name, points: totalPoints, mysteryPoints, streak, streakPart });
                     }
         
-                    // 4. Hoja PARTICIPADOS: leer quién ha jugado cada misterio
-                    // Estructura: fila 1=cabeceras, fila 2=totales (SALTAR), fila 3+=usuarios
-                    // Cols: A=ID | B=Total | C=Racha | D+=misterios (valor numérico, >0 = participó)
+                    // 4. Hoja PARTICIPADOS → fila 2 = JUGADORES (participantes únicos por misterio)
+                    // Estructura: Fila1=cabeceras | Fila2=JUGADORES(CONTAR.SI) | Fila3=TOTAL(SUMA) | Fila4+=usuarios
+                    // Cols: A=ID | B=Total_Part | C=Mist_Part | D=Racha | E+=misterios
+                    // El index solo necesita leer la fila 2 (índice 1) para obtener el nº de jugadores por misterio
                     try {
                         const partBase = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PARTICIPADOS_SHEET)}`;
                         const rPart  = await fetch(partBase);
                         const tPart  = await parseGviz(rPart);
-                        if (tPart && tPart.rows && tPart.rows.length > 2) {
-                            const partHeaderRow = tPart.rows[0]?.c || [];
-                            // Misterios empiezan en col índice 3 (D en adelante)
-                            const partColMap = {};
-                            for (let i = 3; i < partHeaderRow.length; i++) {
-                                const label = partHeaderRow[i]?.v?.toString()?.trim();
-                                if (label) partColMap[label] = i;
-                            }
-                            // Filas de usuarios empiezan en índice 2 (fila 3), saltamos la fila de totales (índice 1)
-                            for (let ri = 2; ri < tPart.rows.length; ri++) {
-                                const row = tPart.rows[ri];
-                                if (!row?.c) continue;
-                                for (const [mid, ci] of Object.entries(partColMap)) {
-                                    const v = parseFloat(row.c[ci]?.v) || 0;
-                                    if (v > 0) {
-                                        participationCountMap[mid] = (participationCountMap[mid] || 0) + 1;
-                                    }
-                                }
+                        if (tPart && tPart.rows && tPart.rows.length > 1) {
+                            const headerRow   = tPart.rows[0]?.c || []; // fila 1: IDs de misterio en col E+ (índice 4+)
+                            const jugadoresRow = tPart.rows[1]?.c || []; // fila 2: CONTAR.SI = nº jugadores únicos
+                            for (let i = 4; i < headerRow.length; i++) {
+                                const mid   = headerRow[i]?.v?.toString()?.trim();
+                                const count = Math.round(parseFloat(jugadoresRow[i]?.v) || 0);
+                                if (mid && count > 0) participationCountMap[mid] = count;
                             }
                         }
                     } catch(ep) {
-                        console.log('[Sheets] Hoja PARTICIPADOS no disponible todavía.');
+                        console.log('[Sheets] PARTICIPADOS no disponible:', ep);
                     }
 
                     return { users, mysteryColMap };
