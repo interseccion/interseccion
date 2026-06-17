@@ -1006,7 +1006,12 @@
                     // Cols: A=ID | B=Total_Part | C=Mist_Part | D=Racha | E+=misterios
                     // El index solo necesita leer la fila 2 (índice 1) para obtener el nº de jugadores por misterio
                     try {
-                        const partBase = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PARTICIPADOS_SHEET)}`;
+                        // headers=0 es CLAVE: sin esto, gviz auto-detecta la fila 1 como cabecera
+                        // (porque es texto y las filas 2-3 son numéricas) y la saca de "rows",
+                        // desplazando todos los índices un puesto (rows[0] pasa a ser JUGADORES,
+                        // rows[1] pasa a ser TOTAL...). Con headers=0 forzamos a que "rows" sea
+                        // literalmente la hoja tal cual, fila por fila, igual que para PRINCIPAL.
+                        const partBase = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PARTICIPADOS_SHEET)}&headers=0&range=1:2`;
                         const rPart  = await fetch(partBase);
                         const tPart  = await parseGviz(rPart);
                         if (tPart && tPart.rows && tPart.rows.length > 1) {
@@ -1639,11 +1644,14 @@
             const isFav = getFavorites().includes(game.id);
             const starIcon = getStarIconSVG(isFav);
 
-            // Jugadores = participantes únicos (hoja PARTICIPADOS), NO los aciertos
+            // Obtener estadísticas del misterio desde la hoja PRINCIPAL
             let statsHTML = '';
-            const partCount = participationCountMap[game.id] || 0;
-            if (partCount > 0) {
-                statsHTML = `<p class="text-xs text-indigo-400 mt-2">👥 ${partCount} jugador${partCount !== 1 ? 'es' : ''}</p>`;
+            const podiumData  = podiumsCache[game.id];
+            const partCount   = participationCountMap[game.id] || 0;
+            const solverCount = podiumData?.entries?.length || 0;
+            const displayCount = partCount > 0 ? partCount : solverCount;
+            if (displayCount > 0) {
+                statsHTML = `<p class="text-xs text-indigo-400 mt-2">👥 ${displayCount} jugador${displayCount !== 1 ? 'es' : ''}</p>`;
             }
 
             const card = document.createElement('div');
@@ -1883,11 +1891,12 @@
 
                     // ── Stats: acertadores vs. jugadores ──
                     const _solvers  = podiumsCache[game.id]?.entries?.length || 0;
-                    const _players  = participationCountMap[game.id] || 0; // PARTICIPADOS, no aciertos
+                    const _players  = participationCountMap[game.id] || 0;
                     let mysteryStatsHTML = '';
                     if (_solvers > 0 || _players > 0) {
+                        const _playersDisplay = _players > _solvers ? _players : _solvers;
                         const solverPart  = _solvers > 0 ? `<span class="text-green-400 font-semibold">🏅 ${_solvers} ${_solvers === 1 ? 'acierto' : 'aciertos'}</span>` : '';
-                        const playerPart  = _players > 0 ? `<span class="text-indigo-400 font-semibold">👥 ${_players} ${_players === 1 ? 'jugador' : 'jugadores'}</span>` : '';
+                        const playerPart  = _playersDisplay > 0 ? `<span class="text-indigo-400 font-semibold">👥 ${_playersDisplay} ${_playersDisplay === 1 ? 'jugador' : 'jugadores'}</span>` : '';
                         const sep         = (solverPart && playerPart) ? `<span class="text-gray-600 mx-1">·</span>` : '';
                         mysteryStatsHTML = `<div class="flex items-center gap-1 flex-wrap text-sm bg-gray-900/40 border border-gray-700/50 rounded-lg px-4 py-2">${solverPart}${sep}${playerPart}</div>`;
                     }
