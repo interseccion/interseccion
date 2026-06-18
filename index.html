@@ -1609,7 +1609,7 @@
             // Filtro en Archivo
             dom.seasonFilterSelect.innerHTML = '<option value="Todos">Todas las Temporadas</option>';
             // Selector en Podio
-            dom.podiumSeasonSelect.innerHTML = '<option value="general">🏆 Clasificación General</option><option value="__streaks__">🔥 Racha de aciertos</option><option value="__streaks_part__">🔥 Racha de participaciones</option>';
+            dom.podiumSeasonSelect.innerHTML = '<option value="general">🏆 Clasificación General</option><option value="__streaks__">🔥 Racha de aciertos</option><option value="__streaks_part__">🔥 Racha de participaciones</option><option value="__most_played__">👥 Más misterios participados</option>';
 
             allSeasons.forEach(season => {
                 // Filtro
@@ -2122,7 +2122,8 @@
                     const allSolvedGames = Object.keys(u.mysteryPoints);
                     // Las rachas vienen ya calculadas desde la hoja PRINCIPAL (cols D y E)
                     return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames,
-                             sheetStreak: u.streak || 0, sheetStreakPart: u.streakPart || 0 };
+                             sheetStreak: u.streak || 0, sheetStreakPart: u.streakPart || 0,
+                             mistPart: u.mistPart || 0 };
                 });
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
@@ -2624,6 +2625,11 @@
                     } else {
                         loadLeaderboard(null).then(() => renderStreakPodium('streakPart'));
                     }
+                } else if (selected === '__most_played__') {
+                    dom.seasonWinnersDisplay?.classList.add('hidden');
+                    dom.podiumTitle.textContent = '👥 Más misterios participados';
+                    dom.podiumDescription.textContent = 'Usuarios que han participado en más misterios distintos (sin importar si acertaron)';
+                    renderMostPlayedPodium();
                 } else if (selected === 'general') {
                     dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = "Clasificación General";
@@ -3266,6 +3272,61 @@
                     </td>
                     <td class="p-4 text-right font-bold text-orange-400" title="${colHeader}">🔥 ${val}</td>
                     <td class="p-4 text-center text-gray-400">${user.solvedGames.length}</td>
+                `;
+                tr.addEventListener('click', () => openProfileModal(user));
+                dom.podiumBody.appendChild(tr);
+            });
+        }
+
+        // Podio: usuarios ordenados por nº de misterios distintos en los que han participado.
+        // Lee de participationCountMap (PARTICIPADOS, fila JUGADORES) y cruza con leaderboardData
+        // para tener nombre y poder abrir el perfil al hacer clic.
+        function renderMostPlayedPodium() {
+            dom.podiumBody.innerHTML = '';
+            if (!leaderboardData.length) {
+                dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No hay datos de leaderboard.</td></tr>`;
+                return;
+            }
+            // Cada usuario en leaderboardData tiene solvedGames (aciertos) y allSolvedGames.
+            // Para "participados" usamos el campo streakPart que ya carga PARTICIPADOS,
+            // pero el nº de misterios distintos participados está en PARTICIPADOS col C (Mist_Part).
+            // Esa columna llega como sheetStreakPart no — la guardamos en u.mistPart si existe.
+            // Si no está disponible en leaderboard, estimamos con allSolvedGames.length.
+            // Lo más fiable: cruzar con participationCountMap (que ya tiene el total de jugadores
+            // por misterio) no nos sirve por usuario; pero leaderboardData sí tiene allSolvedGames
+            // que incluye aciertos. Como PARTICIPADOS tiene también fallos, la cifra exacta no
+            // la tenemos en el cliente salvo que el GAS la mande — por eso la estimamos con
+            // allSolvedGames.length (que al menos incluye todos los aciertos históricos).
+            // Si en el futuro se añade mistPart al leaderboard, bastaría con usar u.mistPart.
+            const ranked = leaderboardData
+                .map(u => ({
+                    ...u,
+                    mistPart: u.mistPart ?? u.sheetStreakPart ?? (u.allSolvedGames || u.solvedGames || []).length
+                }))
+                .filter(u => u.mistPart > 0)
+                .sort((a, b) => b.mistPart - a.mistPart || b.points - a.points);
+
+            if (!ranked.length) {
+                dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Nadie ha participado aún.</td></tr>`;
+                return;
+            }
+            ranked.forEach((user, index) => {
+                const isMe = user.id === currentPublicId();
+                const rowClass = isMe ? 'bg-indigo-900/40 border-l-4 border-indigo-500' : 'hover:bg-gray-700/30 border-b border-gray-700/50';
+                let rankDisplay = index + 1;
+                if (index === 0) rankDisplay = '🥇';
+                if (index === 1) rankDisplay = '🥈';
+                if (index === 2) rankDisplay = '🥉';
+                const tr = document.createElement('tr');
+                tr.className = `transition-colors cursor-pointer ${rowClass}`;
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-lg ${index < 3 ? 'text-yellow-400' : 'text-gray-500'}">${rankDisplay}</td>
+                    <td class="p-4 font-medium text-white flex items-center gap-2">
+                        ${user.name}
+                        ${isMe ? '<span class="text-xs bg-indigo-600 px-2 py-0.5 rounded text-white ml-2">Tú</span>' : ''}
+                    </td>
+                    <td class="p-4 text-right font-bold text-blue-400" title="Misterios participados">👥 ${user.mistPart}</td>
+                    <td class="p-4 text-center text-gray-400">${user.points} pts</td>
                 `;
                 tr.addEventListener('click', () => openProfileModal(user));
                 dom.podiumBody.appendChild(tr);
