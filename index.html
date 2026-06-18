@@ -1006,22 +1006,28 @@
                     // Cols: A=ID | B=Total_Part | C=Mist_Part | D=Racha | E+=misterios
                     // El index solo necesita leer la fila 2 (índice 1) para obtener el nº de jugadores por misterio
                     try {
-                        // headers=0 es CLAVE: sin esto, gviz auto-detecta la fila 1 como cabecera
-                        // (porque es texto y las filas 2-3 son numéricas) y la saca de "rows",
-                        // desplazando todos los índices un puesto (rows[0] pasa a ser JUGADORES,
-                        // rows[1] pasa a ser TOTAL...). Con headers=0 forzamos a que "rows" sea
-                        // literalmente la hoja tal cual, fila por fila, igual que para PRINCIPAL.
-                        const partBase = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PARTICIPADOS_SHEET)}&headers=0&range=1:2`;
-                        const rPart  = await fetch(partBase);
-                        const tPart  = await parseGviz(rPart);
-                        if (tPart && tPart.rows && tPart.rows.length > 1) {
-                            const headerRow   = tPart.rows[0]?.c || []; // fila 1: IDs de misterio en col E+ (índice 4+)
-                            const jugadoresRow = tPart.rows[1]?.c || []; // fila 2: CONTAR.SI = nº jugadores únicos
-                            for (let i = 4; i < headerRow.length; i++) {
-                                const mid   = headerRow[i]?.v?.toString()?.trim();
-                                const count = Math.round(parseFloat(jugadoresRow[i]?.v) || 0);
-                                if (mid && count > 0) participationCountMap[mid] = count;
-                            }
+                        // headers=0 evita la auto-detección de cabecera. CLAVE: la fila 1 (IDs de
+                        // misterio, texto) y la fila 2 (JUGADORES, números) se piden en peticiones
+                        // SEPARADAS, igual que ya se hace arriba con PRINCIPAL. Si se piden juntas
+                        // en un mismo rango (1:2), gviz tiene que asignar un único tipo de columna
+                        // para ambas filas a la vez; como la fila 2 es numérica, marca la columna
+                        // entera como "number" y anula (null) el texto de la fila 1 — por eso el
+                        // mapa de participaciones se quedaba siempre vacío, aunque headers=0 ya
+                        // evitara el desplazamiento de filas.
+                        const partBase = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PARTICIPADOS_SHEET)}&headers=0`;
+                        const [rPartHead, rPartJug] = await Promise.all([
+                            fetch(`${partBase}&range=1:1`),
+                            fetch(`${partBase}&range=2:2`)
+                        ]);
+                        const [tPartHead, tPartJug] = await Promise.all([
+                            parseGviz(rPartHead), parseGviz(rPartJug)
+                        ]);
+                        const headerRow    = tPartHead.rows[0]?.c || []; // fila 1: IDs de misterio en col E+ (índice 4+)
+                        const jugadoresRow = tPartJug.rows[0]?.c  || []; // fila 2: CONTAR.SI = nº jugadores únicos
+                        for (let i = 4; i < headerRow.length; i++) {
+                            const mid   = headerRow[i]?.v?.toString()?.trim();
+                            const count = Math.round(parseFloat(jugadoresRow[i]?.v) || 0);
+                            if (mid && count > 0) participationCountMap[mid] = count;
                         }
                     } catch(ep) {
                         console.log('[Sheets] PARTICIPADOS no disponible:', ep);
