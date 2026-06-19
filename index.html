@@ -224,8 +224,8 @@
                                 <tr class="text-gray-400 border-b border-gray-700">
                                     <th class="p-4">#</th>
                                     <th class="p-4">Nombre</th>
-                                    <th class="p-4 text-right">Puntos</th>
-                                    <th class="p-4 text-center">Misterios</th>
+                                    <th class="p-4 text-right" id="podium-th-col3">Puntos</th>
+                                    <th class="p-4 text-center" id="podium-th-col4">Misterios</th>
                                 </tr>
                             </thead>
                             <tbody id="podium-body" class="text-gray-200">
@@ -707,6 +707,8 @@
             myResponsesClose   : document.getElementById('my-responses-close'),
             // Podio
             podiumBody: document.getElementById('podium-body'),
+            podiumThCol3: document.getElementById('podium-th-col3'),
+            podiumThCol4: document.getElementById('podium-th-col4'),
             podiumLoading: document.getElementById('podium-loading'),
             scoringInfoBtn: document.getElementById('scoring-info-btn'),
             podiumSeasonSelect: document.getElementById('podium-season-select'), // NUEVO
@@ -2630,6 +2632,14 @@
                 }
             }));
 
+            // Cabeceras de las dos columnas de datos del podio (#3 y #4): cada vista mide
+            // cosas distintas, así que el texto debe coincidir con lo que realmente se pinta
+            // en esa columna — si no, parece que "están al revés" aunque el dato sea correcto.
+            function setPodiumColumnHeaders(col3, col4) {
+                if (dom.podiumThCol3) dom.podiumThCol3.textContent = col3;
+                if (dom.podiumThCol4) dom.podiumThCol4.textContent = col4;
+            }
+
             // Seleccionar podio de temporada
             dom.podiumSeasonSelect.addEventListener('change', (e) => {
                 const selected = e.target.value;
@@ -2639,6 +2649,7 @@
                     dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = '🔥 Racha de aciertos';
                     dom.podiumDescription.textContent = 'Misterios consecutivos resueltos correctamente';
+                    setPodiumColumnHeaders('Racha 🔥', 'Aciertos');
                     if (leaderboardData.length > 0) {
                         renderStreakPodium('streak');
                     } else {
@@ -2648,6 +2659,7 @@
                     dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = '🔥 Racha de participaciones';
                     dom.podiumDescription.textContent = 'Misterios consecutivos en los que has participado (aunque no acertaras)';
+                    setPodiumColumnHeaders('Racha 🔥', 'Aciertos');
                     if (leaderboardData.length > 0) {
                         renderStreakPodium('streakPart');
                     } else {
@@ -2657,17 +2669,21 @@
                     dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = '👥 Más misterios participados';
                     dom.podiumDescription.textContent = 'Usuarios que han participado en más misterios distintos (sin importar si acertaron)';
+                    // La columna izquierda (3) es la importante en esta vista: participaciones.
+                    setPodiumColumnHeaders('Participaciones 👥', 'Puntos');
                     renderMostPlayedPodium();
                 } else if (selected === 'general') {
                     dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = "Clasificación General";
                     dom.podiumDescription.textContent = "Puntos sumados de todos los misterios resueltos";
+                    setPodiumColumnHeaders('Puntos', 'Misterios');
                     loadLeaderboard(null);
                 } else {
                     const season = allSeasons.find(s => s.id === selected);
                     if (season) {
                         dom.podiumTitle.innerHTML = `${season.emoji} ${season.name}`;
                         dom.podiumDescription.textContent = season.description || 'Clasificación de temporada';
+                        setPodiumColumnHeaders('Puntos', 'Misterios');
                         loadLeaderboard(season.gameIds);
                     }
                 }
