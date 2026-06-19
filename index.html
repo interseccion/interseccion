@@ -757,6 +757,7 @@
 
         // Mapa de participaciones: mysteryId 2192 n00famero de jugadores que enviaron respuesta
         const participationCountMap = {};
+        const userMistPartMap = {}; // publicId → nº misterios distintos participados (col C de PARTICIPADOS)
 
         let allGames = [];
         let allSeasons = [];
@@ -1015,19 +1016,27 @@
                         // mapa de participaciones se quedaba siempre vacío, aunque headers=0 ya
                         // evitara el desplazamiento de filas.
                         const partBase = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(PARTICIPADOS_SHEET)}&headers=0`;
-                        const [rPartHead, rPartJug] = await Promise.all([
+                        const [rPartHead, rPartJug, rPartUsers] = await Promise.all([
                             fetch(`${partBase}&range=1:1`),
-                            fetch(`${partBase}&range=2:2`)
+                            fetch(`${partBase}&range=2:2`),
+                            fetch(`${partBase}&range=4:9999`)  // filas de usuario: col A=ID, col C=Mist_Part
                         ]);
-                        const [tPartHead, tPartJug] = await Promise.all([
-                            parseGviz(rPartHead), parseGviz(rPartJug)
+                        const [tPartHead, tPartJug, tPartUsers] = await Promise.all([
+                            parseGviz(rPartHead), parseGviz(rPartJug), parseGviz(rPartUsers)
                         ]);
-                        const headerRow    = tPartHead.rows[0]?.c || []; // fila 1: IDs de misterio en col E+ (índice 4+)
-                        const jugadoresRow = tPartJug.rows[0]?.c  || []; // fila 2: CONTAR.SI = nº jugadores únicos
+                        const headerRow    = tPartHead.rows[0]?.c || [];
+                        const jugadoresRow = tPartJug.rows[0]?.c  || [];
                         for (let i = 4; i < headerRow.length; i++) {
                             const mid   = headerRow[i]?.v?.toString()?.trim();
                             const count = Math.round(parseFloat(jugadoresRow[i]?.v) || 0);
                             if (mid && count > 0) participationCountMap[mid] = count;
+                        }
+                        // Mist_Part por usuario (col C, índice 2)
+                        for (const row of (tPartUsers?.rows || [])) {
+                            const c    = row?.c || [];
+                            const idPub = c[0]?.v?.toString()?.trim();
+                            const mpart = Math.round(parseFloat(c[2]?.v) || 0);
+                            if (idPub && mpart > 0) userMistPartMap[idPub] = mpart;
                         }
                     } catch(ep) {
                         console.log('[Sheets] PARTICIPADOS no disponible:', ep);
@@ -1133,28 +1142,46 @@
                 fetch(`${APPS_SCRIPT_URL}?action=saveSeed&privateId=${encodeURIComponent(userId)}&publicId=${encodeURIComponent(getPublicId(userId)||'')}&seed=${encodeURIComponent(phrase)}`).catch(()=>{});
         };
 
+        let isCreatingAccount = false; // evita doble-envío si el click se dispara dos veces
+
         async function createNewUser(username, displayName) {
-            // Mostrar estado de carga en el botón
-            const createBtn = document.querySelector('#welcome-new-form button[type="submit"], #welcome-new-form .create-btn, #welcome-form button');
-            if (createBtn) { createBtn.disabled = true; createBtn.innerHTML = '⏳ Creando tu cuenta…'; }
+            if (isCreatingAccount) return; // ya hay una creación en curso, ignorar
+            isCreatingAccount = true;
+
+            // Botones que pueden "sacar" al usuario de la pantalla de creación
+            // mientras la petición está en curso: hay que bloquearlos todos, no solo el submit.
+            const lockButtons = [dom.welcomeSubmitBtn, dom.welcomeBackBtn];
+            const originalSubmitHTML = dom.welcomeSubmitBtn.innerHTML;
+            lockButtons.forEach(b => b && (b.disabled = true));
+            dom.welcomeSubmitBtn.innerHTML = '⏳ Creando tu cuenta…';
+            dom.welcomeSubmitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+            dom.welcomeFormError.classList.add('hidden');
+
+            const unlock = () => {
+                isCreatingAccount = false;
+                lockButtons.forEach(b => b && (b.disabled = false));
+                dom.welcomeSubmitBtn.innerHTML = originalSubmitHTML;
+                dom.welcomeSubmitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+            };
 
             // 1) Comprobar duplicados
             const availCheck = await checkUsernameAvailable(username);
             if (availCheck && !availCheck.available) {
                 const suggestion = availCheck.suggestion || (username + '2');
-                const errEl = document.getElementById('welcome-username-error');
-                const msg = `El nombre de usuario "${username}" ya está registrado. ¿Quizá quisiste decir "${suggestion}"?`;
-                if (errEl) { errEl.textContent = msg; errEl.style.color = '#f87171'; errEl.classList.remove('hidden'); }
-                else showToast('❌ ' + msg, false);
-                if (createBtn) { createBtn.disabled = false; createBtn.innerHTML = 'Crear cuenta'; }
+                // Error visible justo debajo de la caja de nombre, no como toast discreto.
+                dom.welcomeFormError.textContent = `❌ El nombre "${username}" ya está registrado. Prueba con "${suggestion}" o elige otro.`;
+                dom.welcomeFormError.classList.remove('hidden');
+                dom.welcomeUsername.focus();
+                unlock();
                 return;
             }
 
             // 2) Crear cuenta en el servidor (nunca en el cliente)
             const serverResult = await createAccountOnServer(username, displayName);
             if (!serverResult || !serverResult.privateId) {
-                showToast('❌ No se pudo contactar con el servidor. Inténtalo de nuevo.', false);
-                if (createBtn) { createBtn.disabled = false; createBtn.innerHTML = 'Crear cuenta'; }
+                dom.welcomeFormError.textContent = '❌ No se pudo contactar con el servidor. Inténtalo de nuevo.';
+                dom.welcomeFormError.classList.remove('hidden');
+                unlock();
                 return;
             }
 
@@ -1163,6 +1190,7 @@
             const phrase = await generateSeedPhrase();
             if (phrase) saveSeedPhrase(phrase);
             isNewUserSession = true;
+            unlock();
 
             // Solo abrir el modal de ID si el usuario sigue en bienvenida
             if (dom.welcomeModal.classList.contains('active')) {
@@ -2123,7 +2151,7 @@
                     // Las rachas vienen ya calculadas desde la hoja PRINCIPAL (cols D y E)
                     return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames,
                              sheetStreak: u.streak || 0, sheetStreakPart: u.streakPart || 0,
-                             mistPart: u.mistPart || 0 };
+                             mistPart: userMistPartMap[u.id] || u.mistPart || 0 };
                 });
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
@@ -3278,31 +3306,16 @@
             });
         }
 
-        // Podio: usuarios ordenados por nº de misterios distintos en los que han participado.
-        // Lee de participationCountMap (PARTICIPADOS, fila JUGADORES) y cruza con leaderboardData
-        // para tener nombre y poder abrir el perfil al hacer clic.
+        // Podio: usuarios ordenados por nº de misterios distintos en los que han participado
+        // (col C "Mist_Part" de PARTICIPADOS, leída por usuario en loadSheetsData → userMistPartMap).
+        // Incluye aciertos Y fallos, a diferencia del resto de podios que solo cuentan aciertos.
         function renderMostPlayedPodium() {
             dom.podiumBody.innerHTML = '';
             if (!leaderboardData.length) {
                 dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No hay datos de leaderboard.</td></tr>`;
                 return;
             }
-            // Cada usuario en leaderboardData tiene solvedGames (aciertos) y allSolvedGames.
-            // Para "participados" usamos el campo streakPart que ya carga PARTICIPADOS,
-            // pero el nº de misterios distintos participados está en PARTICIPADOS col C (Mist_Part).
-            // Esa columna llega como sheetStreakPart no — la guardamos en u.mistPart si existe.
-            // Si no está disponible en leaderboard, estimamos con allSolvedGames.length.
-            // Lo más fiable: cruzar con participationCountMap (que ya tiene el total de jugadores
-            // por misterio) no nos sirve por usuario; pero leaderboardData sí tiene allSolvedGames
-            // que incluye aciertos. Como PARTICIPADOS tiene también fallos, la cifra exacta no
-            // la tenemos en el cliente salvo que el GAS la mande — por eso la estimamos con
-            // allSolvedGames.length (que al menos incluye todos los aciertos históricos).
-            // Si en el futuro se añade mistPart al leaderboard, bastaría con usar u.mistPart.
             const ranked = leaderboardData
-                .map(u => ({
-                    ...u,
-                    mistPart: u.mistPart ?? u.sheetStreakPart ?? (u.allSolvedGames || u.solvedGames || []).length
-                }))
                 .filter(u => u.mistPart > 0)
                 .sort((a, b) => b.mistPart - a.mistPart || b.points - a.points);
 
