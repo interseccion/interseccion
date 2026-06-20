@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#4f46e5">
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #111827; }
@@ -4134,7 +4134,14 @@
         function init() {
             initUserIdentity();
             initEventListeners();
-            datePicker = flatpickr(dom.searchDate, { mode: "range", dateFormat: "d/m/Y", locale: "es", altInput: true, altFormat: "j F, Y", onClose: renderGames, onReady: (_, __, instance) => instance.calendarContainer.classList.add('dark') });
+            try {
+                datePicker = flatpickr(dom.searchDate, { mode: "range", dateFormat: "d/m/Y", locale: "es", altInput: true, altFormat: "j F, Y", onClose: renderGames, onReady: (_, __, instance) => instance.calendarContainer.classList.add('dark') });
+            } catch (e) {
+                // Si el selector de fechas falla (p.ej. un CDN externo caído), no debe
+                // impedir que se cargue el resto de la página — misterios y notificaciones
+                // son mucho más importantes que el selector de rango de fechas.
+                console.error('No se pudo inicializar el selector de fechas:', e);
+            }
             loadGames();
             loadNotifications();
         }
