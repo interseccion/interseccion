@@ -760,6 +760,7 @@
         // Mapa de participaciones: mysteryId 2192 n00famero de jugadores que enviaron respuesta
         const participationCountMap = {};
         const userMistPartMap = {}; // publicId → nº misterios distintos participados (col C de PARTICIPADOS)
+        const userTotalPartMap = {}; // publicId → suma total de participaciones, incl. reintentos (col B de PARTICIPADOS)
 
         let allGames = [];
         let allSeasons = [];
@@ -1033,12 +1034,15 @@
                             const count = Math.round(parseFloat(jugadoresRow[i]?.v) || 0);
                             if (mid && count > 0) participationCountMap[mid] = count;
                         }
-                        // Mist_Part por usuario (col C, índice 2)
+                        // Mist_Part (col C) y Total_Part (col B) por usuario
                         for (const row of (tPartUsers?.rows || [])) {
-                            const c    = row?.c || [];
+                            const c     = row?.c || [];
                             const idPub = c[0]?.v?.toString()?.trim();
-                            const mpart = Math.round(parseFloat(c[2]?.v) || 0);
-                            if (idPub && mpart > 0) userMistPartMap[idPub] = mpart;
+                            const total = Math.round(parseFloat(c[1]?.v) || 0); // col B: Total_Part
+                            const mpart = Math.round(parseFloat(c[2]?.v) || 0); // col C: Mist_Part
+                            if (!idPub) continue;
+                            if (mpart > 0) userMistPartMap[idPub] = mpart;
+                            if (total > 0) userTotalPartMap[idPub] = total;
                         }
                     } catch(ep) {
                         console.log('[Sheets] PARTICIPADOS no disponible:', ep);
@@ -2153,7 +2157,8 @@
                     // Las rachas vienen ya calculadas desde la hoja PRINCIPAL (cols D y E)
                     return { id: u.id, name: u.name, points: filteredPts, solvedGames, allSolvedGames,
                              sheetStreak: u.streak || 0, sheetStreakPart: u.streakPart || 0,
-                             mistPart: userMistPartMap[u.id] || u.mistPart || 0 };
+                             mistPart: userMistPartMap[u.id] || u.mistPart || 0,
+                             totalPart: userTotalPartMap[u.id] || 0 };
                 });
 
                 if (filterGameIds) users = users.filter(u => u.points > 0);
@@ -2659,7 +2664,7 @@
                     dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = '🔥 Racha de participaciones';
                     dom.podiumDescription.textContent = 'Misterios consecutivos en los que has participado (aunque no acertaras)';
-                    setPodiumColumnHeaders('Racha 🔥', 'Aciertos');
+                    setPodiumColumnHeaders('Racha 🔥', 'Misterios');
                     if (leaderboardData.length > 0) {
                         renderStreakPodium('streakPart');
                     } else {
@@ -2669,8 +2674,8 @@
                     dom.seasonWinnersDisplay?.classList.add('hidden');
                     dom.podiumTitle.textContent = '👥 Más misterios participados';
                     dom.podiumDescription.textContent = 'Usuarios que han participado en más misterios distintos (sin importar si acertaron)';
-                    // La columna izquierda (3) es la importante en esta vista: participaciones.
-                    setPodiumColumnHeaders('Participaciones 👥', 'Puntos');
+                    // La columna izquierda (3) es la importante en esta vista: misterios distintos.
+                    setPodiumColumnHeaders('Misterios 👥', 'Participaciones');
                     renderMostPlayedPodium();
                 } else if (selected === 'general') {
                     dom.seasonWinnersDisplay?.classList.add('hidden');
@@ -3300,6 +3305,9 @@
             const colHeader = isPartMode ? 'Participaciones seguidas' : 'Aciertos seguidos';
             streakData.forEach((user, index) => {
                 const val  = isPartMode ? user.streakPart : user.streak;
+                // En modo "racha de participaciones" la 4ª columna muestra el total de
+                // misterios distintos participados (mistPart); en aciertos, los aciertos totales.
+                const col4Val = isPartMode ? (user.mistPart || 0) : user.solvedGames.length;
                 const isMe = user.id === currentPublicId();
                 const rowClass = isMe ? 'bg-indigo-900/40 border-l-4 border-indigo-500' : 'hover:bg-gray-700/30 border-b border-gray-700/50';
                 let rankDisplay = index + 1;
@@ -3315,7 +3323,7 @@
                         ${isMe ? '<span class="text-xs bg-indigo-600 px-2 py-0.5 rounded text-white ml-2">Tú</span>' : ''}
                     </td>
                     <td class="p-4 text-right font-bold text-orange-400" title="${colHeader}">🔥 ${val}</td>
-                    <td class="p-4 text-center text-gray-400">${user.solvedGames.length}</td>
+                    <td class="p-4 text-center text-gray-400">${col4Val}</td>
                 `;
                 tr.addEventListener('click', () => openProfileModal(user));
                 dom.podiumBody.appendChild(tr);
@@ -3333,7 +3341,7 @@
             }
             const ranked = leaderboardData
                 .filter(u => u.mistPart > 0)
-                .sort((a, b) => b.mistPart - a.mistPart || b.points - a.points);
+                .sort((a, b) => b.mistPart - a.mistPart || b.totalPart - a.totalPart);
 
             if (!ranked.length) {
                 dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">Nadie ha participado aún.</td></tr>`;
@@ -3348,14 +3356,16 @@
                 if (index === 2) rankDisplay = '🥉';
                 const tr = document.createElement('tr');
                 tr.className = `transition-colors cursor-pointer ${rowClass}`;
+                // Col3 (izquierda, la importante): misterios distintos participados.
+                // Col4: participaciones totales, incluyendo reintentos al mismo misterio.
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-lg ${index < 3 ? 'text-yellow-400' : 'text-gray-500'}">${rankDisplay}</td>
                     <td class="p-4 font-medium text-white flex items-center gap-2">
                         ${user.name}
                         ${isMe ? '<span class="text-xs bg-indigo-600 px-2 py-0.5 rounded text-white ml-2">Tú</span>' : ''}
                     </td>
-                    <td class="p-4 text-right font-bold text-blue-400" title="Misterios participados">👥 ${user.mistPart}</td>
-                    <td class="p-4 text-center text-gray-400">${user.points} pts</td>
+                    <td class="p-4 text-right font-bold text-blue-400" title="Misterios distintos participados">👥 ${user.mistPart}</td>
+                    <td class="p-4 text-center text-gray-400" title="Participaciones totales (incluye reintentos)">${user.totalPart || user.mistPart}</td>
                 `;
                 tr.addEventListener('click', () => openProfileModal(user));
                 dom.podiumBody.appendChild(tr);
