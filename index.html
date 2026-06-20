@@ -240,17 +240,18 @@
             <div id="sobre" class="tab-content hidden relative pb-8">
                  <div class="space-y-8 fade-in">
                     <div class="bg-gray-800 rounded-xl shadow-lg p-8">
-                        <h2 class="text-3xl font-bold text-indigo-400 mb-4">¿Qué es "La Intersección"?</h2>
-                        <p class="text-gray-300 leading-relaxed">Este es un pequeño proyecto de entretenimiento inspirado en el famoso concurso "Saber y Ganar". El objetivo es adivinar "la intersección" —que puede ser una persona, un lugar, una película, una canción o cualquier cosa imaginable— a partir de pequeñas pistas que se irán revelando semanalmente. Es un reto a la paciencia, la deducción y la cultura general.</p>
+                        <h2 class="text-3xl font-bold text-indigo-400 mb-4">¿Qué es «La Intersección»?</h2>
+                        <p class="text-gray-300 leading-relaxed">Este es un pequeño proyecto de entretenimiento inspirado en el famoso concurso «Saber y Ganar». El objetivo es adivinar «la intersección» —que puede ser una persona, un lugar, una película, una canción o cualquier cosa imaginable— a partir de pequeñas pistas que se irán revelando semanalmente. Es un reto a la paciencia, la deducción y la cultura general.</p>
                     </div>
                      <div class="grid md:grid-cols-5 gap-8">
                         <div class="md:col-span-3 bg-gray-800 rounded-xl shadow-lg p-8">
                             <h3 class="text-2xl font-bold text-indigo-400 mb-6">¿Cómo se juega?</h3>
                             <ol class="space-y-5">
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">1</div><div class="pt-1">Visita la pestaña <strong>Misterios en Curso</strong> o el <strong>Archivo</strong> para elegir un juego.</div></li>
-                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">2</div><div class="pt-1">Si está resuelto, puedes elegir entre ver la solución directamente o jugar pista a pista.</div></li>
-                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">3</div><div class="pt-1">Cuando creas tener la solución (en un juego en curso), ¡usa el formulario para enviarla! <strong>Tu ID se copiará automáticamente.</strong></div></li>
-                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">4</div><div class="pt-1">¡Compite en el Podio acumulando puntos por tus aciertos!</div></li>
+                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">2</div><div class="pt-1">Si ya está resuelto, puedes ver la solución directamente o intentarlo tú primero, pista a pista.</div></li>
+                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">3</div><div class="pt-1">Cuando creas tener la solución (en un juego en curso), rellena el formulario: tu respuesta y una breve explicación de tu razonamiento.</div></li>
+                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">4</div><div class="pt-1">Espera la revisión — te llegará una notificación 🔔 en cuanto se confirme si has acertado.</div></li>
+                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">5</div><div class="pt-1">¡Compite en el Podio acumulando puntos por tus aciertos y manteniendo tu racha!</div></li>
                             </ol>
                              <div class="mt-8 text-center">
                                 <button id="instructions-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105">Instrucciones detalladas</button>
@@ -540,7 +541,7 @@
                     <div class="grid grid-cols-2 gap-2" id="feedback-tipo-btns">
                         <button type="button" data-val="sugerencia" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-indigo-800 text-gray-300 hover:text-white transition border border-transparent">💡 Sugerencia</button>
                         <button type="button" data-val="bug" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-red-900 text-gray-300 hover:text-white transition border border-transparent">🐛 Bug / Error</button>
-                        <button type="button" data-val="elogio" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-green-900 text-gray-300 hover:text-white transition border border-transparent">❤️ Elogio</button>
+                        <button type="button" data-val="elogio" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-green-900 text-gray-300 hover:text-white transition border border-transparent">❤️ Me gusta</button>
                         <button type="button" data-val="otro" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white transition border border-transparent">💬 Otro</button>
                     </div>
                     <input type="hidden" id="feedback-tipo" value="">
@@ -1203,7 +1204,7 @@
                 dom.welcomeModal.classList.remove('active');
                 openIdModal();
             } else {
-                showToast('✅ Cuenta creada. Pulsa "Mi ID" en la barra para ver tu llave.', false);
+                showToast('✅ Cuenta creada. Pulsa «Mi ID» en la barra para ver tu llave.', false);
                 loadNotifications();
             }
         }
@@ -1498,19 +1499,21 @@
              renderModal(null, 'info', { title: "¡Bienvenido a La Intersección!", content: `
                 <div class="prose prose-invert max-w-none text-left text-gray-300">
                     <p class="text-xl text-center font-bold text-indigo-400 mb-4">¿En qué consiste esto?</p>
-                    <p>La Intersección es un juego de misterios semanales. Tu objetivo es adivinar <strong>"la intersección"</strong> (persona, lugar, cosa...) que une todas las pistas.</p>
+                    <p>La Intersección es un juego de misterios semanales. Tu objetivo es adivinar <strong>«la intersección»</strong> —la persona, lugar, cosa o concepto que conecta todas las pistas— antes que el resto.</p>
 
                     <h3 class="text-lg font-bold text-white mt-6 mb-2">Pasos básicos:</h3>
                     <ol class="list-decimal pl-5 space-y-3">
-                        <li><strong>Explora:</strong> Busca juegos en "Misterios en Curso" o "Archivo".</li>
-                        <li><strong>Analiza:</strong> Lee las pistas. Cada semana se publican nuevas pistas en los juegos activos.</li>
-                        <li><strong>Deduce:</strong> ¿Qué tienen en común? ¡Esa es la solución!</li>
-                        <li><strong>Gana:</strong> Envía tu respuesta para ganar puntos y subir en el podio.</li>
+                        <li><strong>Explora:</strong> Busca juegos en «Misterios en Curso» o «Archivo». Si quieres probar sin compromiso, hay un <strong>Misterio de Ejemplo</strong> en la pestaña «Sobre el proyecto».</li>
+                        <li><strong>Analiza:</strong> Lee las pistas con calma. Cada semana se publican nuevas en los juegos activos — no hace falta tener prisa.</li>
+                        <li><strong>Deduce:</strong> ¿Qué tienen en común todas las pistas? ¡Esa es la solución!</li>
+                        <li><strong>Responde:</strong> Envía tu solución y una breve explicación de cómo llegaste a ella. Cuanto antes aciertes, más puntos ganas — pero participar también cuenta, aunque falles.</li>
+                        <li><strong>Compite:</strong> Sube en el Podio y compara tu racha con la de tus amigos.</li>
                     </ol>
 
                     <div class="bg-gray-700/50 p-4 rounded-lg mt-6 border border-indigo-500/30">
                         <p class="text-sm text-center">💡 <strong>Consejo:</strong> No te pierdas las notificaciones en la campana de anuncios para saber cuándo hay nuevas pistas.</p>
                     </div>
+                    <p class="text-xs text-gray-500 text-center mt-4">¿Quieres repasar esto más adelante? Puedes reabrir este tutorial cuando quieras desde «Sobre el proyecto» → «Ver Tutorial».</p>
                 </div>
             `});
         }
@@ -2842,9 +2845,10 @@
                                 <li><strong>Posición:</strong> 1º(5pts), 2º(3pts), 3º(2pts), Resto(1pt).</li>
                                 <li><strong>Dificultad:</strong> Fácil(1), Medio(2), Difícil(3).</li>
                                 <li><strong>Ahorro:</strong> +2 puntos por cada pista que NO se había revelado cuando respondiste.</li>
-                                <li><strong>Demora:</strong> Si respondes tarde (después de salir la última pista), se resta 1 punto por cada "Unidad de Tiempo de Demora" (UTD) adicional que pase (hay una UTD de cortesía).</li>
+                                <li><strong>Demora:</strong> Si respondes tarde (después de salir la última pista), se resta 1 punto por cada «Unidad de Tiempo de Demora» (UTD) adicional que pase (hay una UTD de cortesía).</li>
                                 <li><strong>Mínimo:</strong> Siempre ganas al menos 1 punto si aciertas.</li>
                             </ul>
+                            <p class="text-xs text-gray-500 italic mt-4 pt-3 border-t border-gray-700">💭 Opinión personal de quien hace los misterios: los «Fáciles» suelen ser ridículamente sencillos y los «Medios» tampoco se quedan muy atrás — los que de verdad merecen la pena son los «Difíciles». Pero anímate a probarlos todos, ¡nunca se sabe!</p>
                         </div>
                     `});
                 });
