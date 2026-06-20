@@ -768,6 +768,7 @@
         const GAMES_INDEX_PATH = 'games/index.json';
         const SEASONS_INDEX_PATH = 'seasons/index.json';
         const EXAMPLE_GAME_PATH = 'games/ejemplo_resuelto.json';
+        const TOUR_EXAMPLE_PATH = 'games/ejemplo.json'; // mismo contenido, sin resolver — el tour necesita el botón ¡Adivina aquí! real
         const ADS_PATH = 'anuncios/actual.json';
 
         // =====================================================================
@@ -1618,8 +1619,16 @@
                     <div class="flex-1 text-center">${dots}</div>
                     <button id="tutorial-next-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-5 rounded-lg transition">${isLast ? 'Entendido ✓' : 'Siguiente →'}</button>
                 </div>
-                ${isLast ? '<p class="text-xs text-gray-500 text-center mt-4">¿Quieres repasar esto más adelante? Reabre el tutorial desde «Sobre el proyecto» → «Ver Tutorial».</p>' : ''}`;
+                ${isLast ? `
+                    <button id="tutorial-start-tour-btn" class="w-full mt-3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-5 rounded-lg transition flex items-center justify-center gap-2">
+                        🧭 Hacer el tour guiado interactivo
+                    </button>
+                    <p class="text-xs text-gray-500 text-center mt-3">¿Quieres repasar esto más adelante? Reabre el tutorial desde «Sobre el proyecto» → «Ver Tutorial».</p>` : ''}`;
 
+            document.getElementById('tutorial-start-tour-btn')?.addEventListener('click', () => {
+                dom.modal.classList.remove('active');
+                startGuidedTour();
+            });
             document.getElementById('tutorial-prev-btn')?.addEventListener('click', () => {
                 if (tutorialPageIndex > 0) { tutorialPageIndex--; renderTutorialPage(); }
             });
@@ -1649,6 +1658,19 @@
 
         function tourEnsureDOM() {
             if (document.getElementById('tour-spotlight')) return;
+
+            // 4 franjas (arriba/abajo/izquierda/derecha) que enmarcan el hueco resaltado
+            // y bloquean los clics en TODO lo demás. El propio elemento resaltado queda
+            // libre (sin ninguna franja encima), así que se puede seguir interactuando
+            // con él con normalidad si hace falta; el resto de la página, no.
+            ['top','bottom','left','right'].forEach(side => {
+                const strip = document.createElement('div');
+                strip.id = 'tour-blocker-' + side;
+                strip.style.cssText = 'position:fixed;z-index:9997;background:transparent;pointer-events:none;';
+                strip.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
+                document.body.appendChild(strip);
+            });
+
             const spotlight = document.createElement('div');
             spotlight.id = 'tour-spotlight';
             spotlight.style.opacity = '0';
@@ -1672,6 +1694,37 @@
                 </div>`;
             document.body.appendChild(tooltip);
         }
+
+        // Coloca las 4 franjas de bloqueo enmarcando exactamente el hueco (rect),
+        // o cubriendo toda la pantalla si rect es null (paso centrado, sin objetivo).
+        function tourPositionBlockers(rect) {
+            const vw = window.innerWidth, vh = window.innerHeight;
+            const top    = document.getElementById('tour-blocker-top');
+            const bottom = document.getElementById('tour-blocker-bottom');
+            const left   = document.getElementById('tour-blocker-left');
+            const right  = document.getElementById('tour-blocker-right');
+            if (!top) return;
+
+            if (!rect) {
+                // Sin objetivo: una sola franja (top) cubre toda la pantalla, las demás se anulan
+                top.style.top = '0px'; top.style.left = '0px';
+                top.style.width = '100vw'; top.style.height = '100vh';
+                [bottom, left, right].forEach(s => { s.style.width = '0px'; s.style.height = '0px'; });
+                return;
+            }
+            top.style.top = '0px'; top.style.left = '0px';
+            top.style.width = vw + 'px'; top.style.height = Math.max(0, rect.top) + 'px';
+
+            bottom.style.top = rect.bottom + 'px'; bottom.style.left = '0px';
+            bottom.style.width = vw + 'px'; bottom.style.height = Math.max(0, vh - rect.bottom) + 'px';
+
+            left.style.top = rect.top + 'px'; left.style.left = '0px';
+            left.style.width = Math.max(0, rect.left) + 'px'; left.style.height = rect.height + 'px';
+
+            right.style.top = rect.top + 'px'; right.style.left = rect.right + 'px';
+            right.style.width = Math.max(0, vw - rect.right) + 'px'; right.style.height = rect.height + 'px';
+        }
+
 
         // Cada paso: { selector (o null = paso centrado sin objetivo),
         // title, text, before (función async opcional que se ejecuta ANTES
@@ -1707,9 +1760,15 @@
                     text: 'O si prefieres, pulsa aquí para verlas todas juntas y pasar directamente a responder.'
                 },
                 {
-                    selector: '#resolver-solucion',
+                    selector: '.guess-btn',
                     title: '¡Adivina aquí!',
-                    text: 'Cuando creas tener la solución, pulsas este botón para abrir el formulario. Vamos a verlo en modo demo — escribirías aquí tu respuesta.',
+                    text: 'Cuando creas tener la solución, pulsas este botón para abrir el formulario de respuesta.',
+                    before: async () => { document.querySelector('.view-all-clues-btn')?.click(); }
+                },
+                {
+                    selector: '#resolver-solucion',
+                    title: 'Tu solución',
+                    text: 'Escribes aquí qué crees que es «la intersección». Es obligatorio. Vamos a abrir el formulario en modo demo — no se enviará nada real.',
                     before: async () => {
                         if (!tourExampleGame) return;
                         dom.modal.classList.remove('active');
@@ -1743,12 +1802,6 @@
                     }
                 },
                 {
-                    selector: '#scoring-info-btn',
-                    title: 'Sistema de puntos',
-                    text: 'Pulsa este icono cuando quieras para ver la fórmula exacta de puntuación.',
-                    before: async () => { document.querySelector('.tab-button[data-tab="sobre"]')?.click(); }
-                },
-                {
                     selector: '#bell-btn',
                     title: 'Notificaciones',
                     text: 'La campana te avisa cuando revisan tu respuesta, salen nuevas pistas o hay un anuncio importante.'
@@ -1769,7 +1822,7 @@
         async function tourOpenExampleGame(view) {
             if (!tourExampleGame) {
                 try {
-                    const response = await fetch(`${EXAMPLE_GAME_PATH}?v=${Date.now()}`);
+                    const response = await fetch(`${TOUR_EXAMPLE_PATH}?v=${Date.now()}`);
                     if (!response.ok) throw new Error();
                     tourExampleGame = await response.json();
                 } catch (e) {
@@ -1795,16 +1848,25 @@
                 tooltip.style.left = '50%';
                 tooltip.style.transform = 'translate(-50%, -50%)';
                 tooltip.style.opacity = '1';
+                tourPositionBlockers(null);
                 return;
             }
 
-            const rect = el.getBoundingClientRect();
+            const r = el.getBoundingClientRect();
+            // Rectángulo con el mismo padding que se ve en el spotlight — el hueco
+            // "clicable" debe coincidir exactamente con el hueco visual.
+            const rect = {
+                top: r.top - pad, left: r.left - pad,
+                width: r.width + pad * 2, height: r.height + pad * 2,
+                bottom: r.bottom + pad, right: r.right + pad
+            };
             spotlight.classList.remove('centered');
-            spotlight.style.top    = (rect.top - pad) + 'px';
-            spotlight.style.left   = (rect.left - pad) + 'px';
-            spotlight.style.width  = (rect.width + pad * 2) + 'px';
-            spotlight.style.height = (rect.height + pad * 2) + 'px';
+            spotlight.style.top    = rect.top + 'px';
+            spotlight.style.left   = rect.left + 'px';
+            spotlight.style.width  = rect.width + 'px';
+            spotlight.style.height = rect.height + 'px';
             spotlight.style.opacity = '1';
+            tourPositionBlockers(rect);
 
             // Tooltip: debajo del elemento si hay sitio, si no, encima.
             const tooltipWidth = Math.min(320, window.innerWidth - 32);
@@ -1813,7 +1875,7 @@
             let left = rect.left + rect.width/2 - tooltipWidth/2;
             left = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16));
             const spaceBelow = window.innerHeight - rect.bottom;
-            const top = spaceBelow > 220 ? rect.bottom + pad + 12 : Math.max(16, rect.top - pad - 12 - 200);
+            const top = spaceBelow > 220 ? rect.bottom + 12 : Math.max(16, rect.top - 12 - 200);
             tooltip.style.left = left + 'px';
             tooltip.style.top  = top + 'px';
             tooltip.style.opacity = '1';
@@ -1862,6 +1924,10 @@
             const tooltip   = document.getElementById('tour-tooltip');
             if (spotlight) spotlight.style.opacity = '0';
             if (tooltip)   tooltip.style.opacity   = '0';
+            ['top','bottom','left','right'].forEach(side => {
+                const s = document.getElementById('tour-blocker-' + side);
+                if (s) s.style.pointerEvents = 'none';
+            });
             // Dejar la pantalla limpia: cerrar cualquier modal que el tour haya abierto
             dom.resolverModal.classList.remove('active');
             dom.modal.classList.remove('active');
@@ -1873,6 +1939,10 @@
             tourEnsureDOM();
             tourExampleGame = null;
             tourActive = true;
+            ['top','bottom','left','right'].forEach(side => {
+                const s = document.getElementById('tour-blocker-' + side);
+                if (s) s.style.pointerEvents = 'auto';
+            });
             window.addEventListener('resize', tourReposition);
             window.addEventListener('scroll', tourReposition, true);
             showTourStep(0);
