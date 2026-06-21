@@ -1739,78 +1739,93 @@
                 {
                     selector: null,
                     title: '👋 ¡Vamos a hacer un recorrido rápido!',
-                    text: 'Te enseño las partes principales del juego usando el Misterio de Ejemplo, sin que se envíe nada real. Dura un par de minutos.'
+                    text: 'Te enseño las partes principales del juego usando el Misterio de Ejemplo, sin que se envíe nada real. Dura un par de minutos.',
+                    before: async () => { tourCloseAllModals(); }
                 },
                 {
                     selector: '#main-tabs-nav',
                     title: 'Las pestañas principales',
                     text: 'Aquí navegas entre Misterios en Curso, Archivo, Podio y Sobre el Proyecto.',
-                    before: async () => { document.querySelector('.tab-button[data-tab="en-curso"]')?.click(); }
+                    before: async () => {
+                        tourCloseAllModals();
+                        document.querySelector('.tab-button[data-tab="en-curso"]')?.click();
+                    }
                 },
                 {
                     selector: '#en-curso > div:first-child',
                     title: 'Así se abre un misterio',
                     text: 'Pulsa sobre cualquier tarjeta para ver sus detalles. Vamos a abrir el Misterio de Ejemplo para que veas cómo es por dentro.',
-                    advanceOnClick: true
+                    advanceOnClick: true,
+                    before: async () => {
+                        tourCloseAllModals();
+                        document.querySelector('.tab-button[data-tab="en-curso"]')?.click();
+                    }
                 },
                 {
                     selector: '#modal-badges',
                     title: 'Tipo y dificultad',
                     text: 'Cada misterio muestra aquí su tipo y su dificultad.',
-                    before: async () => { await tourOpenExampleGame('summary'); }
+                    before: async () => { tourCloseAllModals(); await tourOpenExampleGame('summary'); }
                 },
                 {
-                    selector: '#modal-content',
+                    selector: '#clue-index-wrapper',
                     title: 'Índice de pistas',
-                    text: 'Aquí ves todas las pistas disponibles. Puedes abrirlas una a una desde este índice.'
+                    text: 'Aquí ves todas las pistas disponibles. Puedes abrirlas una a una desde este índice.',
+                    before: async () => { tourCloseAllModals(); await tourOpenExampleGame('summary'); }
                 },
                 {
                     selector: '.view-all-clues-btn',
                     title: 'Ver todas las pistas',
                     text: 'O si prefieres, pulsa aquí para verlas todas juntas y pasar directamente a responder.',
-                    advanceOnClick: true
+                    advanceOnClick: true,
+                    before: async () => { tourCloseAllModals(); await tourOpenExampleGame('summary'); }
                 },
                 {
                     selector: '.guess-btn',
                     title: '¡Adivina aquí!',
                     text: 'Cuando creas tener la solución, pulsas este botón para abrir el formulario de respuesta.',
                     advanceOnClick: true,
-                    before: async () => { document.querySelector('.view-all-clues-btn')?.click(); }
+                    before: async () => {
+                        tourCloseAllModals();
+                        await tourOpenExampleGame('summary');
+                        document.querySelector('.view-all-clues-btn')?.click();
+                    }
                 },
                 {
                     selector: '#resolver-solucion',
                     title: 'Tu solución',
                     text: 'Escribes aquí qué crees que es «la intersección». Es obligatorio. Vamos a abrir el formulario en modo demo — no se enviará nada real.',
                     before: async () => {
-                        if (!tourExampleGame) return;
-                        dom.modal.classList.remove('active');
-                        openResolverModal(tourExampleGame, true); // true = modo demo, no se envía
+                        if (!tourExampleGame) { await tourOpenExampleGame('summary'); }
+                        tourCloseAllModals();
+                        if (tourExampleGame) openResolverModal(tourExampleGame, true); // true = modo demo, no se envía
                     }
                 },
                 {
                     selector: '#resolver-explicacion',
                     title: 'Tu explicación',
-                    text: 'Cuenta brevemente tu razonamiento. También es obligatorio — ayuda mucho a quien revisa tu respuesta.'
+                    text: 'Cuenta brevemente tu razonamiento. También es obligatorio — ayuda mucho a quien revisa tu respuesta.',
+                    before: async () => { tourEnsureResolverOpen(); }
                 },
                 {
                     selector: '#resolver-dificultad-btns',
                     title: 'Dificultad percibida',
                     text: 'Esto es opcional: tu propia valoración de lo difícil que te ha parecido, más allá de la dificultad oficial del misterio. Prueba a pulsar una.',
-                    advanceOnClick: true
+                    advanceOnClick: true,
+                    before: async () => { tourEnsureResolverOpen(); }
                 },
                 {
                     selector: '#resolver-opinion',
                     title: 'Opinión / Sugerencias',
-                    text: 'También opcional: cualquier comentario que quieras dejar sobre este misterio en concreto.'
+                    text: 'También opcional: cualquier comentario que quieras dejar sobre este misterio en concreto.',
+                    before: async () => { tourEnsureResolverOpen(); }
                 },
                 {
                     selector: '#podium-season-select',
                     title: 'Elige tu clasificación',
                     text: 'Aquí cambias entre Clasificación General, rachas de aciertos o de participaciones, y quién ha participado en más misterios.',
                     before: async () => {
-                        // Cerrar el demo y el modal del misterio antes de pasar al podio
-                        dom.resolverModal.classList.remove('active');
-                        dom.modal.classList.remove('active');
+                        tourCloseAllModals();
                         document.querySelector('.tab-button[data-tab="podio"]')?.click();
                         // El clic dispara loadLeaderboard() sin esperarlo (fire-and-forget) — si no
                         // lo esperamos aquí también, medimos la posición ANTES de que lleguen los
@@ -1823,7 +1838,8 @@
                     selector: '#bell-btn',
                     title: 'Notificaciones',
                     text: 'La campana te avisa cuando revisan tu respuesta, salen nuevas pistas o hay un anuncio importante.',
-                    advanceOnClick: true
+                    advanceOnClick: true,
+                    before: async () => { tourCloseAllModals(); }
                 },
                 // ── Identidad: rama distinta según si hay sesión iniciada o no. Se decide
                 // UNA VEZ al arrancar el tour (tourIsGuestFlow), no en cada paso. ──
@@ -1831,7 +1847,8 @@
                     {
                         selector: '#my-id-btn',
                         title: 'Tu identidad',
-                        text: 'Estás jugando como invitado: tu progreso no se guarda todavía. Vamos a ver cómo crearías una cuenta — es instantáneo, sin email ni contraseña.'
+                        text: 'Estás jugando como invitado: tu progreso no se guarda todavía. Vamos a ver cómo crearías una cuenta — es instantáneo, sin email ni contraseña.',
+                        before: async () => { tourCloseAllModals(); }
                     },
                     {
                         selector: '#welcome-new-btn',
@@ -1839,6 +1856,7 @@
                         text: 'Pulsa aquí para empezar a crear tu cuenta nueva.',
                         advanceOnClick: true,
                         before: async () => {
+                            tourCloseAllModals();
                             dom.welcomeStep2.classList.add('hidden');
                             dom.welcomeStep1.classList.remove('hidden');
                             dom.welcomeModal.classList.add('active');
@@ -1848,40 +1866,40 @@
                         selector: '#welcome-username',
                         title: 'Tu nombre de usuario',
                         text: 'Este será tu identificador único. Aparecerá en el Podio junto a un pequeño código para que no se repita con el de otra persona.',
-                        before: async () => {
-                            dom.welcomeStep1.classList.add('hidden');
-                            dom.welcomeStep2.classList.remove('hidden');
-                        }
+                        before: async () => { tourEnsureWelcomeStep2Open(); }
                     },
                     {
                         selector: '#welcome-displayname',
                         title: 'Tu nombre para mostrar',
-                        text: 'Este es el nombre "bonito" que verán tus amigos — puede repetirse, no pasa nada.'
+                        text: 'Este es el nombre "bonito" que verán tus amigos — puede repetirse, no pasa nada.',
+                        before: async () => { tourEnsureWelcomeStep2Open(); }
                     },
                     {
                         selector: null,
                         title: '🔑 Después de crear tu cuenta',
                         text: 'Una vez la crees, podrás ver y gestionar tu ID y tu frase semilla de recuperación desde el botón «Mi ID». ¡No los pierdas, son la única forma de volver a entrar!',
-                        before: async () => { dom.welcomeModal.classList.remove('active'); }
+                        before: async () => { tourCloseAllModals(); }
                     }
                 ] : [
                     {
                         selector: '#my-id-btn',
                         title: 'Tu identidad',
                         text: 'Aquí gestionas tu ID y tu frase semilla de recuperación. Vamos a echar un vistazo dentro.',
-                        advanceOnClick: true
+                        advanceOnClick: true,
+                        before: async () => { tourCloseAllModals(); }
                     },
                     {
                         selector: '#user-id-display',
                         title: 'Tu ID Público',
                         text: 'Este es el identificador que aparece en el Podio. No es secreto, lo puede ver cualquiera.',
-                        before: async () => { openIdModal(); }
+                        before: async () => { tourEnsureIdModalOpen(); }
                     },
                     {
                         selector: '#id-modal-seed-details',
                         title: '🌱 Tu frase semilla',
                         text: 'Tres palabras como alternativa de recuperación si pierdes el archivo de tu ID. Guárdalas en un sitio seguro — sin ellas (ni el archivo), no hay forma de recuperar tu cuenta.',
                         before: async () => {
+                            tourEnsureIdModalOpen();
                             const details = document.getElementById('id-modal-seed-details');
                             if (details) details.open = true;
                         }
@@ -1890,17 +1908,15 @@
                         selector: '#download-id-btn',
                         title: 'Guarda una copia',
                         text: 'Descarga un archivo con tu ID — ábrelo en cualquier dispositivo para volver a entrar con tu cuenta.',
-                        advanceOnClick: true
+                        advanceOnClick: true,
+                        before: async () => { tourEnsureIdModalOpen(); }
                     }
                 ]),
                 {
                     selector: null,
                     title: '🎉 ¡Listo!',
                     text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour, lo encuentras en «Sobre el proyecto» → «Tour Guiado Interactivo». ¡Ahora sí, a jugar de verdad!',
-                    before: async () => {
-                        dom.idModal.classList.remove('active');
-                        dom.welcomeModal.classList.remove('active');
-                    }
+                    before: async () => { tourCloseAllModals(); }
                 }
             ];
         }
@@ -1917,6 +1933,45 @@
                 }
             }
             openModalWithGame(tourExampleGame, view);
+        }
+
+        // Cierra TODOS los modales que el tour puede llegar a abrir. Se llama al principio
+        // de la mayoría de pasos para que, sea cual sea la dirección desde la que se llega
+        // (Siguiente o Anterior), cada paso parta de un estado limpio y predecible en vez de
+        // asumir que se viene linealmente del paso justo anterior.
+        function tourCloseAllModals() {
+            dom.modal.classList.remove('active');
+            dom.resolverModal.classList.remove('active');
+            dom.idModal.classList.remove('active');
+            dom.welcomeModal.classList.remove('active');
+        }
+
+        // Asegura el formulario demo abierto SIN reabrirlo si ya está abierto — así, al
+        // moverse entre los pasos del propio formulario (solución/explicación/dificultad/
+        // opinión), no se pierde lo que el usuario ya hubiera escrito.
+        function tourEnsureResolverOpen() {
+            if (!dom.resolverModal.classList.contains('active') && tourExampleGame) {
+                tourCloseAllModals();
+                openResolverModal(tourExampleGame, true);
+            }
+        }
+
+        // Igual que arriba pero para el modal de Mi ID
+        function tourEnsureIdModalOpen() {
+            if (!dom.idModal.classList.contains('active')) {
+                tourCloseAllModals();
+                openIdModal();
+            }
+        }
+
+        // Igual que arriba pero para el modal de bienvenida (crear cuenta), en su paso 2
+        function tourEnsureWelcomeStep2Open() {
+            if (!dom.welcomeModal.classList.contains('active') || dom.welcomeStep2.classList.contains('hidden')) {
+                tourCloseAllModals();
+                dom.welcomeStep1.classList.add('hidden');
+                dom.welcomeStep2.classList.remove('hidden');
+                dom.welcomeModal.classList.add('active');
+            }
         }
 
         function tourPositionFor(el) {
@@ -2005,7 +2060,10 @@
                 if (tourStepIndex === steps.length - 1) endTour();
                 else showTourStep(tourStepIndex + 1);
             };
-            document.getElementById('tour-skip-btn').onclick = endTour;
+            document.getElementById('tour-skip-btn').onclick = () => {
+                endTour();
+                showToast('Puedes retomar el tour cuando quieras desde «Sobre el proyecto» → «Tour Guiado Interactivo».', false);
+            };
 
             // Si el paso lo permite, pulsar el elemento real resaltado también avanza —
             // así no hace falta usar "Siguiente" si el usuario ya ha interactuado de verdad
@@ -2049,7 +2107,6 @@
             dom.modal.classList.remove('active');
             dom.idModal.classList.remove('active');
             window.removeEventListener('resize', tourReposition);
-            window.removeEventListener('scroll', tourReposition, true);
         }
 
         let tourIsGuestFlow = false; // capturado al iniciar el tour, no se reevalúa a mitad
@@ -2066,7 +2123,6 @@
                 if (s) s.style.pointerEvents = 'auto';
             });
             window.addEventListener('resize', tourReposition);
-            window.addEventListener('scroll', tourReposition, true);
             showTourStep(0);
         }
 
@@ -2403,7 +2459,7 @@
             switch(view) {
                 case 'summary':
                     const cluesIndex = availableClues.length > 0 ? `
-                        <div class="mt-6">
+                        <div class="mt-6" id="clue-index-wrapper">
                             <h4 class="text-xl font-bold text-indigo-400">Índice de Pistas</h4>
                             <ul class="space-y-2 mt-3 text-gray-300">
                                 ${availableClues.map((clue, index) => `<li><a href="#" class="view-clue-btn flex justify-between items-center w-full hover:bg-gray-700/50 p-3 rounded-lg transition-colors" data-clue-index="${index}"><span class="font-semibold">${getOrdinal(index + 1)} pista</span>${getClueTypeTag(clue.type)}</a></li>`).join('')}
