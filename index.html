@@ -213,7 +213,7 @@
 
                     <!-- Contenedor especial para Top 3 de Temporada Finalizada -->
                     <div id="season-winners-display" class="hidden mb-8 p-6 bg-gradient-to-b from-gray-900 to-gray-800 rounded-xl border border-yellow-500/30 text-center">
-                        <h3 class="text-yellow-400 font-bold tracking-widest uppercase mb-4 text-sm">🏆 Salón de la Fama de Temporada 🏆</h3>
+                        <h3 class="text-yellow-400 font-bold tracking-widest uppercase mb-4 text-sm">🏆 Podio de Temporada 🏆</h3>
                         <div class="flex justify-center items-end gap-4 h-48 pb-2">
                              <!-- 2do Lugar -->
                              <div class="flex flex-col items-center group w-1/3">
@@ -265,7 +265,7 @@
                  <div class="space-y-8 fade-in">
                     <div class="bg-gray-800 rounded-xl shadow-lg p-8">
                         <h2 class="text-3xl font-bold text-indigo-400 mb-4">¿Qué es «La Intersección»?</h2>
-                        <p class="text-gray-300 leading-relaxed">Este es un pequeño proyecto de entretenimiento inspirado en el famoso concurso «Saber y Ganar». El objetivo es adivinar «la intersección» —que puede ser una persona, un lugar, una película, una canción o cualquier cosa imaginable— a partir de pequeñas pistas que se irán revelando semanalmente. Es un reto a la paciencia, la deducción y la cultura general.</p>
+                        <p class="text-gray-300 leading-relaxed">Este es un pequeño proyecto de entretenimiento inspirado en el famoso concurso «Saber y Ganar». El objetivo es adivinar «la intersección» (que puede ser una persona, un lugar, una película, una canción o cualquier cosa imaginable) a partir de pequeñas pistas que se irán revelando semanalmente. Es un reto a la paciencia, la deducción y la cultura general.</p>
                     </div>
                      <div class="grid md:grid-cols-5 gap-8">
                         <div class="md:col-span-3 bg-gray-800 rounded-xl shadow-lg p-8">
@@ -273,7 +273,7 @@
                             <ol class="space-y-5">
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">1</div><div class="pt-1">Visita la pestaña <strong>Misterios en Curso</strong> o el <strong>Archivo</strong> para elegir un juego.</div></li>
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">2</div><div class="pt-1">Si ya está resuelto, puedes ver la solución directamente o intentarlo tú primero, pista a pista.</div></li>
-                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">3</div><div class="pt-1">Cuando creas tener la solución (en un juego en curso), rellena el formulario: tu respuesta y una breve explicación de tu razonamiento.</div></li>
+                                <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">3</div><div class="pt-1">Cuando creas tener la solución (en un juego en curso), envía tu respuesta y una breve explicación de tu razonamiento.</div></li>
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">4</div><div class="pt-1">Espera la revisión — te llegará una notificación 🔔 en cuanto se confirme si has acertado.</div></li>
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">5</div><div class="pt-1">¡Compite en el Podio acumulando puntos por tus aciertos y manteniendo tu racha!</div></li>
                             </ol>
@@ -385,7 +385,7 @@
 
             <!-- Paso 3: Recuperar con frase semilla -->
             <div id="welcome-step-3" class="hidden text-left">
-                <h2 class="text-2xl font-extrabold text-white mb-1 text-center">🌱 Recuperar cuenta</h2>
+                <h2 class="text-2xl font-extrabold text-white mb-1 text-center">🌱 Recuperar cuenta (iniciar sesión)</h2>
                 <p class="text-gray-400 mb-5 text-sm text-center">Introduce tu nombre de usuario y las tres palabras de tu frase semilla.</p>
                 <div class="space-y-3">
                     <input id="welcome-recover-username" type="text" placeholder="Tu nombre de usuario (ej: beita)"
@@ -505,7 +505,7 @@
                     <div>
                         <label class="block text-sm font-bold text-gray-300 mb-1">Explicación <span class="text-red-400">*</span></label>
                         <textarea id="resolver-explicacion" rows="3" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none" placeholder="¿Cómo llegaste a esa conclusión? Cuéntanos tu razonamiento."></textarea>
-                        <p id="explicacion-error" class="hidden text-red-400 text-xs mt-1">Debes explicar tu razonamiento para poder enviar.</p>
+                        <p id="explicacion-error" class="hidden text-red-400 text-xs mt-1">Debes explicar tu razonamiento para poder enviar la respuesta.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-gray-300 mb-2">¿Cómo te ha parecido de difícil? <span class="text-gray-500 font-normal">(opcional)</span></label>
@@ -560,7 +560,7 @@
     <div id="feedback-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-[95]">
         <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md">
             <div class="flex items-center justify-between p-5 border-b border-gray-700">
-                <h3 class="text-base font-bold text-white">💬 Danos tu opinión</h3>
+                <h3 class="text-base font-bold text-white">💬 Dame tu opinión</h3>
                 <button id="feedback-modal-close" class="text-gray-400 hover:text-white text-2xl leading-none">×</button>
             </div>
             <div id="feedback-form" class="p-5 space-y-4">
@@ -598,7 +598,7 @@
             <div id="feedback-success" class="hidden text-center p-10">
                 <div class="text-5xl mb-4">🙏</div>
                 <h4 class="text-lg font-bold text-white mb-2">¡Gracias por tu opinión!</h4>
-                <p class="text-gray-400 text-sm mb-6">Tu comentario nos ayuda a mejorar el juego.</p>
+                <p class="text-gray-400 text-sm mb-6">Le echaré un vistazo en cuanto pueda.</p>
                 <button id="feedback-done-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-lg text-sm">Cerrar</button>
             </div>
         </div>
@@ -1190,7 +1190,7 @@
             const lockButtons = [dom.welcomeSubmitBtn, dom.welcomeBackBtn];
             const originalSubmitHTML = dom.welcomeSubmitBtn.innerHTML;
             lockButtons.forEach(b => b && (b.disabled = true));
-            dom.welcomeSubmitBtn.innerHTML = '⏳ Creando tu cuenta…';
+            dom.welcomeSubmitBtn.innerHTML = '⏳ Cargando… Espera unos segundos…';
             dom.welcomeSubmitBtn.classList.add('opacity-70', 'cursor-not-allowed');
             dom.welcomeFormError.classList.add('hidden');
 
@@ -1333,7 +1333,7 @@
                 const res    = await fetch(`${APPS_SCRIPT_URL}?${params}`);
                 const data   = await res.json();
                 if (data.error) {
-                    errEl.textContent = '❌ ' + (data.error.includes('no encontrado') ? 'No hemos encontrado esa combinación de usuario y frase. Comprueba que estén bien escritos.' : data.error);
+                    errEl.textContent = '❌ ' + (data.error.includes('no encontrado') ? 'No se ha encontrado esa combinación de usuario y frase. Comprueba que estén bien escritos.' : data.error);
                     errEl.classList.remove('hidden');
                 } else {
                     userId = data.privateId;
@@ -1530,10 +1530,10 @@
                 icon: '🔍',
                 title: '¿En qué consiste esto?',
                 body: `
-                    <p>La Intersección es un juego de misterios semanales. Tu objetivo es adivinar <strong>«la intersección»</strong> —la persona, lugar, cosa o concepto que conecta todas las pistas— antes que el resto.</p>
-                    <p class="mt-3">Cada semana se publican nuevas pistas en los juegos activos. Tú decides cuándo intentarlo: en cuanto sale la primera pista, a mitad de semana, o esperando a tener más información — cada estrategia tiene sus ventajas (lo vemos en «Podios y puntos»).</p>
+                    <p>La Intersección es un juego de misterios semanales. Tu objetivo es adivinar <strong>«la intersección»</strong> (la persona, lugar, cosa o concepto) que conecta todas las pistas antes que el resto.</p>
+                    <p class="mt-3">Normalmente cada semana se publican nuevas pistas en los juegos activos, aunque dependiendo del tipo de juego puede variar. Tú decides cuándo intentarlo: en cuanto sale la primera pista, a mitad de semana, esperando a tener más información... Cada estrategia tiene sus ventajas (ahora te digo cuando llegues a la parte de «Podios y puntos»).</p>
                     <div class="bg-gray-700/50 p-4 rounded-lg mt-5 border border-indigo-500/30">
-                        <p class="text-sm text-center">💡 <strong>Consejo:</strong> No te pierdas las notificaciones en la campana de anuncios para saber cuándo hay nuevas pistas.</p>
+                        <p class="text-sm text-center">💡 <strong>Consejo:</strong> Estate pendiente de las notificaciones en la campana de anuncios para saber cuándo hay nuevas pistas.</p>
                     </div>`
             },
             {
@@ -1542,29 +1542,29 @@
                 body: `
                     <h4 class="text-base font-bold text-white mb-2">Tipos de misterio</h4>
                     <ul class="list-disc pl-5 space-y-2 mb-5">
-                        <li><strong>Semanal:</strong> el formato clásico, con pistas que se revelan a lo largo de la semana.</li>
-                        <li><strong>Diario / Relámpago:</strong> misterios más cortos, pensados para resolver en menos tiempo.</li>
+                        <li><strong>Semanal:</strong> el formato clásico, con pistas que se revelan cada semana.</li>
+                        <li><strong>Diario / Relámpago:</strong> misterios más cortos, pensados para resolver en menos tiempo. Si un misterio es <strong>Diario</strong> se publica una pista al día, y los <strong>Relámpago</strong> suelen ser cada pocas horasa o así (se indica en el misterio que sea).</li>
                         <li><strong>Especial:</strong> eventos temáticos, a veces con reglas distintas.</li>
                         <li><strong>Tutorial:</strong> misterios pensados para aprender a jugar, sin presión.</li>
                     </ul>
                     <h4 class="text-base font-bold text-white mb-2">Dificultad</h4>
-                    <p>Cada misterio tiene una dificultad asignada —<strong>Fácil 😇</strong>, <strong>Medio 🧐</strong> o <strong>Difícil 😈</strong>— que puedes usar para filtrar en la lista de juegos. También afecta a los puntos que ganas si aciertas.</p>
-                    <p class="text-xs text-gray-500 italic mt-3 pt-3 border-t border-gray-700">💭 Opinión personal de quien hace los misterios: los «Fáciles» suelen ser ridículamente sencillos y los «Medios» tampoco se quedan muy atrás — los que de verdad merecen la pena son los «Difíciles». Pero anímate a probarlos todos, ¡nunca se sabe!</p>`
+                    <p>Cada misterio tiene una dificultad asignada (<strong>Fácil 😇</strong>, <strong>Medio 🧐</strong> o <strong>Difícil 😈</strong>) que puedes filtrar en la lista de juegos. La dificultad también afecta a los puntos que ganas si aciertas, porque no es lo mismo resolver uno sencillito que uno más elaborado, no sé si me explico.</p>
+                    <p class="text-xs text-gray-500 italic mt-3 pt-3 border-t border-gray-700">💭 Opinión personal: los «Fáciles» suelen ser ridículamente sencillos y los «Medios» tampoco se quedan muy atrás, los que de verdad merecen la pena son los «Difíciles». Pero bueno, que esa es solamente mi opinión, anímate a probarlos todos, ¡nunca se sabe! Los fáciles los añadí porque había gente que quería probar algo más facilito.</p>`
             },
             {
                 icon: '✍️',
-                title: 'Cómo resolver',
+                title: 'Cómo resolver un misterio',
                 body: `
                     <p>Cuando creas tener la solución de un misterio en curso, pulsa <strong>¡Adivina aquí!</strong> y rellena el formulario:</p>
                     <ul class="list-disc pl-5 space-y-2 mt-3">
                         <li><strong>Tu solución</strong> (obligatorio): qué crees que es «la intersección».</li>
-                        <li><strong>Explicación</strong> (obligatorio): cómo llegaste a esa conclusión. Ayuda a quien revisa a entender tu razonamiento, sobre todo si la solución es ambigua.</li>
-                        <li><strong>Dificultad percibida</strong> (opcional): cómo de difícil te ha parecido a ti.</li>
-                        <li><strong>Opinión / Sugerencias</strong> (opcional): cualquier comentario sobre el misterio en sí.</li>
+                        <li><strong>Explicación</strong> (obligatorio): cómo llegaste a esa conclusión. Si está bien explicado me ayuda a entender tu razonamiento, sobre todo si la solución es ambigua, y por tanto poder darte un empujoncito si no te has quedado muy lejos (o si no te has acercado para nada jajaja).</li>
+                        <li><strong>Dificultad percibida</strong> (opcional): cómo de difícil te ha parecido a ti (es subjetivo).</li>
+                        <li><strong>Opinión / Sugerencias</strong> (opcional): cualquier comentario sobre el misterio en sí. Para otras cosas te pediría que usases el botoncito de <strong>Dame tu opinión</strong> en la pestaña de <strong>Sobre el Proyecto</strong>, que si no es un lío. ¡Gracias!</li>
                     </ul>
-                    <p class="mt-3">Las respuestas se revisan a mano, así que no hay un veredicto instantáneo — recibirás una <strong>notificación 🔔</strong> en cuanto se confirme si has acertado o no.</p>
+                    <p class="mt-3">Las respuestas las reviso a mano, así que no hay un veredicto instantáneo; recibirás una <strong>notificación 🔔</strong> en cuanto vea si has acertado o no.</p>
                     <div class="bg-gray-700/50 p-4 rounded-lg mt-5 border border-indigo-500/30">
-                        <p class="text-sm text-center">💡 <strong>Dato curioso:</strong> participar cuenta para tu racha de participaciones aunque falles — no solo cuando aciertas.</p>
+                        <p class="text-sm text-center">💡 <strong>Nota:</strong> participar cuenta para tu racha de participaciones aunque falles, no sólo cuando aciertas.</p>
                     </div>`
             },
             {
@@ -1576,10 +1576,10 @@
                         <li><strong>🏆 Clasificación General:</strong> puntos totales acumulados por tus aciertos.</li>
                         <li><strong>🔥 Racha de aciertos:</strong> misterios consecutivos que has resuelto correctamente.</li>
                         <li><strong>🔥 Racha de participaciones:</strong> misterios consecutivos en los que has participado, aciertes o no.</li>
-                        <li><strong>👥 Más misterios participados:</strong> quién ha jugado más misterios distintos, sin importar el resultado.</li>
+                        <li><strong>👥 Más misterios participados:</strong> quién ha jugado más misterios distintos, sin importar el resultado. También dice cuántas veces ha intentado resolver cada usuario en total.</li>
                     </ul>
-                    <p class="mt-3">Si hay alguna <strong>Temporada</strong> especial activa, también aparecerá como opción adicional en el selector.</p>
-                    <p class="mt-3">Los puntos dependen de tu posición al acertar, la dificultad del misterio, cuántas pistas te ahorraste y si respondiste con demora. Pulsa la <strong>ℹ️</strong> junto al podio para ver la fórmula completa.</p>`
+                    <p class="mt-3">Si hay alguna <strong>Temporada</strong> especial activa (o ya acabada), también aparecerá como opción adicional en el selector.</p>
+                    <p class="mt-3">Los puntos dependen de tu posición al acertar, la dificultad del misterio, cuántas pistas te ahorraste y si respondiste con demora (es decir, una vez publicadas todas las pistas). Pulsa la <strong>ℹ️</strong> junto al podio para ver la fórmula completa.</p>`
             },
             {
                 icon: '🔑',
@@ -1589,8 +1589,8 @@
                     <ul class="list-disc pl-5 space-y-2 mt-3">
                         <li><strong>ID Público:</strong> el que aparece en el podio (no es secreto).</li>
                         <li><strong>ID Privado:</strong> tu clave de acceso completa. Nunca la compartas.</li>
-                        <li><strong>Archivo de respaldo:</strong> desde <strong>Mi ID</strong> puedes descargar un archivo con tu ID — ábrelo para volver a entrar desde cualquier dispositivo.</li>
-                        <li><strong>🌱 Frase semilla:</strong> tres palabras fáciles de recordar (o anotar a mano) como alternativa al archivo, por si lo pierdes.</li>
+                        <li><strong>Archivo de respaldo:</strong> desde <strong>Mi ID</strong> puedes descargar un archivo con tu ID, ábrelo para volver a iniciar sesión desde cualquier dispositivo.</li>
+                        <li><strong>🌱 Frase semilla:</strong> tres palabras fáciles de recordar (o anotar a mano) como alternativa al archivo, por si lo pierdes. Pero el archivo es más manejable en mi opinión, porque es simplemente una redirección con tu ID como parámetro de la URL y no tienes que acordarte de nada.</li>
                     </ul>
                     <div class="bg-yellow-900/30 p-4 rounded-lg mt-5 border border-yellow-700/50">
                         <p class="text-sm text-center">⚠️ <strong>Importante:</strong> si pierdes tu ID y no tienes la frase semilla guardada, no hay forma de recuperar tu cuenta.</p>
@@ -1739,7 +1739,7 @@
                 {
                     selector: null,
                     title: '👋 ¡Vamos a hacer un recorrido rápido!',
-                    text: 'Te enseño las partes principales del juego usando el Misterio de Ejemplo, sin que se envíe nada real. Dura un par de minutos.',
+                    text: 'Esto es simplemente para ver las partes principales del juego usando el Misterio de Ejemplo, sin que se envíe nada real, y también entender un poquito la interfaz y eso. Dura un par de minutos.',
                     before: async () => { tourCloseAllModals(); }
                 },
                 {
@@ -1754,7 +1754,7 @@
                 {
                     selector: '#en-curso > div:first-child',
                     title: 'Así se abre un misterio',
-                    text: 'Pulsa sobre cualquier tarjeta para ver sus detalles. Vamos a abrir el Misterio de Ejemplo para que veas cómo es por dentro.',
+                    text: 'Pulsa sobre cualquier tarjeta para ver sus detalles. Vamos a abrir un misterio de ejemplo para que veas cómo es por dentro.',
                     advanceOnClick: true,
                     before: async () => {
                         tourCloseAllModals();
@@ -1776,14 +1776,14 @@
                 {
                     selector: '.view-all-clues-btn',
                     title: 'Ver todas las pistas',
-                    text: 'O si prefieres, pulsa aquí para verlas todas juntas y pasar directamente a responder.',
+                    text: 'O si prefieres, pulsa aquí para verlas todas juntas y responder directamente.',
                     advanceOnClick: true,
                     before: async () => { tourCloseAllModals(); await tourOpenExampleGame('summary'); }
                 },
                 {
                     selector: '.guess-btn',
                     title: '¡Adivina aquí!',
-                    text: 'Cuando creas tener la solución, pulsas este botón para abrir el formulario de respuesta.',
+                    text: 'Cuando creas tener la solución, pulsas este botón para enviar tu respuesta.',
                     advanceOnClick: true,
                     before: async () => {
                         tourCloseAllModals();
@@ -1793,8 +1793,8 @@
                 },
                 {
                     selector: '#resolver-solucion',
-                    title: 'Tu solución',
-                    text: 'Escribes aquí qué crees que es «la intersección». Es obligatorio. Vamos a abrir el formulario en modo demo — no se enviará nada real.',
+                    title: 'La solución',
+                    text: 'Escribes aquí qué crees que es «la intersección». Es obligatorio (obviamente). Vamos a abrir el formulario en modo demo, no se enviará nada real.',
                     before: async () => {
                         if (!tourExampleGame) { await tourOpenExampleGame('summary'); }
                         tourCloseAllModals();
@@ -1804,13 +1804,13 @@
                 {
                     selector: '#resolver-explicacion',
                     title: 'Tu explicación',
-                    text: 'Cuenta brevemente tu razonamiento. También es obligatorio — ayuda mucho a quien revisa tu respuesta.',
+                    text: 'Explica brevemente (o no tan brevemente) tu razonamiento. También es obligatorio, me ayuda mucho al revisar las respuestas.',
                     before: async () => { tourEnsureResolverOpen(); }
                 },
                 {
                     selector: '#resolver-dificultad-btns',
                     title: 'Dificultad percibida',
-                    text: 'Esto es opcional: tu propia valoración de lo difícil que te ha parecido, más allá de la dificultad oficial del misterio. Prueba a pulsar una.',
+                    text: 'Esto es opcional: en una escala del 1 al 5, tu propia valoración de lo difícil que te ha parecido, más allá de la dificultad oficial del misterio. Prueba a pulsar una.',
                     advanceOnClick: true,
                     before: async () => { tourEnsureResolverOpen(); }
                 },
@@ -1822,8 +1822,8 @@
                 },
                 {
                     selector: '#podium-season-select',
-                    title: 'Elige tu clasificación',
-                    text: 'Aquí cambias entre Clasificación General, rachas de aciertos o de participaciones, y quién ha participado en más misterios.',
+                    title: 'Elige el filtro del podio',
+                    text: 'Aquí cambias entre la Clasificación General, rachas de aciertos o de participaciones, y quién ha participado en más misterios, por si queires ver una cosa u otra.',
                     before: async () => {
                         tourCloseAllModals();
                         document.querySelector('.tab-button[data-tab="podio"]')?.click();
@@ -1837,7 +1837,7 @@
                 {
                     selector: '#bell-btn',
                     title: 'Notificaciones',
-                    text: 'La campana te avisa cuando revisan tu respuesta, salen nuevas pistas o hay un anuncio importante.',
+                    text: 'La campana te avisará cuando revise tu respuesta, salgan nuevas pistas o haya un anuncio importante. Es para avisos, básicamente.',
                     advanceOnClick: true,
                     before: async () => { tourCloseAllModals(); }
                 },
@@ -1847,13 +1847,13 @@
                     {
                         selector: '#my-id-btn',
                         title: 'Tu identidad',
-                        text: 'Estás jugando como invitado: tu progreso no se guarda todavía. Vamos a ver cómo crearías una cuenta — es instantáneo, sin email ni contraseña.',
+                        text: 'Estás jugando como invitado: tu progreso no se guarda todavía. Vamos a ver cómo crearías una cuenta; es instantáneo, sin email ni contraseña. No te preocupes, no se va a crear ahora, sólo es para enseñártelo.',
                         before: async () => { tourCloseAllModals(); }
                     },
                     {
                         selector: '#welcome-new-btn',
                         title: 'Crear una cuenta',
-                        text: 'Pulsa aquí para empezar a crear tu cuenta nueva.',
+                        text: 'Pulsa aquí para empezar a crear tu cuenta nueva (de nuevo, no vamos a crearla, es meramente ilustrativo).',
                         advanceOnClick: true,
                         before: async () => {
                             tourCloseAllModals();
@@ -1865,19 +1865,19 @@
                     {
                         selector: '#welcome-username',
                         title: 'Tu nombre de usuario',
-                        text: 'Este será tu identificador único. Aparecerá en el Podio junto a un pequeño código para que no se repita con el de otra persona.',
+                        text: 'Este sería tu identificador único. Aparecería en el Podio junto a un pequeño código para que no se repita con el de otra persona (y porque queda chulo).',
                         before: async () => { tourEnsureWelcomeStep2Open(); }
                     },
                     {
                         selector: '#welcome-displayname',
                         title: 'Tu nombre para mostrar',
-                        text: 'Este es el nombre "bonito" que verán tus amigos — puede repetirse, no pasa nada.',
+                        text: 'Este sería el nombre "bonito" que verían tus amigos — puede repetirse, no pasa nada. Por algo está también el nombre de usuario.',
                         before: async () => { tourEnsureWelcomeStep2Open(); }
                     },
                     {
                         selector: null,
                         title: '🔑 Después de crear tu cuenta',
-                        text: 'Una vez la crees, podrás ver y gestionar tu ID y tu frase semilla de recuperación desde el botón «Mi ID». ¡No los pierdas, son la única forma de volver a entrar!',
+                        text: 'Una vez creada, podrías ver y gestionar tu ID y tu frase semilla de recuperación desde el botón «Mi ID». ¡No los pierdas, son la única forma de volver a entrar! Si al final decides crearte una cuenta, vuelve a ver este tutorial, porque hay una sección cortita sobre estas cosas.',
                         before: async () => { tourCloseAllModals(); }
                     }
                 ] : [
@@ -1897,7 +1897,7 @@
                     {
                         selector: '#id-modal-seed-details',
                         title: '🌱 Tu frase semilla',
-                        text: 'Tres palabras como alternativa de recuperación si pierdes el archivo de tu ID. Guárdalas en un sitio seguro — sin ellas (ni el archivo), no hay forma de recuperar tu cuenta.',
+                        text: 'Tres palabras como alternativa de inicio de sesión si pierdes el archivo de tu ID. Guárdalas en un sitio seguro, pues sin ellas (ni el archivo) no hay manera de recuperar tu cuenta.',
                         before: async () => {
                             tourEnsureIdModalOpen();
                             const details = document.getElementById('id-modal-seed-details');
@@ -1915,11 +1915,12 @@
                 {
                     selector: null,
                     title: '🎉 ¡Listo!',
-                    text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour, lo encuentras en «Sobre el proyecto» → «Tour Guiado Interactivo». ¡Ahora sí, a jugar de verdad!',
-                    before: async () => { tourCloseAllModals(); }
+                    text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour vete a «Sobre el proyecto» → «Tour Guiado Interactivo». ¡Ahora sí, a jugar de verdad!',
+                    before: async () => { tourCloseAllModals(); document.querySelector('.tab-button[data-tab="en-curso"]')?.click(); }
                 }
             ];
         }
+       
 
         async function tourOpenExampleGame(view) {
             if (!tourExampleGame) {
@@ -2246,7 +2247,7 @@
                 // Llenar selectores
                 fillSeasonSelectors();
             } catch (error) {
-                console.log("No se pudieron cargar las temporadas (Probablemente no configurado aún).");
+                console.log("No se pudieron cargar las temporadas.");
             }
         }
 
@@ -2751,7 +2752,7 @@
              try {
                 const data = await loadSheetsData();
                 if (!data) {
-                    dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No se pudo conectar con la hoja de cálculo.</td></tr>`;
+                    dom.podiumBody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">No se pudo conectar con la base de datos.</td></tr>`;
                     return;
                 }
 
@@ -2775,7 +2776,7 @@
                 if (filterGameIds) users = users.filter(u => u.points > 0);
                 leaderboardData = users.sort((a, b) => b.points - a.points);
 
-                // Poblar podiumsCache de forma gratuita (ya tenemos todos los datos de la hoja)
+                // Poblar podiumsCache (ya tenemos todos los datos de la hoja)
                 // Esto permite que renderSummaryCard muestre "👥 X jugadores" sin peticiones extra
                 const freshCache = {};
                 data.users.forEach(u => {
@@ -3416,8 +3417,8 @@
                         openResolverModal(currentGameData, true);
                         return;
                     }
-                    if (userCorrectGames.has(currentGameData?.id)) return showToast('¡Ya acertaste este misterio! 🎉', false);
-                    if (userPendingGames.has(currentGameData?.id)) return showToast('Ya tienes una respuesta enviada pendiente de revisión ⏳', false);
+                    if (userCorrectGames.has(currentGameData?.id)) return showToast('¡Ya has adivinado este misterio! 🎉', false);
+                    if (userPendingGames.has(currentGameData?.id)) return showToast('Ya tienes una respuesta enviada pendiente de revisión, espérate a que la corrija antes de mandar otra. ⏳', false);
                     openResolverModal(currentGameData);
                     return;
                 }
@@ -3450,53 +3451,53 @@
                     <li>Puedes ver las pistas una por una haciendo clic en el índice, o todas juntas pulsando <strong>Mostrar Pistas y Resolver</strong>.</li>
                     <li>Si un misterio está en curso, usa el botón <strong>¡Adivina aquí!</strong> para enviar tu solución a través del formulario.</li>
                     <li>Puedes compartir un enlace al misterio o a una pista específica usando los botones de compartir.</li>
-                    <li>Para guardar una copia offline, usa el botón <strong>Descargar HTML</strong> para obtener un archivo con todas las pistas y la solución (si está disponible).</li>
+                    <li>Para guardar una copia offline, usa el botón <strong>Descargar HTML</strong> para obtener un archivo con todas las pistas y la solución (si está disponible). Ten en cuenta que es un archivo HTML, por lo que necesitarás abrirlo con conexión al menos una vez para que se guarden las imágenes y demás en la caché si quieres verlas sin conexión.</li>
                 </ol>
 
                 <h2 class="mt-6">Tipos de Misterio</h2>
                 <ul class="list-disc pl-5 space-y-2">
-                    <li><strong>Semanal:</strong> el formato clásico. Las pistas se van revelando a lo largo de la semana hasta completar el misterio.</li>
-                    <li><strong>Diario / Relámpago:</strong> versión más corta, pensada para resolverse en menos tiempo — ideal si no quieres esperar toda una semana.</li>
+                    <li><strong>Semanal:</strong> el formato clásico. Las pistas se van revelando semana a semana hasta completar el misterio.</li>
+                    <li><strong>Diario / Relámpago:</strong> versión más corta, pensada para resolverse en menos tiempo; ideal si no quieres esperar toda una semana para una sola pista.</li>
                     <li><strong>Especial:</strong> eventos puntuales o temáticos, a veces con reglas o formato distintos al habitual.</li>
                     <li><strong>Tutorial:</strong> misterios de práctica, sin presión, pensados para aprender la mecánica antes de lanzarte a los de verdad.</li>
                 </ul>
 
                 <h2 class="mt-6">Dificultad</h2>
-                <p>Cada misterio lleva asignada una dificultad —<strong>Fácil 😇</strong>, <strong>Medio 🧐</strong> o <strong>Difícil 😈</strong>— visible como filtro en la lista de juegos y como insignia en cada ficha. También es uno de los factores que determinan cuántos puntos ganas al acertar (ver «Puntos» más abajo).</p>
-                <p class="text-xs text-gray-500 italic mt-2 pt-2 border-t border-gray-700">💭 Opinión personal de quien hace los misterios: los «Fáciles» suelen ser ridículamente sencillos y los «Medios» tampoco se quedan muy atrás — los que de verdad merecen la pena son los «Difíciles». Pero anímate a probarlos todos, ¡nunca se sabe!</p>
+                <p>Cada misterio lleva asignada una dificultad (<strong>Fácil 😇</strong>, <strong>Medio 🧐</strong> o <strong>Difícil 😈</strong>) visible como filtro en la lista de juegos y como insignia en cada ficha. También es uno de los factores que determinan cuántos puntos ganas al acertar (ver «Puntos» más abajo).</p>
+                <p class="text-xs text-gray-500 italic mt-2 pt-2 border-t border-gray-700">💭 Opinión personal: los «Fáciles» suelen ser ridículamente sencillos y los «Medios» tampoco se quedan muy atrás; los que de verdad merecen la pena son los «Difíciles». Pero anímate a probarlos todos, ¡nunca se sabe! Hay gente que dice que los fáciles son complicadillos... 🫣</p>
 
                 <h2 class="mt-6">Cómo Responder</h2>
                 <p>El formulario de respuesta tiene cuatro campos:</p>
                 <ul class="list-disc pl-5 space-y-2">
                     <li><strong>Tu solución</strong> (obligatorio): qué crees que es «la intersección».</li>
-                    <li><strong>Explicación</strong> (obligatorio): tu razonamiento. No hace falta que sea perfecto, pero ayuda a quien revisa a entender por qué llegaste a esa respuesta, sobre todo en soluciones ambiguas o parciales.</li>
-                    <li><strong>Dificultad percibida</strong> (opcional): tu valoración personal de lo difícil que te resultó, independiente de la dificultad oficial del misterio.</li>
+                    <li><strong>Explicación</strong> (obligatorio): tu razonamiento. No hace falta que sea perfecto, pero me ayuda a entender cómo llegaste a esa respuesta, sobre todo en soluciones ambiguas o parciales.</li>
+                    <li><strong>Dificultad percibida</strong> (opcional): tu valoración personal de lo difícil que te ha parecido, independiente de la dificultad oficial del misterio; me ayuda a intentar calibrar un poquito mejor la dificultad de futuros misterios.</li>
                     <li><strong>Opinión / Sugerencias</strong> (opcional): cualquier comentario sobre el misterio concreto.</li>
                 </ul>
-                <p>Las respuestas se revisan a mano —no hay corrección automática—, así que puede pasar algo de tiempo hasta saber el resultado. Te llegará una <strong>notificación 🔔</strong> en cuanto se confirme si has acertado. Tanto si aciertas como si fallas, esa respuesta cuenta para tu racha y total de participaciones (ver «Podios» más abajo).</p>
+                <p>Las respuestas las reviso a mano (no hay corrección automática), así que puede pasar algo de tiempo hasta que te llegue el resultado. Te saltará una <strong>notificación 🔔</strong> en cuanto vea si has acertado. Tanto si aciertas como si fallas, esa respuesta cuenta para tu racha y total de participaciones (ver «Podios» más abajo).</p>
 
                 <h2 class="mt-6">Puntos</h2>
                 <p>Ganas puntos al acertar, calculados a partir de tu posición (quién respondió antes), la dificultad del misterio, cuántas pistas te ahorraste y si respondiste con demora tras la última pista. Pulsa el icono <strong>ℹ️</strong> junto al Podio para ver la fórmula exacta.</p>
 
                 <h2 class="mt-6">Podios</h2>
-                <p>El Podio no es solo una clasificación: hay varias vistas, seleccionables en el desplegable:</p>
+                <p>El Podio no es solo una clasificación; hay varios podios distintos, seleccionables en el desplegable:</p>
                 <ul class="list-disc pl-5 space-y-2">
                     <li><strong>🏆 Clasificación General:</strong> puntos totales acumulados.</li>
                     <li><strong>🔥 Racha de aciertos:</strong> misterios consecutivos resueltos correctamente.</li>
-                    <li><strong>🔥 Racha de participaciones:</strong> misterios consecutivos en los que has participado, aciertes o no — una racha que no se rompe por fallar, solo por no participar.</li>
+                    <li><strong>🔥 Racha de participaciones:</strong> misterios consecutivos en los que has participado, aciertes o no. Esta racha que no se pierde por fallar, solo por no participar.</li>
                     <li><strong>👥 Más misterios participados:</strong> quién ha jugado en más misterios distintos en total, sin importar si acertó.</li>
                 </ul>
-                <p>Si hay alguna <strong>Temporada</strong> especial configurada, aparecerá también como opción adicional, limitada a los misterios de esa temporada.</p>
+                <p>Si hay alguna <strong>Temporada</strong> (activa o ya finalizada), aparecerá también como opción adicional, limitada a los misterios de esa temporada.</p>
 
                 <h2 class="mt-6">Tu Identidad</h2>
                 <p>No hay email ni contraseña: tu cuenta se identifica con un ID generado al crearla.</p>
                 <ul class="list-disc pl-5 space-y-2">
                     <li><strong>ID Público:</strong> el que aparece en el podio. No es secreto.</li>
                     <li><strong>ID Privado:</strong> tu clave de acceso completa. No lo compartas con nadie.</li>
-                    <li><strong>Archivo de respaldo:</strong> desde <strong>Mi ID</strong> puedes descargarlo y volver a entrar abriéndolo desde cualquier dispositivo.</li>
-                    <li><strong>🌱 Frase semilla:</strong> tres palabras como alternativa de recuperación si pierdes el archivo. Puedes generarla y consultarla también desde <strong>Mi ID</strong>.</li>
+                    <li><strong>Archivo de ID:</strong> desde <strong>Mi ID</strong> puedes descargarlo y volver a entrar abriéndolo desde cualquier dispositivo.</li>
+                    <li><strong>🌱 Frase semilla:</strong> tres palabras como alternativa de inicio de sesión si pierdes el archivo. Puedes generarla y consultarla también desde <strong>Mi ID</strong>.</li>
                 </ul>
-                <p class="text-xs text-gray-500">⚠️ Si pierdes el ID y no tienes la frase semilla guardada, no hay forma de recuperar el progreso — guárdalos en un sitio seguro.</p>
+                <p class="text-xs text-gray-500">⚠️ Si pierdes el archivo del ID y no tienes la frase semilla guardada no hay forma de recuperar tu cuenta. Guárdalos en un sitio seguro.</p>
             </div>` }); });
 
             // BOTÓN DE INFO DE PUNTOS
@@ -3509,10 +3510,10 @@
                                 <li><strong>Posición:</strong> 1º(5pts), 2º(3pts), 3º(2pts), Resto(1pt).</li>
                                 <li><strong>Dificultad:</strong> Fácil(1), Medio(2), Difícil(3).</li>
                                 <li><strong>Ahorro:</strong> +2 puntos por cada pista que NO se había revelado cuando respondiste.</li>
-                                <li><strong>Demora:</strong> Si respondes tarde (después de salir la última pista), se resta 1 punto por cada «Unidad de Tiempo de Demora» (UTD) adicional que pase (hay una UTD de cortesía).</li>
+                                <li><strong>Demora:</strong> Si respondes tarde (después de salir la última pista), se resta 1 punto por cada «Unidad de Tiempo de Demora» (UTD) adicional que pase (hay una UTD de cortesía). Normalmente una UTD es el tiempo que pasa entre pistas.</li>
                                 <li><strong>Mínimo:</strong> Siempre ganas al menos 1 punto si aciertas.</li>
                             </ul>
-                            <p class="text-xs text-gray-500 italic mt-4 pt-3 border-t border-gray-700">💭 Opinión personal de quien hace los misterios: los «Fáciles» suelen ser ridículamente sencillos y los «Medios» tampoco se quedan muy atrás — los que de verdad merecen la pena son los «Difíciles». Pero anímate a probarlos todos, ¡nunca se sabe!</p>
+                            <p class="text-xs text-gray-500 italic mt-4 pt-3 border-t border-gray-700">💭 Opinión personal: los «Fáciles» suelen ser ridículamente sencillos y los «Medios» tampoco se quedan muy atrás; los que de verdad merecen la pena son los «Difíciles». Pero anímate a probarlos todos, ¡nunca se sabe!</p>
                         </div>
                     `});
                 });
@@ -4137,7 +4138,7 @@
                 dom.notifDetailLinkBtn.classList.remove('hidden');
                 dom.notifDetailLinkBtn.onclick = (e) => {
                     e.preventDefault();
-                    const confirmed = confirm('¿Quieres restaurar tu sesión con el ID reparado? Tu ID actual se sustituirá por el nuevo.\n\nSi no lo tienes claro, pulsa Cancelar.');
+                    const confirmed = confirm('¿Quieres restaurar tu sesión con el ID reparado? Tu ID actual se sustituirá por el nuevo.\n\nSi no lo tienes claro, pulsa Cancelar, pero es posible que tus respuestas sean ignoradas y no puedas volver a jugar.');
                     if (!confirmed) return;
                     const newId = decodeURIComponent(notif.link.replace('#restore_id=', ''));
                     if (!newId || newId.length < 10) { showToast('❌ ID inválido en la notificación', false); return; }
