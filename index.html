@@ -96,19 +96,22 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                     </button>
                     <span id="bell-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center leading-none">0</span>
-                    <!-- Panel de notificaciones -->
-                    <div id="notif-panel" class="hidden absolute right-0 top-10 w-80 max-w-[calc(100vw-1rem)] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden"
-                         style="max-width: min(320px, calc(100vw - 16px))">
-                        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-                            <span class="font-bold text-white text-sm">Notificaciones</span>
-                            <div class="flex items-center gap-3">
-                                <button id="my-responses-btn" class="text-xs text-gray-400 hover:text-indigo-300 transition" title="Ver mis respuestas enviadas">📋 Mis respuestas</button>
-                                <button id="notif-mark-all-read" class="text-xs text-indigo-400 hover:text-indigo-300">Marcar leídas</button>
-                            </div>
+                </div>
+                <!-- Panel de notificaciones: ANCLADO A LA FILA COMPLETA (no solo a la campana),
+                     porque el botón Mi ID va después de la campana y no es el último elemento de
+                     la fila — si el panel se ancla solo a #bell-wrapper, en pantallas estrechas su
+                     "right-0" queda muy a la izquierda del borde real de la pantalla y se corta. -->
+                <div id="notif-panel" class="hidden absolute right-0 top-10 w-80 max-w-[calc(100vw-1rem)] bg-gray-800 border border-gray-700 rounded-xl shadow-2xl z-50 overflow-hidden"
+                     style="max-width: min(320px, calc(100vw - 16px))">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+                        <span class="font-bold text-white text-sm">Notificaciones</span>
+                        <div class="flex items-center gap-3">
+                            <button id="my-responses-btn" class="text-xs text-gray-400 hover:text-indigo-300 transition" title="Ver mis respuestas enviadas">📋 Mis respuestas</button>
+                            <button id="notif-mark-all-read" class="text-xs text-indigo-400 hover:text-indigo-300">Marcar leídas</button>
                         </div>
-                        <div id="notif-list" class="max-h-96 overflow-y-auto divide-y divide-gray-700/50">
-                            <p class="text-gray-500 text-sm text-center py-8">Cargando...</p>
-                        </div>
+                    </div>
+                    <div id="notif-list" class="max-h-96 overflow-y-auto divide-y divide-gray-700/50">
+                        <p class="text-gray-500 text-sm text-center py-8">Cargando...</p>
                     </div>
                 </div>
                 <!-- Mi ID -->
@@ -432,7 +435,7 @@
             </details>
 
             <!-- Frase semilla -->
-            <details class="text-left mb-4 bg-green-900/20 rounded-lg border border-green-800/40">
+            <details id="id-modal-seed-details" class="text-left mb-4 bg-green-900/20 rounded-lg border border-green-800/40">
                 <summary class="px-4 py-3 text-xs text-green-400 cursor-pointer hover:text-green-300 select-none uppercase tracking-widest">
                     🌱 Mi frase semilla (recuperación)
                 </summary>
@@ -1744,9 +1747,14 @@
                     before: async () => { document.querySelector('.tab-button[data-tab="en-curso"]')?.click(); }
                 },
                 {
+                    selector: '#en-curso > div:first-child',
+                    title: 'Así se abre un misterio',
+                    text: 'Pulsa sobre cualquier tarjeta para ver sus detalles. Vamos a abrir el Misterio de Ejemplo para que veas cómo es por dentro.'
+                },
+                {
                     selector: '#modal-badges',
                     title: 'Tipo y dificultad',
-                    text: 'Cada misterio muestra aquí su tipo y su dificultad. Vamos a abrir el Misterio de Ejemplo para verlo de cerca.',
+                    text: 'Cada misterio muestra aquí su tipo y su dificultad.',
                     before: async () => { await tourOpenExampleGame('summary'); }
                 },
                 {
@@ -1809,12 +1817,34 @@
                 {
                     selector: '#my-id-btn',
                     title: 'Tu identidad',
-                    text: 'Aquí gestionas tu ID y tu frase semilla de recuperación. ¡No la pierdas, es la única forma de volver a entrar!'
+                    text: 'Aquí gestionas tu ID y tu frase semilla de recuperación. Vamos a echar un vistazo dentro.',
+                    before: async () => { document.querySelector('.tab-button[data-tab="sobre"]')?.click(); }
+                },
+                {
+                    selector: '#user-id-display',
+                    title: 'Tu ID Público',
+                    text: 'Este es el identificador que aparece en el Podio. No es secreto, lo puede ver cualquiera.',
+                    before: async () => { openIdModal(); }
+                },
+                {
+                    selector: '#id-modal-seed-details',
+                    title: '🌱 Tu frase semilla',
+                    text: 'Tres palabras como alternativa de recuperación si pierdes el archivo de tu ID. Guárdalas en un sitio seguro — sin ellas (ni el archivo), no hay forma de recuperar tu cuenta.',
+                    before: async () => {
+                        const details = document.getElementById('id-modal-seed-details');
+                        if (details) details.open = true;
+                    }
+                },
+                {
+                    selector: '#download-id-btn',
+                    title: 'Guarda una copia',
+                    text: 'Descarga un archivo con tu ID — ábrelo en cualquier dispositivo para volver a entrar con tu cuenta.'
                 },
                 {
                     selector: null,
                     title: '🎉 ¡Listo!',
-                    text: 'Ya conoces todas las partes del juego. Ahora sí, ¡a jugar de verdad!'
+                    text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour, lo encuentras en «Sobre el proyecto» → «Tour Guiado Interactivo». ¡Ahora sí, a jugar de verdad!',
+                    before: async () => { dom.idModal.classList.remove('active'); }
                 }
             ];
         }
@@ -1891,6 +1921,15 @@
             await new Promise(r => setTimeout(r, 60));
 
             const el = step.selector ? document.querySelector(step.selector) : null;
+            if (el) {
+                // Centrar el objetivo en la pantalla ANTES de medir su posición — si no,
+                // el spotlight se calcula con el scroll que hubiera quedado de antes (p.ej.
+                // bajado del paso anterior) y sale descuadrado hasta que el usuario mueve
+                // la rueda él mismo. scrollIntoView ya gestiona también el scroll interno
+                // de los modales, no solo el de la página.
+                el.scrollIntoView({ block: 'center', inline: 'nearest' });
+                await new Promise(r => setTimeout(r, 80));
+            }
             tourPositionFor(el);
 
             document.getElementById('tour-progress').textContent  = `Paso ${tourStepIndex + 1} de ${steps.length}`;
@@ -1931,6 +1970,7 @@
             // Dejar la pantalla limpia: cerrar cualquier modal que el tour haya abierto
             dom.resolverModal.classList.remove('active');
             dom.modal.classList.remove('active');
+            dom.idModal.classList.remove('active');
             window.removeEventListener('resize', tourReposition);
             window.removeEventListener('scroll', tourReposition, true);
         }
@@ -4118,9 +4158,12 @@
             dom.notifPanel.classList.toggle('hidden');
         });
 
-        // Cerrar panel al clicar fuera
+        // Cerrar panel al clicar fuera (de la campana O del propio panel — ya no está anidado
+        // dentro de bell-wrapper, así que hay que comprobar los dos por separado)
         document.addEventListener('click', e => {
-            if (!dom.bellWrapper.contains(e.target)) dom.notifPanel.classList.add('hidden');
+            if (!dom.bellWrapper.contains(e.target) && !dom.notifPanel.contains(e.target)) {
+                dom.notifPanel.classList.add('hidden');
+            }
         });
 
         // Marcar todas como leídas
