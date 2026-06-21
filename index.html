@@ -1656,6 +1656,7 @@
         // de enviar nada real.
         // ════════════════════════════════════════════════════════════════
         let tourStepIndex = 0;
+        let tourClickAdvanceCleanup = null; // limpia el listener de "avanzar al pulsar" del paso anterior
         let tourExampleGame = null;
         let tourActive = false;
 
@@ -1749,7 +1750,8 @@
                 {
                     selector: '#en-curso > div:first-child',
                     title: 'Así se abre un misterio',
-                    text: 'Pulsa sobre cualquier tarjeta para ver sus detalles. Vamos a abrir el Misterio de Ejemplo para que veas cómo es por dentro.'
+                    text: 'Pulsa sobre cualquier tarjeta para ver sus detalles. Vamos a abrir el Misterio de Ejemplo para que veas cómo es por dentro.',
+                    advanceOnClick: true
                 },
                 {
                     selector: '#modal-badges',
@@ -1765,12 +1767,14 @@
                 {
                     selector: '.view-all-clues-btn',
                     title: 'Ver todas las pistas',
-                    text: 'O si prefieres, pulsa aquí para verlas todas juntas y pasar directamente a responder.'
+                    text: 'O si prefieres, pulsa aquí para verlas todas juntas y pasar directamente a responder.',
+                    advanceOnClick: true
                 },
                 {
                     selector: '.guess-btn',
                     title: '¡Adivina aquí!',
                     text: 'Cuando creas tener la solución, pulsas este botón para abrir el formulario de respuesta.',
+                    advanceOnClick: true,
                     before: async () => { document.querySelector('.view-all-clues-btn')?.click(); }
                 },
                 {
@@ -1791,7 +1795,8 @@
                 {
                     selector: '#resolver-dificultad-btns',
                     title: 'Dificultad percibida',
-                    text: 'Esto es opcional: tu propia valoración de lo difícil que te ha parecido, más allá de la dificultad oficial del misterio.'
+                    text: 'Esto es opcional: tu propia valoración de lo difícil que te ha parecido, más allá de la dificultad oficial del misterio. Prueba a pulsar una.',
+                    advanceOnClick: true
                 },
                 {
                     selector: '#resolver-opinion',
@@ -1807,44 +1812,95 @@
                         dom.resolverModal.classList.remove('active');
                         dom.modal.classList.remove('active');
                         document.querySelector('.tab-button[data-tab="podio"]')?.click();
+                        // El clic dispara loadLeaderboard() sin esperarlo (fire-and-forget) — si no
+                        // lo esperamos aquí también, medimos la posición ANTES de que lleguen los
+                        // datos reales, y el cambio de altura al pintarlos descuadra el spotlight.
+                        // Esperarlo explícitamente garantiza medir ya con el layout final.
+                        try { await loadLeaderboard(null); } catch(e) {}
                     }
                 },
                 {
                     selector: '#bell-btn',
                     title: 'Notificaciones',
-                    text: 'La campana te avisa cuando revisan tu respuesta, salen nuevas pistas o hay un anuncio importante.'
+                    text: 'La campana te avisa cuando revisan tu respuesta, salen nuevas pistas o hay un anuncio importante.',
+                    advanceOnClick: true
                 },
-                {
-                    selector: '#my-id-btn',
-                    title: 'Tu identidad',
-                    text: 'Aquí gestionas tu ID y tu frase semilla de recuperación. Vamos a echar un vistazo dentro.',
-                    before: async () => { document.querySelector('.tab-button[data-tab="sobre"]')?.click(); }
-                },
-                {
-                    selector: '#user-id-display',
-                    title: 'Tu ID Público',
-                    text: 'Este es el identificador que aparece en el Podio. No es secreto, lo puede ver cualquiera.',
-                    before: async () => { openIdModal(); }
-                },
-                {
-                    selector: '#id-modal-seed-details',
-                    title: '🌱 Tu frase semilla',
-                    text: 'Tres palabras como alternativa de recuperación si pierdes el archivo de tu ID. Guárdalas en un sitio seguro — sin ellas (ni el archivo), no hay forma de recuperar tu cuenta.',
-                    before: async () => {
-                        const details = document.getElementById('id-modal-seed-details');
-                        if (details) details.open = true;
+                // ── Identidad: rama distinta según si hay sesión iniciada o no. Se decide
+                // UNA VEZ al arrancar el tour (tourIsGuestFlow), no en cada paso. ──
+                ...(tourIsGuestFlow ? [
+                    {
+                        selector: '#my-id-btn',
+                        title: 'Tu identidad',
+                        text: 'Estás jugando como invitado: tu progreso no se guarda todavía. Vamos a ver cómo crearías una cuenta — es instantáneo, sin email ni contraseña.'
+                    },
+                    {
+                        selector: '#welcome-new-btn',
+                        title: 'Crear una cuenta',
+                        text: 'Pulsa aquí para empezar a crear tu cuenta nueva.',
+                        advanceOnClick: true,
+                        before: async () => {
+                            dom.welcomeStep2.classList.add('hidden');
+                            dom.welcomeStep1.classList.remove('hidden');
+                            dom.welcomeModal.classList.add('active');
+                        }
+                    },
+                    {
+                        selector: '#welcome-username',
+                        title: 'Tu nombre de usuario',
+                        text: 'Este será tu identificador único. Aparecerá en el Podio junto a un pequeño código para que no se repita con el de otra persona.',
+                        before: async () => {
+                            dom.welcomeStep1.classList.add('hidden');
+                            dom.welcomeStep2.classList.remove('hidden');
+                        }
+                    },
+                    {
+                        selector: '#welcome-displayname',
+                        title: 'Tu nombre para mostrar',
+                        text: 'Este es el nombre "bonito" que verán tus amigos — puede repetirse, no pasa nada.'
+                    },
+                    {
+                        selector: null,
+                        title: '🔑 Después de crear tu cuenta',
+                        text: 'Una vez la crees, podrás ver y gestionar tu ID y tu frase semilla de recuperación desde el botón «Mi ID». ¡No los pierdas, son la única forma de volver a entrar!',
+                        before: async () => { dom.welcomeModal.classList.remove('active'); }
                     }
-                },
-                {
-                    selector: '#download-id-btn',
-                    title: 'Guarda una copia',
-                    text: 'Descarga un archivo con tu ID — ábrelo en cualquier dispositivo para volver a entrar con tu cuenta.'
-                },
+                ] : [
+                    {
+                        selector: '#my-id-btn',
+                        title: 'Tu identidad',
+                        text: 'Aquí gestionas tu ID y tu frase semilla de recuperación. Vamos a echar un vistazo dentro.',
+                        advanceOnClick: true
+                    },
+                    {
+                        selector: '#user-id-display',
+                        title: 'Tu ID Público',
+                        text: 'Este es el identificador que aparece en el Podio. No es secreto, lo puede ver cualquiera.',
+                        before: async () => { openIdModal(); }
+                    },
+                    {
+                        selector: '#id-modal-seed-details',
+                        title: '🌱 Tu frase semilla',
+                        text: 'Tres palabras como alternativa de recuperación si pierdes el archivo de tu ID. Guárdalas en un sitio seguro — sin ellas (ni el archivo), no hay forma de recuperar tu cuenta.',
+                        before: async () => {
+                            const details = document.getElementById('id-modal-seed-details');
+                            if (details) details.open = true;
+                        }
+                    },
+                    {
+                        selector: '#download-id-btn',
+                        title: 'Guarda una copia',
+                        text: 'Descarga un archivo con tu ID — ábrelo en cualquier dispositivo para volver a entrar con tu cuenta.',
+                        advanceOnClick: true
+                    }
+                ]),
                 {
                     selector: null,
                     title: '🎉 ¡Listo!',
                     text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour, lo encuentras en «Sobre el proyecto» → «Tour Guiado Interactivo». ¡Ahora sí, a jugar de verdad!',
-                    before: async () => { dom.idModal.classList.remove('active'); }
+                    before: async () => {
+                        dom.idModal.classList.remove('active');
+                        dom.welcomeModal.classList.remove('active');
+                    }
                 }
             ];
         }
@@ -1912,6 +1968,9 @@
         }
 
         async function showTourStep(idx) {
+            // Limpiar el listener de "avanzar al pulsar" del paso anterior, si lo había
+            if (tourClickAdvanceCleanup) { tourClickAdvanceCleanup(); tourClickAdvanceCleanup = null; }
+
             const steps = getTourSteps();
             tourStepIndex = Math.max(0, Math.min(idx, steps.length - 1));
             const step = steps[tourStepIndex];
@@ -1947,6 +2006,23 @@
                 else showTourStep(tourStepIndex + 1);
             };
             document.getElementById('tour-skip-btn').onclick = endTour;
+
+            // Si el paso lo permite, pulsar el elemento real resaltado también avanza —
+            // así no hace falta usar "Siguiente" si el usuario ya ha interactuado de verdad
+            // con el botón. El hueco del spotlight ya deja pasar los clics con normalidad
+            // (las franjas de bloqueo solo cubren alrededor), así que esto no le quita nada
+            // a la acción real del botón, solo añade el avance automático después.
+            if (step.advanceOnClick && el) {
+                const stepAtAttach = tourStepIndex;
+                const handler = () => {
+                    if (tourStepIndex !== stepAtAttach) return; // ya se avanzó por otro lado
+                    setTimeout(() => {
+                        if (tourStepIndex === stepAtAttach) showTourStep(stepAtAttach + 1);
+                    }, 30);
+                };
+                el.addEventListener('click', handler);
+                tourClickAdvanceCleanup = () => el.removeEventListener('click', handler);
+            }
         }
 
         function tourReposition() {
@@ -1959,6 +2035,7 @@
 
         function endTour() {
             tourActive = false;
+            if (tourClickAdvanceCleanup) { tourClickAdvanceCleanup(); tourClickAdvanceCleanup = null; }
             const spotlight = document.getElementById('tour-spotlight');
             const tooltip   = document.getElementById('tour-tooltip');
             if (spotlight) spotlight.style.opacity = '0';
@@ -1975,10 +2052,15 @@
             window.removeEventListener('scroll', tourReposition, true);
         }
 
+        let tourIsGuestFlow = false; // capturado al iniciar el tour, no se reevalúa a mitad
+
         function startGuidedTour() {
             tourEnsureDOM();
             tourExampleGame = null;
             tourActive = true;
+            // Se decide UNA VEZ al empezar (no en cada paso) para que la cantidad de pasos
+            // no cambie a mitad de tour si el usuario se crea una cuenta durante el propio tour.
+            tourIsGuestFlow = !userId;
             ['top','bottom','left','right'].forEach(side => {
                 const s = document.getElementById('tour-blocker-' + side);
                 if (s) s.style.pointerEvents = 'auto';
