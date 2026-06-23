@@ -42,7 +42,7 @@
 
         /* ── Botón flotante de notas ── */
         #notes-fab {
-            position: fixed; bottom: 24px; right: 24px; z-index: 500;
+            position: fixed; bottom: 24px; right: 24px; z-index: 40;
             width: 48px; height: 48px; border-radius: 50%;
             background: #4f46e5; color: white; border: none; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
@@ -396,6 +396,7 @@
                         <input id="welcome-displayname" type="text" maxlength="20" placeholder="ej: El Detective Oscuro"
                             class="w-full bg-gray-800 border border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg p-3 text-white placeholder-gray-600 transition outline-none">
                         <p class="text-xs text-gray-500 mt-1">Máximo 20 caracteres. Puede tener espacios y tildes.</p>
+                        <p class="text-xs text-yellow-400/80 flex items-start gap-1.5 mt-1.5"><span>⚠️</span><span>Por tu seguridad, <strong>no uses tu nombre real</strong> ni datos que te identifiquen.</span></p>
                     </div>
                     <p id="welcome-form-error" class="text-red-400 text-sm hidden"></p>
                     <!-- Casillas de consentimiento RGPD — ambas obligatorias para crear cuenta -->
@@ -2968,6 +2969,9 @@
             dom.seasonWinnersDisplay.classList.remove('hidden');
         }
 
+        let podiumPage = 1;
+        const PODIUM_PAGE_SIZE = 50;
+
         function renderPodium() {
             dom.podiumBody.innerHTML = '';
             if(leaderboardData.length === 0) {
@@ -2975,7 +2979,8 @@
                  return;
             }
 
-            leaderboardData.forEach((user, index) => {
+            const visible = leaderboardData.slice(0, podiumPage * PODIUM_PAGE_SIZE);
+            visible.forEach((user, index) => {
                 const isMe = user.id === currentPublicId();
                 const rowClass = isMe ? 'bg-indigo-900/40 border-l-4 border-indigo-500' : 'hover:bg-gray-700/30 border-b border-gray-700/50';
 
@@ -3004,6 +3009,19 @@
                 tr.addEventListener('click', () => openProfileModal(user));
                 dom.podiumBody.appendChild(tr);
             });
+
+            // Botón "Ver más" si quedan entradas
+            if (visible.length < leaderboardData.length) {
+                const remaining = leaderboardData.length - visible.length;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="4" class="p-4 text-center">
+                    <button id="podium-load-more" class="text-indigo-400 hover:text-indigo-300 text-sm font-semibold underline">
+                        Ver ${Math.min(remaining, PODIUM_PAGE_SIZE)} más (${remaining} restantes)
+                    </button>
+                </td>`;
+                tr.querySelector('#podium-load-more').addEventListener('click', () => { podiumPage++; renderPodium(); });
+                dom.podiumBody.appendChild(tr);
+            }
         }
 
         // --- Perfil de Temporada Específica ---
@@ -3303,13 +3321,15 @@
         function openModalWithGame(game, view = null, options = {}) { renderModal(game, view || (game.isSolved ? 'pre-solved' : 'summary'), options); }
         function closeModal() { dom.modal.classList.remove('active'); dom.modalTitle.textContent = ''; dom.modalContent.innerHTML = ''; dom.modalFooter.innerHTML = ''; currentGameData = null; revealedClueCount = 0; history.pushState("", document.title, window.location.pathname + window.location.search); }
 
+        let archivoPage = 1;
+        const ARCHIVO_PAGE_SIZE = 20;
+
         function renderGames() {
             dom.enCursoContainer.innerHTML = ''; dom.archivoGrid.innerHTML = '';
             const searchText = normalizeText(dom.searchText.value);
             const selectedDates = datePicker.selectedDates;
             const activeTypeFilter = dom.typeFilterContainer.querySelector('.filter-btn.active').dataset.type;
             const activeDifficultyFilter = dom.difficultyFilterContainer.querySelector('.filter-btn.active').dataset.difficulty;
-            // Filtro Temporada
             const activeSeasonId = dom.seasonFilterSelect.value;
 
             let enCursoGames = allGames.filter(game => game && !game.isSolved);
@@ -3320,7 +3340,6 @@
                  return t.includes(searchText) || n.includes(searchText) || s.includes(searchText) || e.includes(searchText) || m.includes(searchText) || w.includes(searchText);
             };
 
-            // Aplicar Filtros
             if (searchText) { filteredArchivoGames = filteredArchivoGames.filter(filterFn); enCursoGames = enCursoGames.filter(filterFn); }
             if (selectedDates && selectedDates.length === 2) {
                 const from = new Date(selectedDates[0]); from.setHours(0,0,0,0); const to = new Date(selectedDates[1]); to.setHours(23,59,59,999);
@@ -3341,8 +3360,27 @@
                 }
             }
 
-            if (enCursoGames.length > 0) enCursoGames.forEach(game => dom.enCursoContainer.appendChild(renderSummaryCard(game))); else dom.enCursoContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">No se encontraron misterios en curso.</p>';
-            if (filteredArchivoGames.length > 0) filteredArchivoGames.forEach(game => dom.archivoGrid.appendChild(renderSummaryCard(game))); else dom.archivoGrid.innerHTML = `<p class="text-center text-gray-400 col-span-full">${showFavoritesOnly ? 'No tienes favoritos guardados.' : 'No se encontraron misterios resueltos.'}</p>`;
+            // En curso: sin paginación (suelen ser pocos)
+            if (enCursoGames.length > 0) enCursoGames.forEach(game => dom.enCursoContainer.appendChild(renderSummaryCard(game)));
+            else dom.enCursoContainer.innerHTML = '<p class="text-center text-gray-400 col-span-full">No se encontraron misterios en curso.</p>';
+
+            // Archivo: paginado
+            if (filteredArchivoGames.length === 0) {
+                dom.archivoGrid.innerHTML = `<p class="text-center text-gray-400 col-span-full">${showFavoritesOnly ? 'No tienes favoritos guardados.' : 'No se encontraron misterios resueltos.'}</p>`;
+            } else {
+                const visibleArchivo = filteredArchivoGames.slice(0, archivoPage * ARCHIVO_PAGE_SIZE);
+                visibleArchivo.forEach(game => dom.archivoGrid.appendChild(renderSummaryCard(game)));
+                if (visibleArchivo.length < filteredArchivoGames.length) {
+                    const remaining = filteredArchivoGames.length - visibleArchivo.length;
+                    const btn = document.createElement('div');
+                    btn.className = 'col-span-full flex justify-center mt-2';
+                    btn.innerHTML = `<button class="text-indigo-400 hover:text-indigo-300 text-sm font-semibold underline py-2">
+                        Cargar ${Math.min(remaining, ARCHIVO_PAGE_SIZE)} más (${remaining} restantes)
+                    </button>`;
+                    btn.querySelector('button').addEventListener('click', () => { archivoPage++; renderGames(); });
+                    dom.archivoGrid.appendChild(btn);
+                }
+            }
         }
 
         function handleUrlSharing() {
@@ -3404,6 +3442,7 @@
             dom.podiumSeasonSelect.addEventListener('change', (e) => {
                 const selected = e.target.value;
                 currentPodiumSeasonId = selected;
+                podiumPage = 1; // Reiniciar paginación al cambiar temporada
 
                 if (selected === '__streaks__') {
                     dom.seasonWinnersDisplay?.classList.add('hidden');
@@ -3450,7 +3489,7 @@
             });
 
             // Filtro Temporada Evento
-            dom.seasonFilterSelect.addEventListener('change', renderGames);
+            dom.seasonFilterSelect.addEventListener('change', () => { archivoPage = 1; renderGames(); });
 
             // Modal de bienvenida e ID
             dom.welcomeNewBtn.addEventListener('click', () => {
@@ -3563,9 +3602,9 @@
             dom.modal.addEventListener('click', (e) => { if (e.target === dom.modal) closeModal(); });
             document.addEventListener('keydown', (e) => { if (e.key === "Escape" && dom.modal.classList.contains('active')) closeModal(); });
             dom.toggleFiltersBtn.addEventListener('click', () => { dom.filtersContainer.classList.toggle('hidden'); dom.toggleFiltersBtn.querySelector('#toggle-filters-text').textContent = dom.filtersContainer.classList.contains('hidden') ? 'Filtros' : 'Ocultar'; });
-            dom.toggleFavoritesBtn.addEventListener('click', () => { showFavoritesOnly = !showFavoritesOnly; dom.toggleFavoritesBtn.classList.toggle('bg-yellow-600/20'); dom.toggleFavoritesBtn.classList.toggle('text-yellow-400'); renderGames(); });
-            dom.searchText.addEventListener('input', renderGames);
-            [dom.typeFilterContainer, dom.difficultyFilterContainer].forEach(container => container.addEventListener('click', (e) => { if (e.target.classList.contains('filter-btn')) { container.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); renderGames(); } }));
+            dom.toggleFavoritesBtn.addEventListener('click', () => { showFavoritesOnly = !showFavoritesOnly; dom.toggleFavoritesBtn.classList.toggle('bg-yellow-600/20'); dom.toggleFavoritesBtn.classList.toggle('text-yellow-400'); archivoPage = 1; renderGames(); });
+            dom.searchText.addEventListener('input', () => { archivoPage = 1; renderGames(); });
+            [dom.typeFilterContainer, dom.difficultyFilterContainer].forEach(container => container.addEventListener('click', (e) => { if (e.target.classList.contains('filter-btn')) { container.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); archivoPage = 1; renderGames(); } }));
 
             dom.modal.addEventListener('click', (e) => {
                 let target = e.target.closest('a, button, .winner-link, .view-clue-btn, .profile-game-link');
