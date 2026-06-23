@@ -1933,6 +1933,12 @@
                     }
                 ]),
                 {
+                    selector: '#notes-fab',
+                    title: '📝 Bloc de notas',
+                    text: 'Este botón abre un bloc de notas privado donde puedes apuntar deducciones, pistas sospechosas o teorías mientras juegas. Solo lo ves tú y se guarda automáticamente en este dispositivo.',
+                    before: async () => { tourCloseAllModals(); document.querySelector('.tab-button[data-tab="en-curso"]')?.click(); }
+                },
+                {
                     selector: null,
                     title: '🎉 ¡Listo!',
                     text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour vete a «Sobre el proyecto» → «Tour Guiado Interactivo». ¡Ahora sí, a jugar de verdad!',
@@ -1965,6 +1971,7 @@
             dom.resolverModal.classList.remove('active');
             dom.idModal.classList.remove('active');
             dom.welcomeModal.classList.remove('active');
+            closeNotes();
         }
 
         // Asegura el formulario demo abierto SIN reabrirlo si ya está abierto — así, al
