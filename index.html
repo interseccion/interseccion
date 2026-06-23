@@ -33,9 +33,10 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             transition: bottom 0.5s ease-in-out;
-            z-index: 100;
+            z-index: 600;
         }
-        #toast-notification.show { bottom: 20px; }
+        /* Se muestra por encima del botón flotante de notas (#notes-fab, bottom:24px, height:48px) */
+        #toast-notification.show { bottom: 84px; }
         .filter-btn { background-color: #374151; }
         .filter-btn.active { background-color: #4f46e5; }
 
@@ -323,6 +324,10 @@
                                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-blue-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-white" viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 0 1.5H4.5A1 1 0 0 0 3.5 3h10a1 1 0 0 0 1-1 .75.75 0 0 1 1.5 0v1A1.5 1.5 0 0 1 14.5 4h-13A1.5 1.5 0 0 1 0 2.5v-1A1.5 1.5 0 0 1 1.5 0H2z"/><path d="M16 5.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 5.5v-1A1.5 1.5 0 0 1 1.5 3H2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1h.5a1.5 1.5 0 0 1 1.5 1.5v1zM1.5 9h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1zm0 2.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1z"/></svg></div>
                                      <div><div class="font-bold text-white">Dame tu opinión</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Feedback y sugerencias</div></div>
                                  </button>
+                                 <button id="open-privacy-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
+                                     <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-gray-600"><span class="text-2xl">🔒</span></div>
+                                     <div><div class="font-bold text-white">Política de Privacidad</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Qué datos guardamos y cómo</div></div>
+                                 </button>
                                  <button id="example-game-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
                                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-teal-500"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="text-white" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg></div>
                                      <div><div class="font-bold text-white">Misterio de Ejemplo</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Prueba el juego</div></div>
@@ -393,7 +398,19 @@
                         <p class="text-xs text-gray-500 mt-1">Máximo 20 caracteres. Puede tener espacios y tildes.</p>
                     </div>
                     <p id="welcome-form-error" class="text-red-400 text-sm hidden"></p>
-                    <button id="welcome-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg">
+                    <!-- Casillas de consentimiento RGPD — ambas obligatorias para crear cuenta -->
+                    <div class="space-y-3 bg-gray-800/60 border border-gray-700 rounded-lg p-4">
+                        <label class="flex items-start gap-3 cursor-pointer group">
+                            <input id="consent-public" type="checkbox" class="mt-0.5 accent-indigo-500 w-4 h-4 flex-shrink-0 cursor-pointer">
+                            <span class="text-xs text-gray-300 group-hover:text-white transition leading-relaxed">Entiendo que mi <strong class="text-white">nombre de display</strong> y mis <strong class="text-white">respuestas ganadoras</strong> serán visibles públicamente en el podio del juego.</span>
+                        </label>
+                        <label class="flex items-start gap-3 cursor-pointer group">
+                            <input id="consent-privacy" type="checkbox" class="mt-0.5 accent-indigo-500 w-4 h-4 flex-shrink-0 cursor-pointer">
+                            <span class="text-xs text-gray-300 group-hover:text-white transition leading-relaxed">He leído y acepto la <button type="button" id="open-privacy-from-consent" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Política de Privacidad</button>.</span>
+                        </label>
+                    </div>
+                    <button id="welcome-submit-btn" disabled
+                        class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg opacity-40 cursor-not-allowed">
                         ✅ Crear mi ID
                     </button>
                     <button id="welcome-back-btn" class="w-full text-sm text-gray-500 hover:text-gray-300 underline pt-1">
@@ -421,6 +438,31 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacy-modal" class="modal fixed inset-0 bg-black bg-opacity-90 items-center justify-center p-4 z-[70]">
+        <div class="bg-gray-900 border border-indigo-500 rounded-2xl shadow-2xl w-full max-w-lg p-6 my-auto" style="max-height: calc(100dvh - 2rem); overflow-y: auto;">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-xl font-bold text-white">🔒 Política de Privacidad</h2>
+                <button id="privacy-close-btn" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <!-- ✏️ EDITA ESTE BLOQUE para cambiar el texto de la política de privacidad -->
+            <div class="text-gray-300 text-sm space-y-4 leading-relaxed">
+                <p><strong class="text-white">¿Qué datos guardamos?</strong><br>
+                Al crear tu cuenta guardamos tu nombre de usuario, tu nombre de display y tus respuestas enviadas. También guardamos de forma local en este dispositivo tu ID, tus notas y tus juegos favoritos.</p>
+                <p><strong class="text-white">¿Dónde se almacenan?</strong><br>
+                Los datos de cuenta y respuestas se almacenan de forma segura en Google Sheets, accesibles únicamente por el administrador del juego.</p>
+                <p><strong class="text-white">¿Son públicos?</strong><br>
+                Tu nombre de display y tus respuestas ganadoras pueden aparecer públicamente en el podio del juego. El resto de tus datos son privados.</p>
+                <p><strong class="text-white">¿Puedo pedir que se eliminen?</strong><br>
+                Sí. Contáctanos por Instagram o correo electrónico y gestionaremos la eliminación de tu cuenta y todos tus datos en un plazo máximo de 30 días.</p>
+            </div>
+            <!-- /✏️ FIN DEL BLOQUE EDITABLE -->
+            <button id="privacy-close-btn-2" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                Entendido
+            </button>
         </div>
     </div>
 
@@ -764,6 +806,7 @@
             podiumDescription: document.getElementById('podium-description'), // NUEVO
             seasonWinnersDisplay: document.getElementById('season-winners-display'), // NUEVO
             // Anuncios y Tutorial
+            privacyModal: document.getElementById('privacy-modal'),
             adModal: document.getElementById('ad-modal'),
             adTitle: document.getElementById('ad-title'),
             adContent: document.getElementById('ad-content'),
@@ -1939,10 +1982,14 @@
                     before: async () => { tourCloseAllModals(); document.querySelector('.tab-button[data-tab="en-curso"]')?.click(); }
                 },
                 {
-                    selector: null,
+                    selector: '#guided-tour-btn',
                     title: '🎉 ¡Listo!',
-                    text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour vete a «Sobre el proyecto» → «Tour Guiado Interactivo». ¡Ahora sí, a jugar de verdad!',
-                    before: async () => { tourCloseAllModals(); document.querySelector('.tab-button[data-tab="en-curso"]')?.click(); }
+                    text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour en cualquier momento, encuéntralo aquí, en la pestaña «Sobre el Proyecto». ¡A jugar de verdad!',
+                    before: async () => {
+                        tourCloseAllModals();
+                        document.querySelector('.tab-button[data-tab="sobre"]')?.click();
+                        await new Promise(r => setTimeout(r, 300));
+                    }
                 }
             ];
         }
@@ -3468,6 +3515,44 @@
             dom.uploadIdInput.addEventListener('change', handleIdUpload);
 
             // Botón para reabrir anuncios y tutorial
+            // ── Casillas de consentimiento RGPD ──
+            function openPrivacyModal() { dom.privacyModal.classList.add('active'); }
+            function closePrivacyModal() { dom.privacyModal.classList.remove('active'); }
+
+            function updateConsentSubmitBtn() {
+                const allChecked = document.getElementById('consent-public').checked
+                               && document.getElementById('consent-privacy').checked;
+                dom.welcomeSubmitBtn.disabled = !allChecked;
+                dom.welcomeSubmitBtn.classList.toggle('opacity-40', !allChecked);
+                dom.welcomeSubmitBtn.classList.toggle('cursor-not-allowed', !allChecked);
+                dom.welcomeSubmitBtn.classList.toggle('hover:bg-indigo-700', allChecked);
+            }
+
+            document.getElementById('consent-public').addEventListener('change', updateConsentSubmitBtn);
+            document.getElementById('consent-privacy').addEventListener('change', updateConsentSubmitBtn);
+
+            // El botón dentro de la <label> abre el modal sin marcar la casilla
+            document.getElementById('open-privacy-from-consent').addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                openPrivacyModal();
+            });
+
+            // Resetear casillas cada vez que el usuario llega al paso 2
+            dom.welcomeNewBtn.addEventListener('click', () => {
+                document.getElementById('consent-public').checked = false;
+                document.getElementById('consent-privacy').checked = false;
+                updateConsentSubmitBtn();
+            }, { capture: true });
+
+            // Botones de cierre del modal de privacidad
+            document.getElementById('privacy-close-btn').addEventListener('click', closePrivacyModal);
+            document.getElementById('privacy-close-btn-2').addEventListener('click', closePrivacyModal);
+            dom.privacyModal.addEventListener('click', (e) => { if (e.target === dom.privacyModal) closePrivacyModal(); });
+
+            // Botón en "Sobre el proyecto"
+            document.getElementById('open-privacy-btn').addEventListener('click', openPrivacyModal);
+
             dom.recallAdBtn.addEventListener('click', () => checkAds(true));
             dom.recallTutorialBtn.addEventListener('click', openTutorial);
             dom.guidedTourBtn?.addEventListener('click', startGuidedTour);
