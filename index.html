@@ -2189,30 +2189,32 @@
         }
 
         let notesSaveTimer = null;
-        document.getElementById('notes-textarea').addEventListener('input', () => {
-            updateNotesCount();
-            clearTimeout(notesSaveTimer);
-            notesSaveTimer = setTimeout(() => {
-                localStorage.setItem(NOTES_KEY, document.getElementById('notes-textarea').value);
-                updateNotesFab();
-            }, 400);
-        });
+        function initNotesListeners() {
+            document.getElementById('notes-textarea').addEventListener('input', () => {
+                updateNotesCount();
+                clearTimeout(notesSaveTimer);
+                notesSaveTimer = setTimeout(() => {
+                    localStorage.setItem(NOTES_KEY, document.getElementById('notes-textarea').value);
+                    updateNotesFab();
+                }, 400);
+            });
 
-        document.getElementById('notes-close-btn').addEventListener('click', closeNotes);
-        document.getElementById('notes-clear-btn').addEventListener('click', () => {
-            if (!confirm('¿Borrar todas las notas? Esta acción no se puede deshacer.')) return;
-            document.getElementById('notes-textarea').value = '';
-            localStorage.removeItem(NOTES_KEY);
-            updateNotesCount();
+            document.getElementById('notes-close-btn').addEventListener('click', closeNotes);
+            document.getElementById('notes-clear-btn').addEventListener('click', () => {
+                if (!confirm('¿Borrar todas las notas? Esta acción no se puede deshacer.')) return;
+                document.getElementById('notes-textarea').value = '';
+                localStorage.removeItem(NOTES_KEY);
+                updateNotesCount();
+                updateNotesFab();
+            });
+            document.getElementById('notes-fab').addEventListener('click', () => {
+                const modal = document.getElementById('notes-modal');
+                if (modal.classList.contains('active')) closeNotes();
+                else openNotes();
+            });
+            // Inicializar el punto indicador al cargar
             updateNotesFab();
-        });
-        document.getElementById('notes-fab').addEventListener('click', () => {
-            const modal = document.getElementById('notes-modal');
-            if (modal.classList.contains('active')) closeNotes();
-            else openNotes();
-        });
-        // Inicializar el punto indicador al cargar
-        updateNotesFab();
+        }
 
         // --- GESTIÓN DE FAVORITOS ---
         function getFavorites() { return JSON.parse(localStorage.getItem('mystery_game_favorites') || '[]'); }
@@ -4413,9 +4415,10 @@
             }
             loadGames();
             loadNotifications();
+            initNotesListeners();
         }
 
-        init();
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 
     <!-- Botón flotante de notas (FAB) -->
