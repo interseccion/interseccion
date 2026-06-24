@@ -708,6 +708,17 @@
         // ─── CONFIGURACIÓN ────────────────────────────────────────────────────
         // URL del Apps Script desplegado como Web App
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsBNhS1srBCg44e2jKTIABl5NvXj_EUwKUbQy4ARivUcVxNj_XQR-loX6rZlS-aoI3yw/exec';
+
+        // POST sin token: el ID privado en el body ES la credencial del usuario.
+        // Usar text/plain evita el preflight CORS manteniendo JSON en el body.
+        async function userPost(body) {
+            const res = await fetch(APPS_SCRIPT_URL, {
+                method : 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body   : JSON.stringify(body)
+            });
+            return res.json();
+        }
         // URL de envío del formulario unificado
         const FORM_SUBMIT_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSdT7aKWYEIVDyh1TKUalD6JcbAG0FydIrP5LBF2ueTAUdbCqw/formResponse';
         // Entry IDs del formulario
@@ -4072,15 +4083,15 @@
 
             // 2) Fetch en paralelo: notificaciones + historial
             try {
-                const [resNotifs, resHist] = await Promise.all([
+                const [resNotifs, histData] = await Promise.all([
                     fetch(`${APPS_SCRIPT_URL}?action=notifs&user=${encodeURIComponent(publicId)}`),
-                    fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`)
+                    userPost({ action: 'history', idPrivado: userId })
                 ]);
                 cachedNotifs = await resNotifs.json();
                 setNotifCache(cachedNotifs);          // guardar en caché local
                 renderNotifPanel(cachedNotifs);
 
-                const hist = await resHist.json();
+                const hist = histData;
                 userCorrectGames.clear();
                 userPendingGames.clear();
                 hist.forEach(r => {
@@ -4410,8 +4421,7 @@
             const publicId = getPublicId(userId);
             if (!publicId) { dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">No se pudo obtener tu ID público.</p>'; return; }
             try {
-                const res  = await fetch(`${APPS_SCRIPT_URL}?action=history&user=${encodeURIComponent(publicId)}`);
-                const data = await res.json();
+                const data = await userPost({ action: 'history', idPrivado: userId });
                 if (!data.length) { dom.myResponsesList.innerHTML = '<p class="text-gray-500 text-sm text-center py-8">Aún no has enviado respuestas 📭</p>'; return; }
                 const difLabels = { '1':'😄 Muy fácil','2':'🙂 Fácil','3':'😐 Normal','4':'😓 Difícil','5':'😵 Muy difícil' };
                 dom.myResponsesList.innerHTML = data.map(r => {
