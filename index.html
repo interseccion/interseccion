@@ -4547,6 +4547,12 @@
             loadGames();
             loadNotifications();
             initNotesListeners();
+
+            // Bfcache: si el usuario vuelve con el botón atrás/adelante el navegador
+            // sirve la página congelada en memoria. Detectamos esto y refrescamos datos.
+            window.addEventListener('pageshow', (ev) => {
+                if (ev.persisted) { loadGames(); loadNotifications(); }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', init);
