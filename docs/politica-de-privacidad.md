@@ -60,7 +60,7 @@ Si usas el **formulario integrado en la web**, el sistema adjunta automáticamen
 
 Si me escribes directamente a **Proton**, veré tu dirección de correo de origen (obviamente) y todo lo que decidas contarme.
 
-*Base legal: interés legítimo para gestionar solicitudes y comunicaciones (Art. 6.1.f RGPD).*
+*Base legal: interés legítimo para gestionar tus solicitudes, atender las comunicaciones y mejorar la estabilidad y el servicio del juego (Art. 6.1.f RGPD).*
 
 ---
 
@@ -98,7 +98,7 @@ Tu nombre de display **aparece públicamente en el podio**. Lo ve cualquier pers
 
 Yo no tengo forma de saber si el nombre que pones al registrarte es real o inventado. Por eso te lo advierto formalmente aquí:
 
-> **Por favor, usa un alias, apodo o pseudónimo divertido.** Si te llamas Juan Pérez y decides ponerte de nombre de display «JuanPerez» o «Juan Pérez», debes saber que ese nombre aparecerá públicamente a la vista de todos en internet. No es ilegal que lo hagas, porque yo ya te estoy avisando de forma clara y expresa en este mismo texto, pero, chiquill@… ¡échale un poco de imaginación! Eres la única persona responsable de no usar datos que te identifiquen en el mundo real. ¡Ten un poco de cabeza!
+> **Por favor, usa un alias, apodo o pseudónimo divertido.** Si te llamas Juan Pérez y decides ponerte de nombre de display «JuanPerez» o «Juan Pérez», debes saber que ese nombre aparecerá públicamente a la vista de todos en internet (lo que incluye el podio de la web y posibles menciones de honor o anuncios de hitos y ganadores en las redes sociales oficiales del juego). No es ilegal que lo hagas, porque yo ya te estoy avisando de forma clara y expresa en este mismo texto, pero, chiquill@… ¡échale un poco de imaginación! Eres la única persona responsable de no usar datos que te identifiquen en el mundo real. ¡Ten un poco de cabeza!
 
 Me reservo el derecho de cambiar de oficio cualquier nombre de display que crea que contenga datos reales evidentes (como un nombre y dos apellidos reconocibles), términos ofensivos o de contacto. Si lo hago, te llegará una notificación dentro del juego.
 
