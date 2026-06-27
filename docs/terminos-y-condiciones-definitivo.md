@@ -3,7 +3,8 @@
 ### *Las reglas del juego*
 
 **Última actualización:** [27/6/2026]
-**Responsable del experimento:** Yo · 💌 interseccion@proton.me
+
+**Correo de contacto:** 💌 interseccion@proton.me
 
 ---
 
