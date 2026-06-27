@@ -128,7 +128,7 @@ Aquí tenemos un problema logístico muy curioso: como no te pedí tu correo ni 
 
 Para evitar suplantaciones y proteger tu progreso, para cualquier trámite "oficial" (borrar tu cuenta, solicitar tus datos, cambiar tu nombre, pedir portabilidad...) utilizaremos obligatoriamente nuestro **Flujo de Doble Autenticación**:
 
-1. **Tú inicias la solicitud:** Me escribes a través del **formulario de contacto del juego** (recomendado, porque adjunta tu ID de forma segura y automática) o me mandas un correo a interseccion@proton.me explicándome qué necesitas. En ningún caso tienes que enviarnos tu ID privado por correo, pero sería de agradecer que ahí sí que me pasases el público apra saber con quién estoy hablando.
+1. **Tú inicias la solicitud:** Me escribes a través del **formulario de contacto del juego** (recomendado, porque adjunta tu ID de forma segura y automática) o me mandas un correo a interseccion@proton.me explicándome qué necesitas. En ningún caso tienes que enviarnos tu ID privado por correo, pero sería de agradecer que ahí sí que me pasases el público para saber con quién estoy hablando.
 2. **Yo genero un código:** Te enviaré una notificación privada *dentro del juego* (la verás en la campanita) que contiene un código secreto único y temporal.
 3. **Tú confirmas por correo:** Me respondes al correo dándome ese código exacto. Como solo el poseedor de tu ID privado puede leer tus notificaciones del juego, esto demuestra que tú eres la persona titular de la cuenta.
 4. **Yo realizo la gestión:** Una vez verificado el código, procedo a realizar la gestión que corresponda.
