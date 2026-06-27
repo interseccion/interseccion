@@ -90,7 +90,7 @@ Para que el juego sea divertido y justo para todo el mundo, te comprometes a no 
 1. **Hackear el podio:** Prohibido crear múltiples cuentas para probar soluciones, usar scripts o bots para enviar respuestas, coordinarse con otros para inflar artificialmente el podio o intentar falsificar marcas de tiempo.
 2. **Contenido tóxico:** Prohibido enviar razonamientos, soluciones o mensajes al formulario que sean ofensivos, ilegales o inapropiados.
 3. **Ingeniería inversa maliciosa:** No intentes acceder al panel de administración, manipular la hoja de cálculo directamente o robar datos de otros jugadores.
-4. **Spoilers masivos:** Queda terminantemente prohibido arruinarle la experiencia al resto publicando de forma pública (valga la reduncancia) las soluciones de los misterios activos.
+4. **Spoilers masivos:** Queda terminantemente prohibido arruinarle la experiencia al resto publicando de forma pública (valga la redundancia) las soluciones de los misterios activos.
 
 Saltarse estas normas resultará en la **eliminación permanente de tu cuenta**, sin derecho a reclamar puntos, historial ni llorar al respecto. Se siente.
 
