@@ -12,6 +12,7 @@
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #111827; }
@@ -56,7 +57,40 @@
         }
         #notes-fab.has-notes .notes-dot { display: block; }
 
-        /* ── Tour guiado interactivo ── */
+        /* ── Legal summary modal ── */
+        .ls-intro { color: #9ca3af; font-size: 12px; line-height: 1.7; text-align: center; margin-bottom: 18px; }
+        .ls-intro strong { color: #e5e7eb; }
+        .ls-card { background: #111827; border: 1px solid #2d3148; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+        .ls-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2d3148; }
+        .ls-card-header .ls-icon { font-size: 17px; }
+        .ls-card-header h3 { color: #e5e7eb; font-size: 13px; font-weight: 600; margin: 0; }
+        .ls-card-header .ls-sub { font-size: 10px; color: #6b7280; margin-top: 1px; }
+        .ls-item { display: flex; gap: 9px; padding: 7px 0; border-bottom: 1px solid #1f2235; }
+        .ls-item:last-of-type { border-bottom: none; }
+        .ls-icon-col { font-size: 14px; flex-shrink: 0; width: 20px; text-align: center; margin-top: 1px; }
+        .ls-text { color: #c4c8d4; font-size: 12px; line-height: 1.55; }
+        .ls-text strong { color: #e5e7eb; }
+        .ls-badge { display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+        .ls-badge-ok { background: #14532d; color: #86efac; }
+        .ls-badge-warn { background: #451a03; color: #fcd34d; }
+        .ls-read-more { display: block; margin-top: 12px; padding: 8px 14px; background: transparent; border: 1px solid #3730a3; border-radius: 7px; color: #a5b4fc; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; transition: background .15s, color .15s; width: 100%; }
+        .ls-read-more:hover { background: #1e1b4b; color: #c7d2fe; }
+        .ls-footer { text-align: center; font-size: 10px; color: #4b5563; line-height: 1.8; margin-top: 4px; }
+        .ls-footer a { color: #6366f1; text-decoration: none; }
+        /* ── Visor de documento legal completo (MD renderizado) ── */
+        .legal-doc-body { color: #d1d5db; font-size: 13px; line-height: 1.7; }
+        .legal-doc-body h1 { color: #e5e7eb; font-size: 17px; font-weight: 700; margin: 0 0 6px; }
+        .legal-doc-body h2 { color: #e5e7eb; font-size: 14px; font-weight: 600; margin: 22px 0 8px; padding-bottom: 5px; border-bottom: 1px solid #2d3148; }
+        .legal-doc-body h3 { color: #c7d2fe; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+        .legal-doc-body p { margin: 0 0 10px; color: #c4c8d4; }
+        .legal-doc-body ul, .legal-doc-body ol { margin: 0 0 10px 18px; color: #c4c8d4; }
+        .legal-doc-body li { margin-bottom: 4px; }
+        .legal-doc-body strong { color: #e5e7eb; }
+        .legal-doc-body em { color: #9ca3af; }
+        .legal-doc-body blockquote { border-left: 3px solid #4f46e5; padding-left: 12px; margin: 10px 0; color: #9ca3af; font-style: italic; }
+        .legal-doc-body a { color: #6366f1; }
+        .legal-doc-body hr { border: none; border-top: 1px solid #2d3148; margin: 18px 0; }
+        .legal-doc-body code { background: #1f2937; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #a5b4fc; }
         #tour-spotlight {
             position: fixed;
             border-radius: 10px;
@@ -326,7 +360,7 @@
                                  </button>
                                  <button id="open-privacy-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
                                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-gray-600"><span class="text-2xl">🔒</span></div>
-                                     <div><div class="font-bold text-white">Política de Privacidad</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Qué datos guardamos y cómo</div></div>
+                                     <div><div class="font-bold text-white">Política de Privacidad y Términos de Servicio</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Qué datos guardamos y cómo; también las reglas</div></div>
                                  </button>
                                  <button id="example-game-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
                                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-teal-500"><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="text-white" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg></div>
@@ -442,28 +476,73 @@
         </div>
     </div>
 
-    <!-- Privacy Policy Modal -->
+    <!-- Legal Summary Modal (resumen de Privacidad + Términos) -->
     <div id="privacy-modal" class="modal fixed inset-0 bg-black bg-opacity-90 items-center justify-center p-4 z-[70]">
-        <div class="bg-gray-900 border border-indigo-500 rounded-2xl shadow-2xl w-full max-w-lg p-6 my-auto" style="max-height: calc(100dvh - 2rem); overflow-y: auto;">
-            <div class="flex justify-between items-center mb-5">
-                <h2 class="text-xl font-bold text-white">🔒 Política de Privacidad</h2>
+        <div class="bg-gray-900 border border-indigo-500/40 rounded-2xl shadow-2xl w-full max-w-lg my-auto flex flex-col" style="max-height: calc(100dvh - 2rem);">
+            <!-- Cabecera fija -->
+            <div class="flex justify-between items-center px-5 pt-5 pb-3 flex-shrink-0">
+                <span class="text-base font-bold text-white">⚖️🛡️ Legal</span>
                 <button id="privacy-close-btn" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
             </div>
-            <!-- ✏️ EDITA ESTE BLOQUE para cambiar el texto de la política de privacidad -->
-            <div class="text-gray-300 text-sm space-y-4 leading-relaxed">
-                <p><strong class="text-white">¿Qué datos guardamos?</strong><br>
-                Al crear tu cuenta guardamos tu nombre de usuario, tu nombre de display y tus respuestas enviadas. También guardamos de forma local en este dispositivo tu ID, tus notas y tus juegos favoritos.</p>
-                <p><strong class="text-white">¿Dónde se almacenan?</strong><br>
-                Los datos de cuenta y respuestas se almacenan de forma segura en Google Sheets, accesibles únicamente por el administrador del juego.</p>
-                <p><strong class="text-white">¿Son públicos?</strong><br>
-                Tu nombre de display y tus respuestas ganadoras pueden aparecer públicamente en el podio del juego. El resto de tus datos son privados.</p>
-                <p><strong class="text-white">¿Puedo pedir que se eliminen?</strong><br>
-                Sí. Contáctanos por Instagram o correo electrónico y gestionaremos la eliminación de tu cuenta y todos tus datos en un plazo máximo de 30 días.</p>
+            <!-- Contenido desplazable -->
+            <div class="overflow-y-auto px-5 pb-5" style="overscroll-behavior: contain;">
+                <p class="ls-intro">Sí, toca un poquito de tema legal. No, no es un tostón.<br>
+                <strong>Aquí va el resumen de lo importante</strong>, en castellano, sin letra pequeña y sin abogados.<br>
+                Si quieres leer los documentos completos, están al final de cada sección.</p>
+
+                <!-- Privacidad -->
+                <div class="ls-card">
+                    <div class="ls-card-header">
+                        <span class="ls-icon">🛡️</span>
+                        <div><h3>Política de Privacidad</h3><div class="ls-sub">¿Qué pasa con tus datos?</div></div>
+                    </div>
+                    <div class="ls-item"><div class="ls-icon-col">🔍</div><div class="ls-text"><strong>Observamos lo mínimo.</strong> Sin nombre real, sin email, sin teléfono. Solo lo estrictamente necesario para que el juego funcione.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">📋</div><div class="ls-text"><strong>Qué guardamos:</strong> tu ID público y privado, tu alias del podio, tu frase semilla (si la generas), tus respuestas y el timestamp exacto de cada envío, así como lo que nos mandes directamente. Nada más.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🗄️</div><div class="ls-text"><strong>Dónde vive todo:</strong> en Google Sheets, solo accesible para mí. La página la alojo en GitHub Pages. Nadie más tiene acceso a tus datos.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🍪</div><div class="ls-text"><strong>Cookies: cero.</strong><span class="ls-badge ls-badge-ok">✓</span> Me las he comido todas, me gusta mucho el chocolate. No hay rastreo, no hay píxeles, no hay banner molesto. Lo que sí usamos es el localStorage en tu propio navegador, pero esa información no abandona tu dispositivo.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🚫</div><div class="ls-text"><strong>Jamás</strong> vendo, comparto ni cedo tus datos a terceros. Nunca.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">⚖️</div><div class="ls-text"><strong>Tus derechos ARCO:</strong> según la normativa europea puedes pedir acceso, rectificación, borrado o portabilidad de tus datos. Todo pasa por un <em>Flujo de Doble Autenticación</em> (te mando un código al juego, tú me lo confirmas por correo).<span class="ls-badge ls-badge-warn">Necesita verificación</span></div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🗑️</div><div class="ls-text"><strong>Borrar cuenta:</strong> 7 días laborables desde la verificación. Guardo una copia de seguridad 14 días por si te arrepientes y después desaparece para siempre.<span class="ls-badge ls-badge-warn">Necesita verificación</span></div></div>
+                    <div class="ls-item"><div class="ls-icon-col">👶</div><div class="ls-text"><strong>Menores de 14 años</strong> necesitan autorización de su tutor legal. Si detecto algún usuario menor sin ese consentimiento, eliminaré su cuenta de inmediato.</div></div>
+                    <button class="ls-read-more" data-doc="privacy">Leer la Política de Privacidad completa →</button>
+                </div>
+
+                <!-- Términos -->
+                <div class="ls-card">
+                    <div class="ls-card-header">
+                        <span class="ls-icon">⚖️</span>
+                        <div><h3>Términos y Condiciones</h3><div class="ls-sub">Básicamente las reglas.</div></div>
+                    </div>
+                    <div class="ls-item"><div class="ls-icon-col">🎮</div><div class="ls-text"><strong>Esto es un juego gratuito</strong> sin ánimo de lucro, hecho por una sola persona (yo, que además soy estudiante). Sin anuncios, sin micropagos, sin cajas de botín.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🕵️</div><div class="ls-text"><strong>Tu alias en el podio es público.</strong> Todo el mundo lo puede ver. Si te pones tu nombre real, esa decisión es tuya y solo tuya (esto cuenta como aviso explícito). ¡Ponte un alias de detective chulo!</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">📨</div><div class="ls-text"><strong>Tus respuestas también son públicas.</strong> Al enviarlas me das permiso para mostrarlas dentro del juego y también fuera de él, por ejemplo en redes sociales. ¡Es el precio de la brillantez!</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🚫</div><div class="ls-text"><strong>Prohibido:</strong> tener múltiples cuentas para inflar los puntos, bots, hackeos, contenido ofensivo o arruinarle los misterios activos al resto con spoilers. Romper estas normas => cuenta eliminada sin posibilidad de recurso.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🏆</div><div class="ls-text"><strong>Las reglas del podio las pongo yo.</strong> Puedo ajustar puntos, cambiar nombres que incumplan las normas, suspender cuentas o modificar las fórmulas de puntuación si lo considero necesario.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">✏️</div><div class="ls-text"><strong>Cambiar el alias:</strong> no puedes hacerlo tú desde la plataforma (por integridad del podio). Solicítamelo por el procedimiento oficial y lo valoro; si está justificado, lo hago.<span class="ls-badge ls-badge-warn">Necesita verificación</span></div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🌀</div><div class="ls-text"><strong>Disponibilidad:</strong> el servicio se ofrece «tal cual». GitHub o Google pueden caerse, o puedo romper algo sin querer. Lo arreglo en cuanto puedo, pero no hay uptime garantizado.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🕰️</div><div class="ls-text"><strong>Soporte realista:</strong> reviso los fines de semana y cuando los exámenes me lo permiten. Plazo máximo para borrar cuentas: 7 días laborables. En enero, mayo y junio, ten un poco de paciencia.</div></div>
+                    <button class="ls-read-more" data-doc="terms">Leer los Términos y Condiciones completos →</button>
+                </div>
+
+                <p class="ls-footer">
+                    ¿Dudas? ¿Quieres ejercer tus derechos? ¿O simplemente saludar?<br>
+                    <a href="mailto:interseccion@proton.me">interseccion@proton.me</a> · Formulario de contacto del juego<br><br>
+                    Última actualización: 27/6/2026 · <em>Que la lógica te acompañe.</em>
+                </p>
             </div>
-            <!-- /✏️ FIN DEL BLOQUE EDITABLE -->
-            <button id="privacy-close-btn-2" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">
-                Entendido
-            </button>
+        </div>
+    </div>
+
+    <!-- Legal Doc Modal (visor de documento completo, carga MD bajo demanda) -->
+    <div id="legal-doc-modal" class="modal fixed inset-0 bg-black bg-opacity-95 items-center justify-center p-4 z-[75]">
+        <div class="bg-gray-900 border border-indigo-500/30 rounded-2xl shadow-2xl w-full max-w-2xl my-auto flex flex-col" style="max-height: calc(100dvh - 2rem);">
+            <div class="flex justify-between items-center px-5 pt-5 pb-3 flex-shrink-0 border-b border-gray-700">
+                <span id="legal-doc-title" class="text-sm font-bold text-white"></span>
+                <button id="legal-doc-close-btn" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <div id="legal-doc-content" class="legal-doc-body overflow-y-auto px-5 py-4" style="overscroll-behavior: contain;">
+                <p class="text-gray-500 text-center py-8">Cargando...</p>
+            </div>
         </div>
     </div>
 
@@ -819,6 +898,7 @@
             seasonWinnersDisplay: document.getElementById('season-winners-display'), // NUEVO
             // Anuncios y Tutorial
             privacyModal: document.getElementById('privacy-modal'),
+            legalDocModal: document.getElementById('legal-doc-modal'),
             adModal: document.getElementById('ad-modal'),
             adTitle: document.getElementById('ad-title'),
             adContent: document.getElementById('ad-content'),
@@ -845,8 +925,11 @@
         const GAMES_INDEX_PATH = 'games/index.json';
         const SEASONS_INDEX_PATH = 'seasons/index.json';
         const EXAMPLE_GAME_PATH = 'games/ejemplo_resuelto.json';
-        const TOUR_EXAMPLE_PATH = 'games/ejemplo.json'; // mismo contenido, sin resolver — el tour necesita el botón ¡Adivina aquí! real
+        const TOUR_EXAMPLE_PATH = 'games/ejemplo.json';
         const ADS_PATH = 'anuncios/actual.json';
+        // ✏️ Rutas a los documentos legales completos (relativas a la raíz del repo)
+        const PRIVACY_MD_PATH = 'docs/politica-de-privacidad.md';
+        const TERMS_MD_PATH   = 'docs/terminos-y-condiciones.md';
 
         // =====================================================================
         // CONFIGURACIÓN GOOGLE SHEETS
@@ -3595,10 +3678,44 @@
                 updateConsentSubmitBtn();
             }, { capture: true });
 
-            // Botones de cierre del modal de privacidad
+            // Botones de cierre del modal de privacidad (resumen)
             document.getElementById('privacy-close-btn').addEventListener('click', closePrivacyModal);
-            document.getElementById('privacy-close-btn-2').addEventListener('click', closePrivacyModal);
             dom.privacyModal.addEventListener('click', (e) => { if (e.target === dom.privacyModal) closePrivacyModal(); });
+
+            // Botones "Leer completo" del resumen: abren el visor de documento
+            let legalDocCache = {};
+            async function openLegalDoc(path, title) {
+                dom.legalDocModal.classList.add('active');
+                const contentEl = document.getElementById('legal-doc-content');
+                document.getElementById('legal-doc-title').textContent = title;
+
+                if (legalDocCache[path]) {
+                    contentEl.innerHTML = legalDocCache[path];
+                    return;
+                }
+                contentEl.innerHTML = '<p class="text-gray-500 text-center py-8">⏳ Cargando documento...</p>';
+                try {
+                    const res = await fetch(`${path}?v=${Date.now()}`);
+                    if (!res.ok) throw new Error('No encontrado');
+                    const md = await res.text();
+                    const html = marked.parse(md);
+                    legalDocCache[path] = html;
+                    contentEl.innerHTML = html;
+                } catch(e) {
+                    contentEl.innerHTML = `<p class="text-red-400 text-center py-8">No se pudo cargar el documento.<br>Puedes leerlo directamente en el repositorio.</p>`;
+                }
+            }
+
+            document.querySelectorAll('.ls-read-more').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.doc === 'privacy') openLegalDoc(PRIVACY_MD_PATH, '🛡️ Política de Privacidad');
+                    if (btn.dataset.doc === 'terms')   openLegalDoc(TERMS_MD_PATH,   '⚖️ Términos y Condiciones');
+                });
+            });
+
+            // Cierre del visor de documento completo
+            document.getElementById('legal-doc-close-btn').addEventListener('click', () => dom.legalDocModal.classList.remove('active'));
+            dom.legalDocModal.addEventListener('click', (e) => { if (e.target === dom.legalDocModal) dom.legalDocModal.classList.remove('active'); });
 
             // Botón en "Sobre el proyecto"
             document.getElementById('open-privacy-btn').addEventListener('click', openPrivacyModal);
