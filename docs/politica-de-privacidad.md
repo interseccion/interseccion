@@ -1,6 +1,7 @@
 # 🛡️ Política de Privacidad
 
 **Última actualización:** [27/6/2026]
+
 **Correo de contacto:** 💌 interseccion@proton.me
 
 ---
