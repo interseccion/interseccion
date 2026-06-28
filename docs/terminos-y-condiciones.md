@@ -169,6 +169,8 @@ Por eso, pactemos estas condiciones de soporte realistas:
 
 Estos Términos pueden actualizarse en cualquier momento (por ejemplo, si añado una nueva funcionalidad o encuentro un agujero legal). Los cambios significativos te los comunicaré mediante una notificación dentro del juego. Si después de un cambio decides seguir jugando, se entiende que aceptas las nuevas normas. Si no estás de acuerdo, el procedimiento de borrado de cuenta (Sección 9) está a tu disposición.
 
+En caso de cese de actividad del proyecto, se notificará en la web con 15 días de antelación y se procederá al borrado irreversible de todas las bases de datos y registros en localStorage.
+
 ---
 
 ## 14. Nulidad parcial
