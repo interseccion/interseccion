@@ -433,16 +433,21 @@
                         <p class="text-xs text-yellow-400/80 flex items-start gap-1.5 mt-1.5"><span>⚠️</span><span>Por tu seguridad, <strong>no uses tu nombre real</strong> ni datos que te identifiquen.</span></p>
                     </div>
                     <p id="welcome-form-error" class="text-red-400 text-sm hidden"></p>
-                    <!-- Casillas de consentimiento RGPD — ambas obligatorias para crear cuenta -->
+                    <!-- Casillas de consentimiento RGPD — las tres son obligatorias para crear cuenta -->
                     <div class="space-y-3 bg-gray-800/60 border border-gray-700 rounded-lg p-4">
+                        <label class="flex items-start gap-3 cursor-pointer group">
+                            <input id="consent-age" type="checkbox" class="mt-0.5 accent-indigo-500 w-4 h-4 flex-shrink-0 cursor-pointer">
+                            <span class="text-xs text-gray-300 group-hover:text-white transition leading-relaxed">Tengo <strong class="text-white">14 años o más</strong>, o cuento con el consentimiento de mi tutor/a legal para registrarme.</span>
+                        </label>
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input id="consent-public" type="checkbox" class="mt-0.5 accent-indigo-500 w-4 h-4 flex-shrink-0 cursor-pointer">
                             <span class="text-xs text-gray-300 group-hover:text-white transition leading-relaxed">Entiendo que mi <strong class="text-white">nombre de display</strong> y mis <strong class="text-white">respuestas ganadoras</strong> serán visibles públicamente en el podio del juego.</span>
                         </label>
-                        <label class="flex items-start gap-3 cursor-pointer group">
-                            <input id="consent-privacy" type="checkbox" class="mt-0.5 accent-indigo-500 w-4 h-4 flex-shrink-0 cursor-pointer">
+                        <label class="flex items-start gap-3 cursor-pointer group" id="consent-privacy-label">
+                            <input id="consent-privacy" type="checkbox" class="mt-0.5 accent-indigo-500 w-4 h-4 flex-shrink-0 cursor-pointer" readonly>
                             <span class="text-xs text-gray-300 group-hover:text-white transition leading-relaxed">He leído y acepto la <button type="button" id="open-privacy-from-consent" class="text-indigo-400 hover:text-indigo-300 underline font-semibold">Política de Privacidad y los Términos y Condiciones</button>.</span>
                         </label>
+                        <p id="consent-privacy-hint" class="text-xs text-indigo-400/70 pl-7 hidden">👆 Pulsa el enlace de arriba para leer el resumen y aceptar.</p>
                     </div>
                     <button id="welcome-submit-btn" disabled
                         class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg opacity-40 cursor-not-allowed">
@@ -485,7 +490,7 @@
                 <button id="privacy-close-btn" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
             </div>
             <!-- Contenido desplazable -->
-            <div class="overflow-y-auto px-5 pb-5" style="overscroll-behavior: contain;">
+            <div id="privacy-modal-body" class="overflow-y-auto px-5 pb-5" style="overscroll-behavior: contain;">
                 <p class="ls-intro">Sí, toca un poquito de tema legal. No, no es un tostón.<br>
                 <strong>Aquí va el resumen de lo importante</strong>, en castellano, sin letra pequeña y sin abogados.<br>
                 Si quieres leer los documentos completos, están al final de cada sección.</p>
@@ -529,6 +534,11 @@
                     <a href="mailto:interseccion@proton.me">interseccion@proton.me</a> · Formulario de contacto del juego<br><br>
                     Última actualización: 27/6/2026 · <em>Que la lógica te acompañe.</em>
                 </p>
+
+                <!-- Solo visible al abrir desde la casilla de consentimiento -->
+                <button id="privacy-accept-btn" class="hidden w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition text-sm">
+                    ✅ He leído el resumen, acepto los términos
+                </button>
             </div>
         </div>
     </div>
@@ -3649,11 +3659,16 @@
 
             // Botón para reabrir anuncios y tutorial
             // ── Casillas de consentimiento RGPD ──
-            function openPrivacyModal() { dom.privacyModal.classList.add('active'); }
+            function openPrivacyModal() {
+                dom.privacyModal.classList.add('active');
+                document.getElementById('privacy-accept-btn').classList.add('hidden');
+                document.getElementById('privacy-modal-body').scrollTop = 0;
+            }
             function closePrivacyModal() { dom.privacyModal.classList.remove('active'); }
 
             function updateConsentSubmitBtn() {
-                const allChecked = document.getElementById('consent-public').checked
+                const allChecked = document.getElementById('consent-age').checked
+                               && document.getElementById('consent-public').checked
                                && document.getElementById('consent-privacy').checked;
                 dom.welcomeSubmitBtn.disabled = !allChecked;
                 dom.welcomeSubmitBtn.classList.toggle('opacity-40', !allChecked);
@@ -3661,24 +3676,51 @@
                 dom.welcomeSubmitBtn.classList.toggle('hover:bg-indigo-700', allChecked);
             }
 
+            document.getElementById('consent-age').addEventListener('change', updateConsentSubmitBtn);
             document.getElementById('consent-public').addEventListener('change', updateConsentSubmitBtn);
-            document.getElementById('consent-privacy').addEventListener('change', updateConsentSubmitBtn);
 
-            // El botón dentro de la <label> abre el modal sin marcar la casilla
+            // consent-privacy no se marca directamente: abre el modal primero
+            const consentPrivacyCheckbox = document.getElementById('consent-privacy');
+            const consentPrivacyHint     = document.getElementById('consent-privacy-hint');
+
+            consentPrivacyCheckbox.addEventListener('click', (e) => {
+                if (!consentPrivacyCheckbox.checked) {
+                    updateConsentSubmitBtn();
+                    return;
+                }
+                e.preventDefault();
+                consentPrivacyHint.classList.remove('hidden');
+                dom.privacyModal.classList.add('active');
+                document.getElementById('privacy-accept-btn').classList.remove('hidden');
+                document.getElementById('privacy-modal-body').scrollTop = 0;
+            });
+
             document.getElementById('open-privacy-from-consent').addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                openPrivacyModal();
+                dom.privacyModal.classList.add('active');
+                document.getElementById('privacy-accept-btn').classList.remove('hidden');
+                document.getElementById('privacy-modal-body').scrollTop = 0;
             });
 
-            // Resetear casillas cada vez que el usuario llega al paso 2
+            // Botón "He leído, lo acepto" del modal: marca la casilla y cierra
+            document.getElementById('privacy-accept-btn').addEventListener('click', () => {
+                consentPrivacyCheckbox.checked = true;
+                consentPrivacyHint.classList.add('hidden');
+                closePrivacyModal();
+                updateConsentSubmitBtn();
+            });
+
+            // Resetear las tres casillas cada vez que el usuario llega al paso 2
             dom.welcomeNewBtn.addEventListener('click', () => {
+                document.getElementById('consent-age').checked    = false;
                 document.getElementById('consent-public').checked = false;
-                document.getElementById('consent-privacy').checked = false;
+                consentPrivacyCheckbox.checked                    = false;
+                consentPrivacyHint.classList.add('hidden');
                 updateConsentSubmitBtn();
             }, { capture: true });
 
-            // Botones de cierre del modal de privacidad (resumen)
+            // Cierre del modal de privacidad (X y clic fuera) — sin auto-marcar
             document.getElementById('privacy-close-btn').addEventListener('click', closePrivacyModal);
             dom.privacyModal.addEventListener('click', (e) => { if (e.target === dom.privacyModal) closePrivacyModal(); });
 
