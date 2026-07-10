@@ -1,0 +1,54 @@
+{
+  "id": "526d050e-4d90-49df-ab94-e58bbaf4d8bf",
+  "title": "2026 - Semanal 2",
+  "type": "Semanal",
+  "difficulty": "Difícil",
+  "mystery": "Una persona",
+  "showMystery": false,
+  "notes": "El anterior no era tan complicado... Pero bueno, viendo lo visto, aquí va uno nuevo. ¡Mucha suerte!",
+  "startDate": "2026-07-10",
+  "googleFormLink": "",
+  "formEntryId": "",
+  "clues": [
+    {
+      "type": "image",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/2pista1.png",
+      "text": null,
+      "publishDate": "2026-07-03T15:00"
+    },
+    {
+      "type": "image",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/2pista2.png",
+      "text": null,
+      "publishDate": "2026-07-10T15:00"
+    },
+    {
+      "type": "image",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/2pista3.png",
+      "text": null,
+      "publishDate": "2026-07-17T15:00"
+    },
+    {
+      "type": "image",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/2pista4.png",
+      "text": null,
+      "publishDate": "2026-07-24T15:00"
+    },
+    {
+      "type": "image",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/2pista5.png",
+      "text": null,
+      "publishDate": "2026-07-31T15:00"
+    }
+  ],
+  "isSolved": false,
+  "endDate": "",
+  "solution": "",
+  "winner": "",
+  "winnerId": "",
+  "explanation": "",
+  "winnerExplanation": "",
+  "bibliography": "Imágenes generadas con IA",
+  "utd": 168,
+  "lastUpdated": "2026-07-10T18:18:11.995Z"
+}
