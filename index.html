@@ -158,13 +158,15 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows:
-                clamp(110px, min(20vw, 18vh), 175px)   /* misterios — crece con vw Y vh */
-                clamp(100px, min(17vw, 15vh), 155px)   /* podio + archivo */
-                clamp(100px, min(17vw, 15vh), 155px);  /* cuenta + sobre */
+                clamp(110px, min(20vw, 18vh), 175px)
+                clamp(100px, min(17vw, 15vh), 155px)
+                clamp(100px, min(17vw, 15vh), 155px)
+                clamp(80px,  min(14vw, 12vh), 120px);
             grid-template-areas:
                 "misterios misterios"
                 "podio     archivo"
-                "cuenta    sobre";
+                "cuenta    sobre"
+                "tarde     tarde";
             gap: clamp(8px, min(1.5vw, 1.4vh), 14px);
         }
         @media (max-width: 340px) {
@@ -182,6 +184,7 @@
         .bento-archivo   { grid-area: archivo; }
         .bento-cuenta    { grid-area: cuenta; }
         .bento-sobre     { grid-area: sobre; }
+        .bento-tarde     { grid-area: tarde; border-radius: clamp(18px,3vw,28px); }
 
         /* Tarjeta base — cristal con borde sutil */
         .home-card {
@@ -250,6 +253,14 @@
 
         #top-bar { pointer-events: none; }
         #top-bar > * { pointer-events: auto; }
+
+        /* ── Tarde ── */
+        .tarde-badge { background:rgba(217,119,6,0.15); border:1px solid rgba(217,119,6,0.3); color:#fbbf24; }
+        .tarde-modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem; }
+        .tarde-modal-box { background:#1f2937;border:1px solid rgba(255,255,255,0.1);border-radius:1.25rem;width:100%;max-width:780px;max-height:90vh;overflow-y:auto;position:relative; }
+        .team-card { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:1rem; }
+        .team-card:hover { border-color:rgba(251,191,36,0.3); }
+        .member-chip { display:inline-flex;align-items:center;gap:0.35rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:9999px;padding:0.2rem 0.65rem;font-size:0.72rem;color:#d1d5db; }
 
         /* ── Main app: espacio para la top-bar fija ── */
         #main-app-view { padding-top: 4.5rem; }
@@ -362,6 +373,17 @@
                     </div>
                 </button>
 
+                <!-- Misterios de Tarde — fila completa -->
+                <button class="home-card card-amber bento-tarde p-4 text-left group flex items-center gap-4" data-home-nav="tarde">
+                    <div class="card-strip"></div>
+                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10 flex-shrink-0" style="font-size:clamp(1.4rem,3.5vw,1.9rem)">🌆</span>
+                    <div class="relative z-10 flex-1 min-w-0">
+                        <div class="card-label" style="font-size:clamp(0.85rem,2.2vw,1.05rem)">Misterios de Tarde</div>
+                        <div class="card-sublabel">Por equipos · Una tarde de juego</div>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0 relative z-10 opacity-35 group-hover:opacity-75 group-hover:translate-x-0.5 transition-all" style="width:14px;height:14px;color:#fbbf24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+
             </div>
         </div>
     </div>
@@ -386,6 +408,7 @@
             <button data-tab="archivo" class="tab-button text-gray-300 hover:bg-gray-700/50 font-semibold py-3 px-6 transition whitespace-nowrap">Archivo</button>
             <button data-tab="podio" class="tab-button text-gray-300 hover:bg-gray-700/50 font-semibold py-3 px-6 transition whitespace-nowrap">Podio</button>
             <button data-tab="sobre" class="tab-button text-gray-300 hover:bg-gray-700/50 font-semibold py-3 px-6 transition whitespace-nowrap">Sobre el Proyecto</button>
+            <button data-tab="tarde" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-3 px-6 transition whitespace-nowrap flex items-center gap-1.5">🌆 Tarde</button>
         </nav>
 
         <main>
@@ -576,6 +599,42 @@
                  </div>
                  <div class="absolute bottom-2 right-2 text-xs text-gray-600">v13.0 — tildes + PARTICIPADOS</div>
             </div>
+            <!-- ═══ TARDE TAB ════════════════════════════════════════════════════ -->
+            <div id="tarde" class="tab-content hidden">
+
+                <!-- Mis Equipos -->
+                <section class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">👥 Mis Equipos</h2>
+                        <button id="tarde-refresh-teams-btn" class="text-xs text-gray-500 hover:text-gray-300 transition">↺ Actualizar</button>
+                    </div>
+                    <div id="my-teams-container">
+                        <div class="animate-pulse space-y-3">
+                            <div class="h-24 bg-gray-800/50 rounded-2xl"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Misterios de Tarde -->
+                <section class="mb-8">
+                    <h2 class="text-xl font-bold text-white mb-4">🌆 Misterios de Tarde</h2>
+                    <div id="tarde-games-container">
+                        <div class="animate-pulse space-y-3">
+                            <div class="h-32 bg-gray-800/50 rounded-2xl"></div>
+                            <div class="h-32 bg-gray-800/50 rounded-2xl"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Podio de Equipos -->
+                <section>
+                    <h2 class="text-xl font-bold text-white mb-4">🏆 Podio de Equipos</h2>
+                    <div id="tarde-podio-container">
+                        <div class="animate-pulse h-40 bg-gray-800/50 rounded-2xl"></div>
+                    </div>
+                </section>
+            </div>
+
         </main>
     </div>
 
@@ -3818,6 +3877,11 @@
             }
 
             function handleHomeNav(navTarget) {
+                // "tarde" redirige a la pestaña tarde
+                if (navTarget === 'tarde') {
+                    showMainApp('tarde');
+                    return;
+                }
                 // "Mi Cuenta" siempre requiere sesión
                 if (navTarget === 'cuenta') {
                     if (!userId) {
@@ -5099,5 +5163,787 @@
         </div>
     </div>
     </div><!-- /#main-app-view -->
+    <!-- ═══ TARDE GAME MODAL ══════════════════════════════════════════════════ -->
+    <div id="tarde-game-modal" class="tarde-modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="tarde-modal-box">
+            <!-- Header -->
+            <div class="sticky top-0 z-10 bg-gray-900/95 backdrop-blur border-b border-gray-700/60 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <div class="flex items-center gap-3">
+                    <span class="tarde-badge text-xs font-bold px-2 py-0.5 rounded-full" id="tgm-type-badge">Tarde</span>
+                    <h2 class="text-base font-bold text-white truncate max-w-xs" id="tgm-title">—</h2>
+                </div>
+                <button id="tgm-close-btn" class="text-gray-400 hover:text-white transition p-1 rounded-lg hover:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Team selector -->
+                <div id="tgm-team-selector" class="hidden">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Jugando como equipo</label>
+                    <select id="tgm-team-select" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white font-medium focus:border-amber-500 transition"></select>
+                </div>
+
+                <!-- Mystery text -->
+                <div id="tgm-mystery-text" class="hidden bg-gray-800/60 border border-gray-700/40 rounded-xl p-4 text-gray-300 leading-relaxed text-sm"></div>
+
+                <!-- Clues -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pistas</span>
+                        <span id="tgm-clue-counter" class="text-xs text-gray-500"></span>
+                    </div>
+                    <div id="tgm-clues-container" class="space-y-3"></div>
+                </div>
+
+                <!-- Submit answer section -->
+                <div id="tgm-answer-section">
+                    <div class="border-t border-gray-700/60 pt-5">
+                        <h3 class="font-bold text-white mb-3">Tu respuesta</h3>
+                        <input id="tgm-answer-input" type="text" placeholder="¿Cuál es la intersección?" maxlength="200"
+                               class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 transition mb-3">
+                        <textarea id="tgm-explain-input" placeholder="Explicación / razonamiento (opcional)" rows="2" maxlength="500"
+                               class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm mb-4 resize-none"></textarea>
+
+                        <!-- Present members picker -->
+                        <div class="bg-amber-900/20 border border-amber-500/25 rounded-xl p-4 mb-4">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="text-amber-400 font-semibold text-sm">👥 ¿Quién estaba presente?</span>
+                                <span class="text-xs text-gray-500">(Solo capitán o admin)</span>
+                            </div>
+                            <div id="tgm-members-list" class="space-y-2"></div>
+                            <div id="tgm-marker-info" class="mt-3 text-xs text-gray-500 italic hidden">
+                                Marcando como: <span id="tgm-marker-name" class="text-amber-400 font-medium"></span>
+                            </div>
+                        </div>
+
+                        <button id="tgm-submit-btn" class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition">
+                            Enviar respuesta
+                        </button>
+                        <p id="tgm-submit-error" class="text-red-400 text-xs text-center mt-2 hidden"></p>
+                    </div>
+                </div>
+
+                <!-- Solved state -->
+                <div id="tgm-solved-section" class="hidden">
+                    <div class="bg-green-900/20 border border-green-500/30 rounded-xl p-5 text-center">
+                        <div class="text-3xl mb-2">✅</div>
+                        <h3 class="font-bold text-green-400 text-lg mb-1">¡Resuelto!</h3>
+                        <p class="text-gray-300 text-sm" id="tgm-solution-text"></p>
+                        <p class="text-gray-400 text-xs mt-2" id="tgm-winner-team"></p>
+                    </div>
+                    <div id="tgm-explanation" class="mt-4 bg-gray-800/50 rounded-xl p-4 text-gray-300 text-sm hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ CREATE TEAM MODAL ══════════════════════════════════════════════════ -->
+    <div id="create-team-modal" class="tarde-modal-overlay hidden">
+        <div class="tarde-modal-box" style="max-width:440px">
+            <div class="px-6 py-5 border-b border-gray-700/60 flex items-center justify-between">
+                <h3 class="font-bold text-white text-lg">Crear equipo</h3>
+                <button onclick="document.getElementById('create-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition">✕</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">Nombre del equipo</label>
+                    <input id="create-team-name" type="text" maxlength="40" placeholder="Ej: Los Detectives del Jueves"
+                           class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition">
+                </div>
+                <p class="text-xs text-gray-500">Se generará un código de invitación automáticamente (6 caracteres). Compártelo con tu equipo para que puedan unirse.</p>
+                <p id="create-team-error" class="text-red-400 text-sm hidden"></p>
+                <button id="create-team-submit-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">
+                    Crear equipo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ JOIN TEAM MODAL ════════════════════════════════════════════════════ -->
+    <div id="join-team-modal" class="tarde-modal-overlay hidden">
+        <div class="tarde-modal-box" style="max-width:400px">
+            <div class="px-6 py-5 border-b border-gray-700/60 flex items-center justify-between">
+                <h3 class="font-bold text-white text-lg">Unirse a un equipo</h3>
+                <button onclick="document.getElementById('join-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition">✕</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1.5">Código de invitación</label>
+                    <input id="join-team-code" type="text" maxlength="6" placeholder="XXXXXX"
+                           class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition font-mono text-center text-xl tracking-widest uppercase"
+                           oninput="this.value=this.value.toUpperCase()">
+                </div>
+                <div id="join-team-preview" class="hidden bg-gray-800/60 border border-gray-700/40 rounded-xl px-4 py-3 text-sm text-gray-300"></div>
+                <p id="join-team-error" class="text-red-400 text-sm hidden"></p>
+                <button id="join-team-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition">
+                    Unirse
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ MANAGE TEAM MODAL ═════════════════════════════════════════════════ -->
+    <div id="manage-team-modal" class="tarde-modal-overlay hidden">
+        <div class="tarde-modal-box" style="max-width:500px">
+            <div class="px-6 py-5 border-b border-gray-700/60 flex items-center justify-between">
+                <h3 class="font-bold text-white text-lg" id="manage-team-title">Gestionar equipo</h3>
+                <button onclick="document.getElementById('manage-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition">✕</button>
+            </div>
+            <div id="manage-team-body" class="p-6 space-y-5"></div>
+        </div>
+    </div>
+
+
 </body>
 </html>
+<script>
+// ═══════════════════════════════════════════════════════════════════════════════
+// MISTERIOS DE TARDE — FRONTEND COMPLETO
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const TARDE_INDEX_PATH = 'tarde/index.json';
+
+// ── Estado global tarde ──────────────────────────────────────────────────────
+let tardeGames   = [];
+let myTeams      = [];
+let tardePodio   = [];
+let tardeLoaded  = false;
+
+// Juego abierto en el modal
+let currentTardeGame = null;
+let currentTardeTeam = null;
+
+// ── Carga de datos ───────────────────────────────────────────────────────────
+
+async function loadTardeData(force = false) {
+    if (tardeLoaded && !force) return;
+    tardeLoaded = true;
+    await Promise.all([_loadTardeGames(), _loadMyTeams(), _loadTardePodio()]);
+    renderTardeSection();
+}
+
+async function _loadTardeGames() {
+    try {
+        const res   = await fetch(`${TARDE_INDEX_PATH}?v=${Date.now()}`);
+        const files = await res.json();
+        const games = await Promise.all(
+            files.map(f => fetch(`tarde/${f}?v=${Date.now()}`).then(r => r.json()).catch(() => null))
+        );
+        tardeGames = games.filter(Boolean);
+    } catch { tardeGames = []; }
+}
+
+async function _loadMyTeams() {
+    if (!userId) { myTeams = []; return; }
+    try {
+        const pubId = getPublicId(userId) || '';
+        const res   = await fetch(`${APPS_SCRIPT_URL}?action=getMyTeams&user=${encodeURIComponent(pubId)}`);
+        const data  = await res.json();
+        myTeams = Array.isArray(data) ? data : [];
+    } catch { myTeams = []; }
+}
+
+async function _loadTardePodio() {
+    try {
+        const res  = await fetch(`${APPS_SCRIPT_URL}?action=getTardePodio`);
+        const data = await res.json();
+        tardePodio = Array.isArray(data) ? data : [];
+    } catch { tardePodio = []; }
+}
+
+// ── Renderizado de la sección tarde ─────────────────────────────────────────
+
+function renderTardeSection() {
+    _renderMyTeams();
+    _renderTardeGames();
+    _renderTardePodio();
+}
+
+function _renderMyTeams() {
+    const el = document.getElementById('my-teams-container');
+    if (!el) return;
+
+    if (!userId) {
+        el.innerHTML = `
+            <div class="text-center py-8 bg-gray-800/30 rounded-2xl border border-gray-700/40">
+                <p class="text-gray-400 mb-4 text-sm">Inicia sesión para crear o unirte a un equipo.</p>
+                <button onclick="dom.welcomeModal.classList.add('active')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-xl transition text-sm">
+                    Iniciar sesión
+                </button>
+            </div>`;
+        return;
+    }
+
+    if (myTeams.length === 0) {
+        el.innerHTML = `
+            <div class="text-center py-8 bg-gray-800/30 rounded-2xl border border-gray-700/40">
+                <p class="text-3xl mb-3">👥</p>
+                <p class="text-gray-300 font-semibold mb-1">Aún no tienes equipo</p>
+                <p class="text-gray-500 text-sm mb-5">Crea uno o únete con un código de invitación.</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="openCreateTeamModal()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-5 rounded-xl transition text-sm">+ Crear equipo</button>
+                    <button onclick="openJoinTeamModal()" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-5 rounded-xl transition text-sm">Unirse con código</button>
+                </div>
+            </div>`;
+        return;
+    }
+
+    const pubId = getPublicId(userId) || '';
+    el.innerHTML = myTeams.map(t => _teamCardHTML(t, pubId)).join('') +
+        (myTeams.length < 3 ? `
+        <div class="flex gap-3 mt-3">
+            <button onclick="openCreateTeamModal()" class="flex-1 py-2 text-sm font-semibold rounded-xl border border-amber-500/30 text-amber-400 bg-amber-900/10 hover:bg-amber-900/20 transition">+ Crear equipo</button>
+            <button onclick="openJoinTeamModal()" class="flex-1 py-2 text-sm font-semibold rounded-xl border border-gray-600/40 text-gray-400 bg-gray-800/30 hover:bg-gray-700/40 transition">Código de invitación</button>
+        </div>` :
+        `<p class="text-gray-500 text-xs text-center mt-2">Máximo de 3 equipos alcanzado.</p>`);
+}
+
+function _teamCardHTML(team, pubId) {
+    const isCaptain = team.captain === pubId;
+    const isAdmin   = isCaptain || (team.admins || []).includes(pubId);
+    const badge     = isCaptain ? '👑 ' : (isAdmin ? '⭐ ' : '');
+
+    return `
+        <div class="team-card p-4 mb-3 transition">
+            <div class="flex items-start justify-between mb-3">
+                <div>
+                    <h3 class="font-bold text-white">${badge}${_esc(team.name)}</h3>
+                    <div class="text-xs text-gray-500 mt-0.5">${team.members.length} miembro${team.members.length !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${isAdmin ? `<button onclick="openManageTeamModal('${team.id}')" class="text-xs text-amber-400 hover:text-amber-300 font-medium transition">Gestionar</button>` : ''}
+                    <button onclick="tardeCopyCode('${team.code || ''}')" class="text-xs text-gray-500 hover:text-gray-300 transition">Copiar código</button>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="flex-1 bg-gray-900/70 rounded-lg px-4 py-2 font-mono text-amber-300 tracking-widest font-bold text-sm text-center select-all">
+                    ${team.code || '——'}
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-1.5 mt-3">
+                ${(team.members || []).map(m => `<span class="member-chip">${_esc(m.substring(0,8))}…</span>`).join('')}
+            </div>
+        </div>`;
+}
+
+function _renderTardeGames() {
+    const el = document.getElementById('tarde-games-container');
+    if (!el) return;
+
+    if (tardeGames.length === 0) {
+        el.innerHTML = `<p class="text-gray-500 text-center py-10 italic text-sm">No hay misterios de tarde disponibles todavía.</p>`;
+        return;
+    }
+
+    const active = tardeGames.filter(g => !g.isSolved);
+    const solved = tardeGames.filter(g => g.isSolved);
+
+    const cardHTML = g => `
+        <div onclick="openTardeModal('${g.id}')"
+             class="cursor-pointer bg-gray-800/40 border border-gray-700/40 rounded-2xl p-5 hover:border-amber-500/40 hover:bg-gray-800/70 transition group">
+            <div class="flex items-start justify-between mb-3">
+                <span class="tarde-badge text-xs font-bold px-2 py-0.5 rounded-full">${_esc(g.type || 'Tarde')}</span>
+                ${g.isSolved
+                    ? `<span class="text-xs text-green-400 font-semibold">✓ Resuelto</span>`
+                    : `<span class="text-xs text-gray-500">Abierto</span>`}
+            </div>
+            <h3 class="font-bold text-white text-lg leading-tight mb-2 group-hover:text-amber-300 transition">${_esc(g.title)}</h3>
+            ${g.mystery ? `<p class="text-gray-400 text-sm line-clamp-2 mb-3">${_esc(g.mystery)}</p>` : ''}
+            <div class="flex items-center gap-4 text-xs text-gray-500">
+                <span>🕐 ~${g.estimatedMinutes || 90} min</span>
+                <span>👥 Por equipos</span>
+                ${g.difficulty ? `<span>📊 ${g.difficulty}</span>` : ''}
+            </div>
+        </div>`;
+
+    el.innerHTML = `
+        ${active.length ? `<h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">En Curso</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">${active.map(cardHTML).join('')}</div>` : ''}
+        ${solved.length ? `<h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Resueltos</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${solved.map(cardHTML).join('')}</div>` : ''}`;
+}
+
+function _renderTardePodio() {
+    const el = document.getElementById('tarde-podio-container');
+    if (!el) return;
+
+    if (tardePodio.length === 0) {
+        el.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm italic">El podio está vacío todavía.</p>`;
+        return;
+    }
+
+    const medals = ['🥇','🥈','🥉'];
+    el.innerHTML = `
+        <div class="overflow-x-auto rounded-2xl border border-gray-700/40">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-700/60">
+                        <th class="py-3 px-4 text-left text-gray-500 font-semibold text-xs uppercase tracking-wider">#</th>
+                        <th class="py-3 px-4 text-left text-gray-500 font-semibold text-xs uppercase tracking-wider">Equipo</th>
+                        <th class="py-3 px-4 text-right text-gray-500 font-semibold text-xs uppercase tracking-wider">Misterios</th>
+                        <th class="py-3 px-4 text-right text-gray-500 font-semibold text-xs uppercase tracking-wider">Puntos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tardePodio.map((entry, i) => {
+                        const team = myTeams.find(t => t.id === entry.teamId);
+                        const name = team ? team.name : entry.teamId.substring(0,10)+'…';
+                        const isMyTeam = myTeams.some(t => t.id === entry.teamId);
+                        return `
+                        <tr class="border-b border-gray-700/20 hover:bg-gray-800/40 transition ${isMyTeam ? 'bg-amber-900/10' : ''}"
+                            onclick="showTeamProfile('${entry.teamId}')" style="cursor:pointer">
+                            <td class="py-3 px-4 font-bold ${i < 3 ? 'text-xl' : 'text-gray-400'}">${i < 3 ? medals[i] : `#${i+1}`}</td>
+                            <td class="py-3 px-4 font-semibold text-white">${_esc(name)} ${isMyTeam ? '<span class="text-amber-400 text-xs">(tú)</span>' : ''}</td>
+                            <td class="py-3 px-4 text-right text-gray-400">${entry.solved}</td>
+                            <td class="py-3 px-4 text-right font-bold text-green-400 font-mono">${entry.totalPoints}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>`;
+}
+
+// ── Tarde game modal ─────────────────────────────────────────────────────────
+
+async function openTardeModal(gameId) {
+    const game = tardeGames.find(g => g.id === gameId);
+    if (!game) return;
+    currentTardeGame = game;
+
+    const modal = document.getElementById('tarde-game-modal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Header
+    document.getElementById('tgm-type-badge').textContent = game.type || 'Tarde';
+    document.getElementById('tgm-title').textContent = game.title;
+
+    // Mystery text
+    const mystEl = document.getElementById('tgm-mystery-text');
+    if (game.mystery && game.showMystery !== false) {
+        mystEl.textContent = game.mystery;
+        mystEl.classList.remove('hidden');
+    } else {
+        mystEl.classList.add('hidden');
+    }
+
+    // Clues
+    const cluesCont = document.getElementById('tgm-clues-container');
+    const clueCount = document.getElementById('tgm-clue-counter');
+    const now = Date.now();
+    const visibleClues = (game.clues || []).filter(c => !c.publishDate || new Date(c.publishDate).getTime() <= now);
+    clueCount.textContent = `${visibleClues.length} de ${(game.clues||[]).length}`;
+
+    if (visibleClues.length === 0) {
+        cluesCont.innerHTML = `<p class="text-gray-500 text-sm italic text-center py-4">No hay pistas disponibles aún.</p>`;
+    } else {
+        cluesCont.innerHTML = visibleClues.map((c, i) => `
+            <div class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-4">
+                <div class="text-xs text-gray-500 mb-2">Pista ${i+1}</div>
+                ${c.type === 'text'  ? `<p class="text-gray-200 text-sm leading-relaxed">${_esc(c.content||'')}</p>` : ''}
+                ${c.type === 'image' ? `<img src="${_esc(c.content||'')}" alt="Pista ${i+1}" class="max-w-full rounded-lg">` : ''}
+                ${c.type === 'interactive' ? `<div class="rounded-lg overflow-hidden"><iframe srcdoc="${_esc(c.content||'')}" style="width:100%;min-height:${c.minHeight||200}px;border:none;border-radius:0.5rem" sandbox="allow-scripts"></iframe></div>` : ''}
+                ${c.type === 'audio' ? `<audio controls class="w-full"><source src="${_esc(c.content||'')}"></audio>` : ''}
+                ${c.type === 'video' ? `<video controls class="w-full rounded-lg"><source src="${_esc(c.content||'')}"></video>` : ''}
+            </div>`).join('');
+    }
+
+    // Solved / answer section
+    const solvedEl = document.getElementById('tgm-solved-section');
+    const answerEl = document.getElementById('tgm-answer-section');
+
+    if (game.isSolved) {
+        solvedEl.classList.remove('hidden');
+        answerEl.classList.add('hidden');
+        document.getElementById('tgm-solution-text').textContent = `Solución: ${game.solution || '—'}`;
+        document.getElementById('tgm-winner-team').textContent = game.winner ? `Ganador: ${game.winner}` : '';
+        const expEl = document.getElementById('tgm-explanation');
+        if (game.explanation) { expEl.textContent = game.explanation; expEl.classList.remove('hidden'); }
+        else { expEl.classList.add('hidden'); }
+    } else {
+        solvedEl.classList.add('hidden');
+        answerEl.classList.remove('hidden');
+        document.getElementById('tgm-answer-input').value = '';
+        document.getElementById('tgm-explain-input').value = '';
+        document.getElementById('tgm-submit-error').classList.add('hidden');
+        _buildMembersPicker();
+    }
+
+    // Team selector
+    _buildTeamSelector();
+}
+
+function _buildTeamSelector() {
+    const sel = document.getElementById('tgm-team-select');
+    const wrap = document.getElementById('tgm-team-selector');
+    if (!myTeams.length) { wrap.classList.add('hidden'); return; }
+    sel.innerHTML = myTeams.map(t => `<option value="${t.id}">${_esc(t.name)}</option>`).join('');
+    wrap.classList.toggle('hidden', myTeams.length <= 1);
+    currentTardeTeam = myTeams[0];
+    sel.onchange = () => {
+        currentTardeTeam = myTeams.find(t => t.id === sel.value) || myTeams[0];
+        _buildMembersPicker();
+    };
+}
+
+function _buildMembersPicker() {
+    const team   = currentTardeTeam;
+    const listEl = document.getElementById('tgm-members-list');
+    const markEl = document.getElementById('tgm-marker-info');
+    const markNm = document.getElementById('tgm-marker-name');
+    if (!listEl) return;
+
+    if (!team) {
+        listEl.innerHTML = `<p class="text-gray-500 text-xs italic">No tienes equipo seleccionado.</p>`;
+        markEl.classList.add('hidden');
+        return;
+    }
+
+    const pubId    = getPublicId(userId) || '';
+    const isAdmin  = team.captain === pubId || (team.admins||[]).includes(pubId);
+
+    if (!isAdmin) {
+        listEl.innerHTML = `<p class="text-amber-300/70 text-xs">Solo el capitán o un admin puede marcar la asistencia. La respuesta la puede enviar cualquier miembro.</p>`;
+        markEl.classList.add('hidden');
+        return;
+    }
+
+    markNm.textContent = pubId.substring(0,12)+'…';
+    markEl.classList.remove('hidden');
+
+    listEl.innerHTML = (team.members||[]).map(m => `
+        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
+            <input type="checkbox" class="tarde-present-check accent-amber-500 w-4 h-4" value="${m}" checked>
+            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…
+                ${m === team.captain ? '<span class="text-amber-400 text-xs ml-1">👑</span>' : ''}
+                ${(team.admins||[]).includes(m) && m !== team.captain ? '<span class="text-yellow-300 text-xs ml-1">⭐</span>' : ''}
+            </span>
+        </label>`).join('');
+}
+
+function closeTardeModal() {
+    document.getElementById('tarde-game-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+    currentTardeGame = null;
+}
+
+async function submitTardeAnswer() {
+    const game   = currentTardeGame;
+    const team   = currentTardeTeam;
+    const errEl  = document.getElementById('tgm-submit-error');
+    const btn    = document.getElementById('tgm-submit-btn');
+
+    errEl.classList.add('hidden');
+
+    if (!userId) { _tardeErr(errEl, 'Debes iniciar sesión para enviar.'); return; }
+    if (!team)   { _tardeErr(errEl, 'Selecciona un equipo.'); return; }
+
+    const answer  = (document.getElementById('tgm-answer-input').value || '').trim();
+    const explain = (document.getElementById('tgm-explain-input').value || '').trim();
+    if (!answer)  { _tardeErr(errEl, 'Escribe tu respuesta antes de enviar.'); return; }
+
+    const pubId   = getPublicId(userId) || '';
+    const isAdmin = team.captain === pubId || (team.admins||[]).includes(pubId);
+
+    // Gather present members
+    let presentPubIds = [];
+    if (isAdmin) {
+        document.querySelectorAll('.tarde-present-check:checked').forEach(cb => presentPubIds.push(cb.value));
+        if (presentPubIds.length === 0) { _tardeErr(errEl, 'Marca al menos un miembro presente.'); return; }
+    } else {
+        // Si no es admin, presentes = todos (el admin lo confirmará en admin panel si es necesario)
+        presentPubIds = team.members || [];
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
+
+    try {
+        const body = {
+            action         : 'submitTardeAnswer',
+            mysteryId      : game.id,
+            teamId         : team.id,
+            senderPrivId   : userId,
+            solution       : answer,
+            explanation    : explain,
+            presentPubIds  : presentPubIds.join(','),
+            markerPubId    : pubId
+        };
+        const res  = await fetch(APPS_SCRIPT_URL, { method:'POST', body: JSON.stringify(body) });
+        const data = await res.json();
+
+        if (data.error) {
+            _tardeErr(errEl, data.error);
+        } else {
+            showToast('✅ Respuesta enviada. Pendiente de revisión.');
+            closeTardeModal();
+        }
+    } catch(e) {
+        _tardeErr(errEl, 'Error de conexión. Inténtalo de nuevo.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enviar respuesta';
+    }
+}
+
+function _tardeErr(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+
+// ── Team management ──────────────────────────────────────────────────────────
+
+function openCreateTeamModal() {
+    if (!userId) { dom.welcomeModal.classList.add('active'); return; }
+    document.getElementById('create-team-name').value = '';
+    document.getElementById('create-team-error').classList.add('hidden');
+    document.getElementById('create-team-modal').classList.remove('hidden');
+}
+
+function openJoinTeamModal() {
+    if (!userId) { dom.welcomeModal.classList.add('active'); return; }
+    document.getElementById('join-team-code').value = '';
+    document.getElementById('join-team-error').classList.add('hidden');
+    document.getElementById('join-team-preview').classList.add('hidden');
+    document.getElementById('join-team-modal').classList.remove('hidden');
+}
+
+async function openManageTeamModal(teamId) {
+    const team  = myTeams.find(t => t.id === teamId);
+    if (!team)  return;
+    const pubId  = getPublicId(userId) || '';
+    const isCap  = team.captain === pubId;
+    const isAdm  = isCap || (team.admins||[]).includes(pubId);
+    if (!isAdm)  return;
+
+    document.getElementById('manage-team-title').textContent = `Gestionar: ${team.name}`;
+    const body = document.getElementById('manage-team-body');
+
+    body.innerHTML = `
+        <!-- Nombre -->
+        <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nombre del equipo</label>
+            <div class="flex gap-2">
+                <input id="manage-team-name" type="text" value="${_esc(team.name)}" maxlength="40"
+                       class="flex-1 bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white focus:border-amber-500 transition">
+                <button onclick="_saveTeamName('${teamId}')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 rounded-xl transition text-sm">Guardar</button>
+            </div>
+        </div>
+
+        <!-- Admins (solo capitán) -->
+        ${isCap ? `
+        <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Admins del equipo <span class="text-gray-600">(pueden marcar asistencia)</span></label>
+            <div id="manage-admins-list" class="space-y-2 mb-2">
+                ${(team.members||[]).filter(m => m !== team.captain).map(m => `
+                <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
+                    <input type="checkbox" class="manage-admin-check accent-amber-500 w-4 h-4" value="${m}"
+                           ${(team.admins||[]).includes(m) ? 'checked' : ''}>
+                    <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…</span>
+                </label>`).join('')}
+            </div>
+            <button onclick="_saveTeamAdmins('${teamId}')" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 rounded-xl transition text-sm">
+                Guardar admins
+            </button>
+        </div>` : ''}
+
+        <!-- Código -->
+        <div class="bg-gray-800/50 rounded-xl p-4">
+            <div class="text-xs text-gray-500 mb-2">Código de invitación</div>
+            <div class="font-mono text-amber-300 text-2xl tracking-widest font-black text-center py-2 select-all">${team.code || '——'}</div>
+            <button onclick="tardeCopyCode('${team.code||''}')" class="w-full mt-2 text-xs text-gray-400 hover:text-white transition py-1.5 bg-gray-700 rounded-lg">Copiar código</button>
+        </div>
+
+        <!-- Abandonar / eliminar -->
+        <div class="border-t border-gray-700/40 pt-4 flex gap-2">
+            ${!isCap ? `<button onclick="_leaveTeam('${teamId}')" class="flex-1 bg-red-900/30 hover:bg-red-900/50 border border-red-500/30 text-red-400 font-semibold py-2 rounded-xl transition text-sm">Abandonar equipo</button>` : ''}
+            ${isCap  ? `<button onclick="_deleteTeam('${teamId}')" class="flex-1 bg-red-900/30 hover:bg-red-900/50 border border-red-500/30 text-red-400 font-semibold py-2 rounded-xl transition text-sm">Eliminar equipo</button>` : ''}
+        </div>
+    `;
+
+    document.getElementById('manage-team-modal').classList.remove('hidden');
+}
+
+async function _saveTeamName(teamId) {
+    const name = (document.getElementById('manage-team-name').value||'').trim();
+    if (!name) return;
+    const res  = await _postTarde({ action:'updateTeam', teamId, userPubId: getPublicId(userId)||'', name });
+    if (res.ok) { showToast('✅ Nombre actualizado'); await _loadMyTeams(); renderTardeSection(); }
+    else showToast('❌ ' + (res.error||'Error'));
+}
+
+async function _saveTeamAdmins(teamId) {
+    const adminIds = [...document.querySelectorAll('.manage-admin-check:checked')].map(cb => cb.value).join(',');
+    const res = await _postTarde({ action:'updateTeam', teamId, userPubId: getPublicId(userId)||'', adminIds });
+    if (res.ok) { showToast('✅ Admins actualizados'); await _loadMyTeams(); renderTardeSection(); }
+    else showToast('❌ ' + (res.error||'Error'));
+}
+
+async function _leaveTeam(teamId) {
+    if (!confirm('¿Seguro que quieres abandonar este equipo?')) return;
+    const res = await _postTarde({ action:'leaveTeam', teamId, userPubId: getPublicId(userId)||'' });
+    if (res.ok) {
+        document.getElementById('manage-team-modal').classList.add('hidden');
+        showToast('✅ Has abandonado el equipo');
+        await _loadMyTeams(); renderTardeSection();
+    } else showToast('❌ ' + (res.error||'Error'));
+}
+
+async function _deleteTeam(teamId) {
+    if (!confirm('¿Eliminar el equipo definitivamente? Esta acción no se puede deshacer.')) return;
+    const res = await _postTarde({ action:'deleteTeam', teamId, userPubId: getPublicId(userId)||'' });
+    if (res.ok) {
+        document.getElementById('manage-team-modal').classList.add('hidden');
+        showToast('✅ Equipo eliminado');
+        await _loadMyTeams(); renderTardeSection();
+    } else showToast('❌ ' + (res.error||'Error'));
+}
+
+async function showTeamProfile(teamId) {
+    try {
+        const res  = await fetch(`${APPS_SCRIPT_URL}?action=getTeam&teamId=${encodeURIComponent(teamId)}`);
+        const team = await res.json();
+        if (team.error) return;
+        const pts   = tardePodio.find(p => p.teamId === teamId);
+        const content = `
+            <div class="text-center pb-5 mb-5" style="border-bottom:1px solid rgba(255,255,255,0.08)">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl font-black text-white mx-auto mb-3">
+                    ${_esc(team.name.charAt(0).toUpperCase())}
+                </div>
+                <h3 class="text-xl font-bold text-white">${_esc(team.name)}</h3>
+                <div class="text-xs text-gray-500 mt-1">${team.members.length} miembros</div>
+            </div>
+            ${pts ? `
+            <div class="grid grid-cols-2 gap-3 mb-5">
+                <div class="rounded-xl p-3 text-center" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2)">
+                    <div class="text-xl font-black text-green-400">${pts.totalPoints}</div>
+                    <div class="text-xs text-gray-500 mt-0.5">Puntos</div>
+                </div>
+                <div class="rounded-xl p-3 text-center" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2)">
+                    <div class="text-xl font-black text-amber-400">${pts.solved}</div>
+                    <div class="text-xs text-gray-500 mt-0.5">Resueltos</div>
+                </div>
+            </div>` : ''}
+            <div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">Miembros</div>
+                <div class="flex flex-wrap gap-1.5">
+                    ${team.members.map(m => `
+                        <span class="member-chip">
+                            ${m === team.captain ? '👑 ' : (team.admins.includes(m) ? '⭐ ' : '')}${_esc(m.substring(0,12))}…
+                        </span>`).join('')}
+                </div>
+            </div>`;
+        renderModal(null, 'info', { title: 'Perfil de Equipo', content });
+    } catch {}
+}
+
+// ── Create/Join team submit handlers ────────────────────────────────────────
+
+async function _submitCreateTeam() {
+    const name   = (document.getElementById('create-team-name').value||'').trim();
+    const errEl  = document.getElementById('create-team-error');
+    const btn    = document.getElementById('create-team-submit-btn');
+    errEl.classList.add('hidden');
+    if (!name) { errEl.textContent='El nombre no puede estar vacío.'; errEl.classList.remove('hidden'); return; }
+    btn.disabled = true; btn.textContent = 'Creando…';
+    const res = await _postTarde({ action:'createTeam', name, captainPubId: getPublicId(userId)||'', captainPrivId: userId });
+    btn.disabled = false; btn.textContent = 'Crear equipo';
+    if (res.ok) {
+        document.getElementById('create-team-modal').classList.add('hidden');
+        showToast(`✅ Equipo creado · Código: ${res.code}`);
+        await _loadMyTeams(); renderTardeSection();
+    } else {
+        errEl.textContent = res.error || 'Error al crear el equipo.';
+        errEl.classList.remove('hidden');
+    }
+}
+
+async function _submitJoinTeam() {
+    const code  = (document.getElementById('join-team-code').value||'').trim().toUpperCase();
+    const errEl = document.getElementById('join-team-error');
+    const btn   = document.getElementById('join-team-submit-btn');
+    errEl.classList.add('hidden');
+    if (code.length !== 6) { errEl.textContent='El código debe tener 6 caracteres.'; errEl.classList.remove('hidden'); return; }
+    btn.disabled = true; btn.textContent = 'Uniéndose…';
+    const res = await _postTarde({ action:'joinTeam', code, userPubId: getPublicId(userId)||'', userPrivId: userId });
+    btn.disabled = false; btn.textContent = 'Unirse';
+    if (res.ok) {
+        document.getElementById('join-team-modal').classList.add('hidden');
+        showToast(`✅ Te has unido a "${res.teamName}"`);
+        await _loadMyTeams(); renderTardeSection();
+    } else {
+        errEl.textContent = res.error || 'Código inválido o equipo no encontrado.';
+        errEl.classList.remove('hidden');
+    }
+}
+
+// Validate code on input (preview team name)
+document.getElementById('join-team-code').addEventListener('input', async function() {
+    const code    = this.value.toUpperCase();
+    const preview = document.getElementById('join-team-preview');
+    if (code.length === 6) {
+        try {
+            const res = await fetch(`${APPS_SCRIPT_URL}?action=validateTeamCode&code=${encodeURIComponent(code)}`);
+            const d   = await res.json();
+            if (d.ok) { preview.textContent = `✓ Equipo encontrado: ${d.teamName}`; preview.classList.remove('hidden'); }
+            else { preview.classList.add('hidden'); }
+        } catch { preview.classList.add('hidden'); }
+    } else { preview.classList.add('hidden'); }
+});
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+async function _postTarde(body) {
+    try {
+        const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body: JSON.stringify(body) });
+        return await res.json();
+    } catch { return { error: 'Error de conexión' }; }
+}
+
+function tardeCopyCode(code) {
+    if (!code) return;
+    navigator.clipboard?.writeText(code).then(() => showToast(`📋 Código copiado: ${code}`));
+}
+
+function _esc(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Event listeners ──────────────────────────────────────────────────────────
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Close tarde game modal
+    document.getElementById('tgm-close-btn')?.addEventListener('click', closeTardeModal);
+    document.getElementById('tarde-game-modal')?.addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeTardeModal();
+    });
+
+    // Submit tarde answer
+    document.getElementById('tgm-submit-btn')?.addEventListener('click', submitTardeAnswer);
+
+    // Team select change
+    document.getElementById('tgm-team-select')?.addEventListener('change', function() {
+        currentTardeTeam = myTeams.find(t => t.id === this.value) || myTeams[0];
+        _buildMembersPicker();
+    });
+
+    // Create team
+    document.getElementById('create-team-submit-btn')?.addEventListener('click', _submitCreateTeam);
+    document.getElementById('create-team-name')?.addEventListener('keydown', e => { if (e.key==='Enter') _submitCreateTeam(); });
+
+    // Join team
+    document.getElementById('join-team-submit-btn')?.addEventListener('click', _submitJoinTeam);
+
+    // Refresh teams
+    document.getElementById('tarde-refresh-teams-btn')?.addEventListener('click', async () => {
+        tardeLoaded = false;
+        await loadTardeData(true);
+    });
+
+    // Load tarde data when tab is clicked (lazy)
+    document.querySelector('[data-tab="tarde"]')?.addEventListener('click', () => {
+        loadTardeData();
+    });
+
+    // Tour: add tarde tab reference
+    document.querySelectorAll('.tab-button[data-tab="tarde"]')?.forEach(btn => btn);
+});
+</script>
