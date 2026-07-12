@@ -1,0 +1,45 @@
+{
+  "id": "1",
+  "category": "tarde",
+  "teamMode": true,
+  "title": "12341234",
+  "type": "Tarde",
+  "difficulty": "Medio",
+  "mystery": "1234134",
+  "showMystery": false,
+  "notes": "1234132412341234",
+  "startDate": "2026-07-12",
+  "googleFormLink": "https://forms.gle/JnzAKf6e5YmzBDudA",
+  "formEntryId": "",
+  "estimatedMinutes": 90,
+  "clues": [
+    {
+      "type": "text",
+      "content": "1234",
+      "text": null,
+      "publishDate": "2026-07-12T21:08"
+    },
+    {
+      "type": "text",
+      "content": "1432",
+      "text": null,
+      "publishDate": "2026-07-12T21:11"
+    },
+    {
+      "type": "text",
+      "content": "143234",
+      "text": null,
+      "publishDate": "2026-07-12T21:12"
+    }
+  ],
+  "isSolved": false,
+  "endDate": "",
+  "solution": "rtrt",
+  "winner": "",
+  "winnerId": "",
+  "explanation": "",
+  "winnerExplanation": "",
+  "bibliography": "",
+  "utd": 1,
+  "lastUpdated": "2026-07-12T19:07:36.764Z"
+}
