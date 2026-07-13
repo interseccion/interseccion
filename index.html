@@ -5173,78 +5173,112 @@
         </div>
     </div>
     </div><!-- /#main-app-view -->
-    <!-- ═══ TARDE GAME MODAL ══════════════════════════════════════════════════ -->
+    <!-- ═══ TARDE GAME MODAL (step-based) ═══════════════════════════════════ -->
     <div id="tarde-game-modal" class="tarde-modal-overlay hidden" role="dialog" aria-modal="true">
         <div class="tarde-modal-box">
-            <!-- Header -->
-            <div class="sticky top-0 z-10 bg-gray-900/95 backdrop-blur border-b border-gray-700/60 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-                <div class="flex items-center gap-3">
-                    <span class="tarde-badge text-xs font-bold px-2 py-0.5 rounded-full" id="tgm-type-badge">Tarde</span>
-                    <h2 class="text-base font-bold text-white truncate max-w-xs" id="tgm-title">—</h2>
+
+            <!-- Sticky header -->
+            <div class="sticky top-0 z-10 bg-gray-900/95 backdrop-blur border-b border-gray-700/60 px-5 py-3.5 flex items-center justify-between rounded-t-2xl gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button id="tgm-back-btn" class="hidden text-gray-400 hover:text-white transition text-sm font-medium flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline -mt-0.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        Pistas
+                    </button>
+                    <span class="tarde-badge text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" id="tgm-type-badge">Tarde</span>
+                    <h2 class="text-sm font-bold text-white truncate" id="tgm-title">—</h2>
                 </div>
-                <button id="tgm-close-btn" class="text-gray-400 hover:text-white transition p-1 rounded-lg hover:bg-gray-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <button id="tgm-close-btn" class="text-gray-400 hover:text-white transition p-1.5 rounded-lg hover:bg-gray-700 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
-            <div class="p-6 space-y-6">
-                <!-- Team selector -->
-                <div id="tgm-team-selector" class="hidden">
-                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Jugando como equipo</label>
-                    <select id="tgm-team-select" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white font-medium focus:border-amber-500 transition"></select>
+            <!-- STEP 0: Equipo -->
+            <div id="tgm-step-team" class="hidden p-6">
+                <h3 class="text-lg font-bold text-white mb-1">¿Con qué equipo juegas hoy?</h3>
+                <p class="text-gray-500 text-sm mb-5">Selecciona el equipo para este misterio.</p>
+                <div id="tgm-team-list" class="space-y-2 mb-4"></div>
+                <button id="tgm-spectate-btn" class="w-full text-gray-500 hover:text-gray-300 text-sm py-2 transition underline">
+                    Solo quiero ver el misterio (sin enviar respuesta)
+                </button>
+            </div>
+
+            <!-- STEP 1: Misterio + pistas -->
+            <div id="tgm-step-game" class="hidden">
+                <!-- Team bar -->
+                <div id="tgm-team-bar" class="hidden px-5 py-2.5 border-b border-gray-700/40 flex items-center gap-2">
+                    <span class="text-amber-400 text-xs font-semibold">👥</span>
+                    <span id="tgm-team-bar-name" class="text-amber-300 text-sm font-bold"></span>
+                    <span class="text-gray-600 text-xs ml-auto" id="tgm-team-bar-role"></span>
                 </div>
 
-                <!-- Mystery text -->
-                <div id="tgm-mystery-text" class="hidden bg-gray-800/60 border border-gray-700/40 rounded-xl p-4 text-gray-300 leading-relaxed text-sm"></div>
+                <div class="p-5 space-y-5">
+                    <!-- Mystery description -->
+                    <div id="tgm-mystery-text" class="hidden bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 text-gray-300 leading-relaxed text-sm"></div>
 
-                <!-- Clues -->
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pistas</span>
-                        <span id="tgm-clue-counter" class="text-xs text-gray-500"></span>
-                    </div>
-                    <div id="tgm-clues-container" class="space-y-3"></div>
-                </div>
-
-                <!-- Submit answer section -->
-                <div id="tgm-answer-section">
-                    <div class="border-t border-gray-700/60 pt-5">
-                        <h3 class="font-bold text-white mb-3">Tu respuesta</h3>
-                        <input id="tgm-answer-input" type="text" placeholder="¿Cuál es la intersección?" maxlength="200"
-                               class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 transition mb-3">
-                        <textarea id="tgm-explain-input" placeholder="Explicación / razonamiento (opcional)" rows="2" maxlength="500"
-                               class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm mb-4 resize-none"></textarea>
-
-                        <!-- Present members picker -->
-                        <div class="bg-amber-900/20 border border-amber-500/25 rounded-xl p-4 mb-4">
-                            <div class="flex items-center gap-2 mb-3">
-                                <span class="text-amber-400 font-semibold text-sm">👥 ¿Quién estaba presente?</span>
-                                <span class="text-xs text-gray-500">(Solo capitán o admin)</span>
-                            </div>
-                            <div id="tgm-members-list" class="space-y-2"></div>
-                            <div id="tgm-marker-info" class="mt-3 text-xs text-gray-500 italic hidden">
-                                Marcando como: <span id="tgm-marker-name" class="text-amber-400 font-medium"></span>
-                            </div>
+                    <!-- Clues: revealed one by one -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pistas</span>
+                            <span id="tgm-clue-counter" class="text-xs text-gray-500"></span>
                         </div>
+                        <div id="tgm-clues-container" class="space-y-3"></div>
+                        <button id="tgm-reveal-btn" class="mt-4 w-full border border-amber-500/30 text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 rounded-xl transition text-sm hidden">
+                            Ver pista 1
+                        </button>
+                        <p id="tgm-no-more-clues" class="hidden text-center text-xs text-gray-600 mt-3 italic">Todas las pistas visibles reveladas</p>
+                    </div>
 
-                        <button id="tgm-submit-btn" class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition">
+                    <!-- Solved state -->
+                    <div id="tgm-solved-section" class="hidden">
+                        <div class="bg-green-900/20 border border-green-500/30 rounded-xl p-5 text-center">
+                            <div class="text-3xl mb-2">✅</div>
+                            <h3 class="font-bold text-green-400 text-lg mb-1">¡Resuelto!</h3>
+                            <p class="text-gray-300 text-sm" id="tgm-solution-text"></p>
+                            <p class="text-gray-400 text-xs mt-2" id="tgm-winner-team"></p>
+                        </div>
+                        <div id="tgm-explanation" class="mt-4 bg-gray-800/50 rounded-xl p-4 text-gray-300 text-sm hidden"></div>
+                    </div>
+
+                    <!-- Responder button (only for unsolved + has team) -->
+                    <div id="tgm-open-answer-area" class="hidden">
+                        <button id="tgm-open-answer-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">
                             Enviar respuesta
                         </button>
-                        <p id="tgm-submit-error" class="text-red-400 text-xs text-center mt-2 hidden"></p>
                     </div>
-                </div>
-
-                <!-- Solved state -->
-                <div id="tgm-solved-section" class="hidden">
-                    <div class="bg-green-900/20 border border-green-500/30 rounded-xl p-5 text-center">
-                        <div class="text-3xl mb-2">✅</div>
-                        <h3 class="font-bold text-green-400 text-lg mb-1">¡Resuelto!</h3>
-                        <p class="text-gray-300 text-sm" id="tgm-solution-text"></p>
-                        <p class="text-gray-400 text-xs mt-2" id="tgm-winner-team"></p>
-                    </div>
-                    <div id="tgm-explanation" class="mt-4 bg-gray-800/50 rounded-xl p-4 text-gray-300 text-sm hidden"></div>
                 </div>
             </div>
+
+            <!-- STEP 2: Formulario de respuesta -->
+            <div id="tgm-step-answer" class="hidden p-5 space-y-4">
+                <h3 class="font-bold text-white text-base mb-1">Tu respuesta</h3>
+
+                <div>
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Solución</label>
+                    <input id="tgm-answer-input" type="text" placeholder="¿Cuál es la intersección?" maxlength="200"
+                           class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Explicación <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
+                    <textarea id="tgm-explain-input" placeholder="Razonamiento o comentario…" rows="3" maxlength="500"
+                           class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm resize-none"></textarea>
+                </div>
+
+                <!-- Present members picker -->
+                <div class="bg-amber-900/15 border border-amber-500/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-amber-300 font-semibold text-sm">👥 ¿Quién estaba presente?</span>
+                        <span class="text-xs text-gray-500" id="tgm-marker-role"></span>
+                    </div>
+                    <div id="tgm-members-list" class="space-y-1.5"></div>
+                </div>
+
+                <button id="tgm-submit-btn" class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition">
+                    Enviar respuesta
+                </button>
+                <p id="tgm-submit-error" class="text-red-400 text-xs text-center hidden"></p>
+            </div>
+
         </div>
     </div>
 
@@ -5426,15 +5460,16 @@ function _teamCardHTML(team, pubId) {
     const badge     = isCaptain ? '👑 ' : (isAdmin ? '⭐ ' : '');
 
     return `
-        <div class="team-card p-4 mb-3 transition">
+        <div class="team-card p-4 mb-3 transition cursor-pointer hover:border-amber-500/30"
+             onclick="showTeamProfile('${team.id}')">
             <div class="flex items-start justify-between mb-3">
                 <div>
                     <h3 class="font-bold text-white">${badge}${_esc(team.name)}</h3>
                     <div class="text-xs text-gray-500 mt-0.5">${team.members.length} miembro${team.members.length !== 1 ? 's' : ''}</div>
                 </div>
                 <div class="flex items-center gap-2">
-                    ${isAdmin ? `<button onclick="openManageTeamModal('${team.id}')" class="text-xs text-amber-400 hover:text-amber-300 font-medium transition">Gestionar</button>` : ''}
-                    <button onclick="tardeCopyCode('${team.code || ''}')" class="text-xs text-gray-500 hover:text-gray-300 transition">Copiar código</button>
+                    ${isAdmin ? `<button onclick="event.stopPropagation();openManageTeamModal('${team.id}')" class="text-xs text-amber-400 hover:text-amber-300 font-medium transition">Gestionar</button>` : ''}
+                    <button onclick="event.stopPropagation();tardeCopyCode('${team.code || ''}')" class="text-xs text-gray-500 hover:text-gray-300 transition">Copiar código</button>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -5525,23 +5560,136 @@ function _renderTardePodio() {
         </div>`;
 }
 
-// ── Tarde game modal ─────────────────────────────────────────────────────────
+// ── Tarde game modal — step-based ────────────────────────────────────────────
 
-async function openTardeModal(gameId) {
+let currentTardeClueIndex = -1; // -1 = ninguna revelada aún
+
+// Muestra solo las pistas publicadas
+function _getTardeVisibleClues() {
+    const now = Date.now();
+    return (currentTardeGame?.clues || []).filter(
+        c => !c.publishDate || new Date(c.publishDate).getTime() <= now
+    );
+}
+
+// Renderiza una sola pista
+function _renderTardeClue(c, i) {
+    return `<div class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 animate-in fade-in" style="animation:fadeIn 0.3s ease">
+        <div class="text-xs text-gray-500 mb-2 font-medium">Pista ${i + 1}</div>
+        ${c.type === 'text'        ? `<p class="text-gray-200 text-sm leading-relaxed">${_esc(c.content||'')}</p>` : ''}
+        ${c.type === 'image'       ? `<img src="${_esc(c.content||'')}" alt="Pista ${i+1}" class="max-w-full rounded-lg">` : ''}
+        ${c.type === 'interactive' ? `<div class="rounded-lg overflow-hidden"><iframe srcdoc="${_esc(c.content||'')}" style="width:100%;min-height:${c.minHeight||200}px;border:none;border-radius:0.5rem" sandbox="allow-scripts"></iframe></div>` : ''}
+        ${c.type === 'audio'       ? `<audio controls class="w-full"><source src="${_esc(c.content||'')}"></audio>` : ''}
+        ${c.type === 'video'       ? `<video controls class="w-full rounded-lg"><source src="${_esc(c.content||'')}"></video>` : ''}
+    </div>`;
+}
+
+function _updateTardeCluesUI() {
+    const visible  = _getTardeVisibleClues();
+    const shown    = visible.slice(0, currentTardeClueIndex + 1);
+    const remaining = visible.length - shown.length;
+
+    document.getElementById('tgm-clues-container').innerHTML =
+        shown.length ? shown.map((c, i) => _renderTardeClue(c, i)).join('') :
+        `<p class="text-gray-600 text-sm italic text-center py-4">Pulsa el botón para revelar la primera pista.</p>`;
+
+    document.getElementById('tgm-clue-counter').textContent =
+        `${shown.length} / ${visible.length}`;
+
+    const revBtn = document.getElementById('tgm-reveal-btn');
+    const noMore = document.getElementById('tgm-no-more-clues');
+    if (visible.length === 0) {
+        revBtn.classList.add('hidden');
+        noMore.classList.add('hidden');
+    } else if (remaining > 0) {
+        revBtn.textContent = shown.length === 0 ? 'Ver primera pista' : `Ver siguiente pista (${remaining} más)`;
+        revBtn.classList.remove('hidden');
+        noMore.classList.add('hidden');
+    } else {
+        revBtn.classList.add('hidden');
+        noMore.classList.remove('hidden');
+    }
+}
+
+// ── Step navigation ───────────────────────────────────────────────────────────
+
+function _tgmShowStep(step) {
+    ['tgm-step-team','tgm-step-game','tgm-step-answer'].forEach(id => {
+        document.getElementById(id)?.classList.add('hidden');
+    });
+    document.getElementById(`tgm-step-${step}`)?.classList.remove('hidden');
+    document.getElementById('tgm-back-btn').classList.toggle('hidden', step !== 'answer');
+}
+
+function openTardeModal(gameId) {
     const game = tardeGames.find(g => g.id === gameId);
     if (!game) return;
-    currentTardeGame = game;
-
-    const modal = document.getElementById('tarde-game-modal');
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    currentTardeGame  = game;
+    currentTardeClueIndex = -1;
 
     // Header
     document.getElementById('tgm-type-badge').textContent = game.type || 'Tarde';
     document.getElementById('tgm-title').textContent = game.title;
 
+    document.getElementById('tarde-game-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    if (game.isSolved) {
+        // Solved: skip team step, show game step with solution
+        _tgmShowStep('game');
+        _buildGameStep(true);
+    } else if (!userId || myTeams.length === 0) {
+        // No session or no teams: go directly to game in spectate mode
+        currentTardeTeam = null;
+        _tgmShowStep('game');
+        _buildGameStep(false);
+    } else if (myTeams.length === 1) {
+        // Single team: auto-select and go to game
+        currentTardeTeam = myTeams[0];
+        _tgmShowStep('game');
+        _buildGameStep(false);
+    } else {
+        // Multiple teams: show team selection step
+        _buildTeamStep();
+        _tgmShowStep('team');
+    }
+}
+
+function _buildTeamStep() {
+    const listEl = document.getElementById('tgm-team-list');
+    listEl.innerHTML = myTeams.map(t => `
+        <button onclick="_selectTardeTeam('${t.id}')"
+                class="w-full text-left team-card p-4 rounded-xl hover:border-amber-500/40 transition group">
+            <div class="font-bold text-white group-hover:text-amber-300 transition">${_esc(t.name)}</div>
+            <div class="text-xs text-gray-500 mt-0.5">${t.members.length} miembro${t.members.length !== 1 ? 's' : ''}</div>
+        </button>`).join('');
+}
+
+function _selectTardeTeam(teamId) {
+    currentTardeTeam = myTeams.find(t => t.id === teamId) || null;
+    _tgmShowStep('game');
+    _buildGameStep(false);
+}
+
+function _buildGameStep(isSolved) {
+    // Team bar
+    const teamBar  = document.getElementById('tgm-team-bar');
+    const teamName = document.getElementById('tgm-team-bar-name');
+    const teamRole = document.getElementById('tgm-team-bar-role');
+    if (currentTardeTeam) {
+        const pubId   = getPublicId(userId) || '';
+        const isCap   = currentTardeTeam.captain === pubId;
+        const isAdm   = isCap || (currentTardeTeam.admins||[]).includes(pubId);
+        teamName.textContent = currentTardeTeam.name;
+        teamRole.textContent = isCap ? '👑 Capitán' : isAdm ? '⭐ Admin' : 'Miembro';
+        teamBar.classList.remove('hidden');
+    } else {
+        teamBar.classList.add('hidden');
+    }
+
     // Mystery text
     const mystEl = document.getElementById('tgm-mystery-text');
+    const game = currentTardeGame;
     if (game.mystery && game.showMystery !== false) {
         mystEl.textContent = game.mystery;
         mystEl.classList.remove('hidden');
@@ -5550,33 +5698,15 @@ async function openTardeModal(gameId) {
     }
 
     // Clues
-    const cluesCont = document.getElementById('tgm-clues-container');
-    const clueCount = document.getElementById('tgm-clue-counter');
-    const now = Date.now();
-    const visibleClues = (game.clues || []).filter(c => !c.publishDate || new Date(c.publishDate).getTime() <= now);
-    clueCount.textContent = `${visibleClues.length} de ${(game.clues||[]).length}`;
+    _updateTardeCluesUI();
 
-    if (visibleClues.length === 0) {
-        cluesCont.innerHTML = `<p class="text-gray-500 text-sm italic text-center py-4">No hay pistas disponibles aún.</p>`;
-    } else {
-        cluesCont.innerHTML = visibleClues.map((c, i) => `
-            <div class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-4">
-                <div class="text-xs text-gray-500 mb-2">Pista ${i+1}</div>
-                ${c.type === 'text'  ? `<p class="text-gray-200 text-sm leading-relaxed">${_esc(c.content||'')}</p>` : ''}
-                ${c.type === 'image' ? `<img src="${_esc(c.content||'')}" alt="Pista ${i+1}" class="max-w-full rounded-lg">` : ''}
-                ${c.type === 'interactive' ? `<div class="rounded-lg overflow-hidden"><iframe srcdoc="${_esc(c.content||'')}" style="width:100%;min-height:${c.minHeight||200}px;border:none;border-radius:0.5rem" sandbox="allow-scripts"></iframe></div>` : ''}
-                ${c.type === 'audio' ? `<audio controls class="w-full"><source src="${_esc(c.content||'')}"></audio>` : ''}
-                ${c.type === 'video' ? `<video controls class="w-full rounded-lg"><source src="${_esc(c.content||'')}"></video>` : ''}
-            </div>`).join('');
-    }
+    // Solved vs open
+    const solvedEl   = document.getElementById('tgm-solved-section');
+    const answerArea = document.getElementById('tgm-open-answer-area');
 
-    // Solved / answer section
-    const solvedEl = document.getElementById('tgm-solved-section');
-    const answerEl = document.getElementById('tgm-answer-section');
-
-    if (game.isSolved) {
+    if (isSolved) {
         solvedEl.classList.remove('hidden');
-        answerEl.classList.add('hidden');
+        answerArea.classList.add('hidden');
         document.getElementById('tgm-solution-text').textContent = `Solución: ${game.solution || '—'}`;
         document.getElementById('tgm-winner-team').textContent = game.winner ? `Ganador: ${game.winner}` : '';
         const expEl = document.getElementById('tgm-explanation');
@@ -5584,54 +5714,38 @@ async function openTardeModal(gameId) {
         else { expEl.classList.add('hidden'); }
     } else {
         solvedEl.classList.add('hidden');
-        answerEl.classList.remove('hidden');
-        document.getElementById('tgm-answer-input').value = '';
-        document.getElementById('tgm-explain-input').value = '';
-        document.getElementById('tgm-submit-error').classList.add('hidden');
-        _buildMembersPicker();
+        answerArea.classList.toggle('hidden', !currentTardeTeam);
     }
-
-    // Team selector
-    _buildTeamSelector();
 }
 
-function _buildTeamSelector() {
-    const sel = document.getElementById('tgm-team-select');
-    const wrap = document.getElementById('tgm-team-selector');
-    if (!myTeams.length) { wrap.classList.add('hidden'); return; }
-    sel.innerHTML = myTeams.map(t => `<option value="${t.id}">${_esc(t.name)}</option>`).join('');
-    wrap.classList.toggle('hidden', myTeams.length <= 1);
-    currentTardeTeam = myTeams[0];
-    sel.onchange = () => {
-        currentTardeTeam = myTeams.find(t => t.id === sel.value) || myTeams[0];
-        _buildMembersPicker();
-    };
+function _openAnswerStep() {
+    document.getElementById('tgm-answer-input').value = '';
+    document.getElementById('tgm-explain-input').value = '';
+    document.getElementById('tgm-submit-error').classList.add('hidden');
+    _buildMembersPicker();
+    _tgmShowStep('answer');
 }
 
 function _buildMembersPicker() {
     const team   = currentTardeTeam;
     const listEl = document.getElementById('tgm-members-list');
-    const markEl = document.getElementById('tgm-marker-info');
-    const markNm = document.getElementById('tgm-marker-name');
+    const roleEl = document.getElementById('tgm-marker-role');
     if (!listEl) return;
 
     if (!team) {
-        listEl.innerHTML = `<p class="text-gray-500 text-xs italic">No tienes equipo seleccionado.</p>`;
-        markEl.classList.add('hidden');
+        listEl.innerHTML = `<p class="text-gray-500 text-xs italic">Sin equipo seleccionado.</p>`;
         return;
     }
 
-    const pubId    = getPublicId(userId) || '';
-    const isAdmin  = team.captain === pubId || (team.admins||[]).includes(pubId);
+    const pubId   = getPublicId(userId) || '';
+    const isAdmin = team.captain === pubId || (team.admins||[]).includes(pubId);
 
     if (!isAdmin) {
-        listEl.innerHTML = `<p class="text-amber-300/70 text-xs">Solo el capitán o un admin puede marcar la asistencia. La respuesta la puede enviar cualquier miembro.</p>`;
-        markEl.classList.add('hidden');
+        listEl.innerHTML = `<p class="text-amber-300/70 text-xs">Solo el capitán o un admin puede marcar la asistencia.</p>`;
+        if (roleEl) roleEl.textContent = 'Solo lectura';
         return;
     }
-
-    markNm.textContent = pubId.substring(0,12)+'…';
-    markEl.classList.remove('hidden');
+    if (roleEl) roleEl.textContent = pubId === team.captain ? '👑 Capitán' : '⭐ Admin';
 
     listEl.innerHTML = (team.members||[]).map(m => `
         <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
@@ -5647,6 +5761,8 @@ function closeTardeModal() {
     document.getElementById('tarde-game-modal').classList.add('hidden');
     document.body.style.overflow = '';
     currentTardeGame = null;
+    currentTardeTeam = null;
+    currentTardeClueIndex = -1;
 }
 
 async function submitTardeAnswer() {
@@ -5681,18 +5797,18 @@ async function submitTardeAnswer() {
     btn.textContent = 'Enviando…';
 
     try {
-        // 1. Submit to Google Form (like normal mysteries, mode no-cors)
+        // 1. Submit to Google Form — mismo mecanismo que los misterios normales
         if (TARDE_FORM_SUBMIT_URL && !TARDE_FORM_SUBMIT_URL.startsWith('XXXXX')) {
-            const formBody = new URLSearchParams();
-            formBody.append(TARDE_FORM_ENTRIES.id_misterio, game.id || '');
-            formBody.append(TARDE_FORM_ENTRIES.id_privado,  userId || '');
-            formBody.append(TARDE_FORM_ENTRIES.id_equipo,   team.id || '');
-            formBody.append(TARDE_FORM_ENTRIES.solucion,    answer);
-            formBody.append(TARDE_FORM_ENTRIES.explicacion, explain);
+            const formBody = new FormData();
+            formBody.append(TARDE_FORM_ENTRIES.id_misterio, String(game.id   || ''));
+            formBody.append(TARDE_FORM_ENTRIES.id_privado,  String(userId    || ''));
+            formBody.append(TARDE_FORM_ENTRIES.id_equipo,   String(team.id   || ''));
+            formBody.append(TARDE_FORM_ENTRIES.solucion,    String(answer));
+            formBody.append(TARDE_FORM_ENTRIES.explicacion, String(explain));
             formBody.append(TARDE_FORM_ENTRIES.presentes,   presentPubIds.join(','));
             try {
                 await fetch(TARDE_FORM_SUBMIT_URL, { method: 'POST', mode: 'no-cors', body: formBody });
-            } catch(_) { /* no-cors siempre lanza, es esperado */ }
+            } catch(_) { /* no-cors lanza siempre — es normal */ }
         }
 
         // 2. Register team/presence data in Apps Script (complementary)
@@ -5952,14 +6068,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === e.currentTarget) closeTardeModal();
     });
 
+    // Back to game step from answer step
+    document.getElementById('tgm-back-btn')?.addEventListener('click', () => _tgmShowStep('game'));
+
+    // Open answer step
+    document.getElementById('tgm-open-answer-btn')?.addEventListener('click', _openAnswerStep);
+
+    // Spectate (no team)
+    document.getElementById('tgm-spectate-btn')?.addEventListener('click', () => {
+        currentTardeTeam = null;
+        _tgmShowStep('game');
+        _buildGameStep(false);
+    });
+
+    // Reveal next clue
+    document.getElementById('tgm-reveal-btn')?.addEventListener('click', () => {
+        const visible = _getTardeVisibleClues();
+        if (currentTardeClueIndex < visible.length - 1) {
+            currentTardeClueIndex++;
+            _updateTardeCluesUI();
+        }
+    });
+
     // Submit tarde answer
     document.getElementById('tgm-submit-btn')?.addEventListener('click', submitTardeAnswer);
-
-    // Team select change
-    document.getElementById('tgm-team-select')?.addEventListener('change', function() {
-        currentTardeTeam = myTeams.find(t => t.id === this.value) || myTeams[0];
-        _buildMembersPicker();
-    });
 
     // Create team
     document.getElementById('create-team-submit-btn')?.addEventListener('click', _submitCreateTeam);
