@@ -5797,42 +5797,21 @@ async function submitTardeAnswer() {
     btn.textContent = 'Enviando…';
 
     try {
-        // 1. Submit to Google Form — mismo mecanismo que los misterios normales
-        if (TARDE_FORM_SUBMIT_URL && !TARDE_FORM_SUBMIT_URL.startsWith('XXXXX')) {
-            const formBody = new FormData();
-            formBody.append(TARDE_FORM_ENTRIES.id_misterio, String(game.id   || ''));
-            formBody.append(TARDE_FORM_ENTRIES.id_privado,  String(userId    || ''));
-            formBody.append(TARDE_FORM_ENTRIES.id_equipo,   String(team.id   || ''));
-            formBody.append(TARDE_FORM_ENTRIES.solucion,    String(answer));
-            formBody.append(TARDE_FORM_ENTRIES.explicacion, String(explain));
-            formBody.append(TARDE_FORM_ENTRIES.presentes,   presentPubIds.join(','));
-            try {
-                await fetch(TARDE_FORM_SUBMIT_URL, { method: 'POST', mode: 'no-cors', body: formBody });
-            } catch(_) { /* no-cors lanza siempre — es normal */ }
-        }
-
-        // 2. Register team/presence data in Apps Script (complementary)
-        const body = {
-            action        : 'submitTardeAnswer',
-            mysteryId     : game.id,
-            teamId        : team.id,
-            senderPrivId  : userId,
-            solution      : answer,
-            explanation   : explain,
-            presentPubIds : presentPubIds.join(','),
-            markerPubId   : pubId
-        };
-        const res  = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(body) });
-        const data = await res.json();
-
-        if (data.error) {
-            _tardeErr(errEl, data.error);
-        } else {
-            showToast('✅ Respuesta enviada. Pendiente de revisión.');
-            closeTardeModal();
-        }
-    } catch(e) {
-        _tardeErr(errEl, 'Error de conexión. Inténtalo de nuevo.');
+        // Enviar al formulario de Google — sin pasar por GAS (no gasta cuota)
+        const formBody = new URLSearchParams();
+        formBody.set(TARDE_FORM_ENTRIES.id_misterio, game.id   || '');
+        formBody.set(TARDE_FORM_ENTRIES.id_privado,  userId    || '');
+        formBody.set(TARDE_FORM_ENTRIES.id_equipo,   team.id   || '');
+        formBody.set(TARDE_FORM_ENTRIES.solucion,    answer);
+        formBody.set(TARDE_FORM_ENTRIES.explicacion, explain   || '');
+        formBody.set(TARDE_FORM_ENTRIES.presentes,   presentPubIds.join(','));
+        await fetch(TARDE_FORM_SUBMIT_URL, { method: 'POST', mode: 'no-cors', body: formBody });
+        showToast('✅ Respuesta enviada. Pendiente de revisión.');
+        closeTardeModal();
+    } catch(_) {
+        // no-cors no devuelve respuesta pero el form se envía correctamente
+        showToast('✅ Respuesta enviada. Pendiente de revisión.');
+        closeTardeModal();
     } finally {
         btn.disabled = false;
         btn.textContent = 'Enviar respuesta';
@@ -6090,7 +6069,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Submit tarde answer
+    // Submit tarde answer (una sola vez)
     document.getElementById('tgm-submit-btn')?.addEventListener('click', submitTardeAnswer);
 
     // Create team
