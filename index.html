@@ -5796,49 +5796,28 @@ async function submitTardeAnswer() {
     btn.disabled = true;
     btn.textContent = 'Enviando…';
 
+    // Mismo mecanismo exacto que los misterios normales
+    const body = new URLSearchParams();
+    body.append(TARDE_FORM_ENTRIES.id_misterio, game.id   || '');
+    body.append(TARDE_FORM_ENTRIES.id_privado,  userId    || '');
+    body.append(TARDE_FORM_ENTRIES.id_equipo,   team.id   || '');
+    body.append(TARDE_FORM_ENTRIES.solucion,    answer);
+    body.append(TARDE_FORM_ENTRIES.explicacion, explain   || '');
+    body.append(TARDE_FORM_ENTRIES.presentes,   presentPubIds.join(','));
+
     try {
-        // Enviar mediante <form> + <iframe> ocultos — método más fiable para Google Forms
-        // (evita problemas de CORS y garantiza que el body llega con contenido)
-        const iframeName = `tdf_${Date.now()}`;
-        const iframe = document.createElement('iframe');
-        iframe.name  = iframeName;
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-
-        const form = document.createElement('form');
-        form.method  = 'POST';
-        form.action  = TARDE_FORM_SUBMIT_URL;
-        form.target  = iframeName;
-        form.style.display = 'none';
-
-        const fields = {
-            [TARDE_FORM_ENTRIES.id_misterio]: game.id   || '',
-            [TARDE_FORM_ENTRIES.id_privado] : userId    || '',
-            [TARDE_FORM_ENTRIES.id_equipo]  : team.id   || '',
-            [TARDE_FORM_ENTRIES.solucion]   : answer,
-            [TARDE_FORM_ENTRIES.explicacion]: explain   || '',
-            [TARDE_FORM_ENTRIES.presentes]  : presentPubIds.join(',')
-        };
-        Object.entries(fields).forEach(([name, value]) => {
-            const input = document.createElement('input');
-            input.type  = 'hidden';
-            input.name  = name;
-            input.value = String(value);
-            form.appendChild(input);
+        // Google Forms no devuelve CORS headers, pero el envío sí llega
+        await fetch(TARDE_FORM_SUBMIT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body
         });
+    } catch(e) { /* no-cors siempre lanza, es esperado */ }
 
-        document.body.appendChild(form);
-        form.submit();
-        setTimeout(() => {
-            try { document.body.removeChild(form); document.body.removeChild(iframe); } catch(_) {}
-        }, 5000);
-
-        showToast('✅ Respuesta enviada. Pendiente de revisión.');
-        closeTardeModal();
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Enviar respuesta';
-    }
+    btn.disabled = false;
+    btn.textContent = 'Enviar respuesta';
+    showToast('✅ Respuesta enviada. Pendiente de revisión.');
+    closeTardeModal();
 }
 
 function _tardeErr(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
