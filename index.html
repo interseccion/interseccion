@@ -5374,11 +5374,11 @@
                 <div class="text-center">
                     <div class="text-3xl mb-1">🎉</div>
                     <h3 class="font-bold text-green-400 text-lg">¡Respuesta correcta!</h3>
-                    <p class="text-gray-300 text-sm">Puntos finales: <span id="tso-final-points" class="font-mono font-bold"></span></p>
+                    <p class="text-gray-300 text-sm">Puntos estimados: <span id="tso-final-points" class="font-mono font-bold"></span> <span class="text-gray-500 text-xs">(se confirman al enviar)</span></p>
                 </div>
                 <div>
-                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Explicación <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
-                    <textarea id="tso-explain-input" placeholder="Razonamiento o comentario…" rows="2" maxlength="500"
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Explicación <span class="text-red-400 font-normal normal-case">(obligatoria)</span></label>
+                    <textarea id="tso-explain-input" placeholder="Razonamiento o comentario… (necesario para enviar)" rows="2" maxlength="500"
                         class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm resize-none"></textarea>
                 </div>
                 <div>
@@ -5392,6 +5392,37 @@
                     Enviar y terminar
                 </button>
                 <p id="tso-submit-error" class="text-red-400 text-xs text-center hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TARDE — RESUMEN FINAL (tras enviar) ═══════════════════════════════ -->
+    <div id="tarde-result-modal" class="tarde-modal-overlay hidden" style="z-index:260">
+        <div class="tarde-modal-box" style="max-width:420px">
+            <div class="p-6 text-center">
+                <div class="text-4xl mb-3">🏆</div>
+                <h3 class="text-lg font-bold text-white mb-1" id="tres-title">¡Misterio resuelto!</h3>
+                <p class="text-gray-400 text-sm mb-5" id="tres-position"></p>
+
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-gray-800/60 rounded-xl p-4">
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Puntos</div>
+                        <div class="text-2xl font-mono font-bold text-green-400" id="tres-points">—</div>
+                    </div>
+                    <div class="bg-gray-800/60 rounded-xl p-4">
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Tiempo</div>
+                        <div class="text-2xl font-mono font-bold text-white" id="tres-time">—</div>
+                    </div>
+                </div>
+                <p class="text-xs font-semibold mb-5" id="tres-vs-estimate"></p>
+                <div class="flex items-center justify-center gap-4 text-xs text-gray-500 mb-5">
+                    <span id="tres-hints">💡 0 pistas</span>
+                    <span id="tres-wrong">❌ 0 fallos</span>
+                </div>
+
+                <button id="tarde-result-close-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl transition">
+                    Genial
+                </button>
             </div>
         </div>
     </div>
@@ -6133,41 +6164,72 @@ async function _submitTardeSessionAnswer() {
     const btn   = document.getElementById('tso-submit-btn');
     errEl.classList.add('hidden');
 
+    const explain = (document.getElementById('tso-explain-input').value || '').trim();
+    if (!explain) { _tardeErr(errEl, 'La explicación es obligatoria — cuéntanos brevemente cómo habéis llegado a la solución.'); return; }
+
     const presentPubIds = [...document.querySelectorAll('.tarde-final-present-check:checked')].map(cb => cb.value);
     if (presentPubIds.length === 0) { _tardeErr(errEl, 'Marca al menos un miembro presente.'); return; }
 
     const finalAnswer = document.getElementById('tso-final-points').dataset.answer || '';
-    const elapsedSec  = document.getElementById('tso-final-points').dataset.elapsedSec || '0';
-    const explain = (document.getElementById('tso-explain-input').value || '').trim();
 
     btn.disabled = true; btn.textContent = 'Enviando…';
 
-    const body = new URLSearchParams();
-    body.append(TARDE_FORM_ENTRIES.id_misterio,       tardeSession.mysteryId);
-    body.append(TARDE_FORM_ENTRIES.id_privado,        userId || '');
-    body.append(TARDE_FORM_ENTRIES.id_equipo,         tardeSession.teamId);
-    body.append(TARDE_FORM_ENTRIES.solucion,          finalAnswer);
-    body.append(TARDE_FORM_ENTRIES.explicacion,       explain);
-    body.append(TARDE_FORM_ENTRIES.presentes,         presentPubIds.join(','));
-    body.append(TARDE_FORM_ENTRIES.session_id,        tardeSession.sessionId);
-    body.append(TARDE_FORM_ENTRIES.tiempo_segundos,   elapsedSec);
-    body.append(TARDE_FORM_ENTRIES.pistas_usadas,     String(tardeClueIndex + 1));
-    body.append(TARDE_FORM_ENTRIES.intentos_fallidos, String(tardeWrongAttempts));
-    body.append(TARDE_FORM_ENTRIES.scoring_config,    JSON.stringify(tardeSessionGame.scoring || {}));
+    const res = await _postTarde({
+        action: 'completeTardeSession',
+        sessionId: tardeSession.sessionId,
+        solution: finalAnswer,
+        explanation: explain,
+        presentPubIds,
+        senderPrivId: userId || '',
+        hintsUsed: tardeClueIndex + 1,
+        wrongAttempts: tardeWrongAttempts,
+        scoringConfig: tardeSessionGame.scoring || {}
+    });
 
-    try {
-        await fetch(TARDE_FORM_SUBMIT_URL, { method: 'POST', mode: 'no-cors', body });
-    } catch(e) { /* no-cors siempre lanza, es esperado */ }
+    btn.disabled = false; btn.textContent = 'Enviar y terminar';
+
+    if (res.error) { _tardeErr(errEl, res.error); return; }
 
     // Limpiar progreso local de esta sesión
     ['clueIndex','wrong','notes'].forEach(k => localStorage.removeItem(_localKey(k)));
 
-    btn.disabled = false; btn.textContent = 'Enviar y terminar';
-    showToast('✅ ¡Misterio resuelto! Puntos añadidos a vuestro equipo.');
     _closeTardeSessionOverlay();
+    _showTardeResultModal(res);
     await _loadMyParticipados();
     await _loadTardePodio(); _renderTardePodio();
     _renderTardeGames();
+}
+
+function _showTardeResultModal(res) {
+    document.getElementById('tres-position').textContent = `Posición #${res.position} en resolverlo`;
+    document.getElementById('tres-points').textContent = res.points;
+    document.getElementById('tres-time').textContent = _fmtTardeSeconds(res.elapsedSeconds);
+    document.getElementById('tres-hints').textContent = `💡 ${res.hintsUsed} pista${res.hintsUsed === 1 ? '' : 's'}`;
+    document.getElementById('tres-wrong').textContent = `❌ ${res.wrongAttempts} fallo${res.wrongAttempts === 1 ? '' : 's'}`;
+
+    const estimateMin = tardeSessionGame?.estimatedMinutes || 0;
+    const vsEl = document.getElementById('tres-vs-estimate');
+    if (estimateMin > 0) {
+        const diffMin = Math.round(res.elapsedSeconds / 60 - estimateMin);
+        if (diffMin <= 0) {
+            vsEl.className = 'text-xs font-semibold mb-5 text-green-400';
+            vsEl.textContent = `⚡ ${Math.abs(diffMin)} min por debajo del tiempo estimado (${estimateMin} min)`;
+        } else {
+            vsEl.className = 'text-xs font-semibold mb-5 text-amber-400';
+            vsEl.textContent = `⏳ ${diffMin} min por encima del tiempo estimado (${estimateMin} min)`;
+        }
+    } else {
+        vsEl.textContent = '';
+    }
+
+    document.getElementById('tarde-result-modal').classList.remove('hidden');
+}
+
+function _fmtTardeSeconds(seconds) {
+    const s = Math.round(seconds || 0);
+    const mm = Math.floor(s / 60);
+    const ss = s % 60;
+    return `${mm}:${String(ss).padStart(2,'0')}`;
 }
 
 function _closeTardeSessionOverlay() {
@@ -6482,6 +6544,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tso-notepad')?.addEventListener('input', _saveTardeNotepad);
     document.getElementById('tso-abandon-btn')?.addEventListener('click', _openAbandonConfirm);
     document.getElementById('tso-submit-btn')?.addEventListener('click', _submitTardeSessionAnswer);
+    document.getElementById('tarde-result-close-btn')?.addEventListener('click', () => {
+        document.getElementById('tarde-result-modal').classList.add('hidden');
+    });
 
     // Confirmación de abandono (anti-trampas)
     document.getElementById('tarde-abandon-cancel-btn')?.addEventListener('click', _closeAbandonConfirm);
