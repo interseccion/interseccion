@@ -1,0 +1,58 @@
+{
+  "id": "5e9b5ada-b4c2-48f5-a48e-c9a7b367c27e",
+  "category": "tarde",
+  "teamMode": true,
+  "title": "asasa",
+  "type": "Tarde",
+  "difficulty": "Medio",
+  "mystery": "oo",
+  "showMystery": true,
+  "notes": "descripción",
+  "startDate": "2026-07-17",
+  "googleFormLink": "",
+  "formEntryId": "",
+  "estimatedMinutes": 45,
+  "clues": [
+    {
+      "type": "text",
+      "content": "xaxa",
+      "text": null,
+      "publishDate": "2026-07-17T14:12"
+    },
+    {
+      "type": "text",
+      "content": "axax",
+      "text": null,
+      "publishDate": "2026-07-17T14:15"
+    },
+    {
+      "type": "text",
+      "content": "vv",
+      "text": null,
+      "publishDate": "2026-07-17T14:16"
+    }
+  ],
+  "isSolved": false,
+  "endDate": "",
+  "solution": "Un laberinto",
+  "winner": "",
+  "winnerId": "",
+  "explanation": "ooooooooooooo",
+  "winnerExplanation": "",
+  "bibliography": "",
+  "autoCheck": true,
+  "correctKeywords": [
+    "laberinto"
+  ],
+  "excludedPhrases": [
+    "de en"
+  ],
+  "scoring": {
+    "base": 1000,
+    "minPoints": 50,
+    "perMinute": 8,
+    "perHint": 75,
+    "perWrongAttempt": 100
+  },
+  "lastUpdated": "2026-07-17T12:15:04.919Z"
+}
