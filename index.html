@@ -258,6 +258,11 @@
         .tarde-badge { background:rgba(217,119,6,0.15); border:1px solid rgba(217,119,6,0.3); color:#fbbf24; }
         .tarde-modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem; }
         .tarde-modal-box { background:#1f2937;border:1px solid rgba(255,255,255,0.1);border-radius:1.25rem;width:100%;max-width:780px;max-height:90vh;overflow-y:auto;position:relative; }
+        .tarde-filter-btn { background:#1f2937; border:1px solid rgba(255,255,255,0.1); color:#9ca3af; }
+        .tarde-filter-btn.active-filter { background:rgba(217,119,6,0.2); border-color:rgba(217,119,6,0.5); color:#fbbf24; }
+        /* Sesión de tarde a pantalla completa (bloqueada) */
+        #tarde-session-overlay { position:fixed; inset:0; z-index:200; background:#0b0f1a; overflow-y:auto; }
+        .tarde-session-locked { -webkit-user-select:none; }
         .team-card { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:1rem; }
         .team-card:hover { border-color:rgba(251,191,36,0.3); }
         .member-chip { display:inline-flex;align-items:center;gap:0.35rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:9999px;padding:0.2rem 0.65rem;font-size:0.72rem;color:#d1d5db; }
@@ -615,9 +620,34 @@
                     </div>
                 </section>
 
+                <!-- Sesión activa (reanudar) -->
+                <div id="tarde-resume-banner" class="hidden mb-6 bg-amber-900/20 border border-amber-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                        <div class="font-bold text-amber-300">⏱️ Tienes una sesión de tarde en curso</div>
+                        <div class="text-xs text-gray-400" id="tarde-resume-info"></div>
+                    </div>
+                    <button id="tarde-resume-btn" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-5 rounded-xl transition">Reanudar</button>
+                </div>
+
                 <!-- Misterios de Tarde -->
                 <section class="mb-8">
-                    <h2 class="text-xl font-bold text-white mb-4">🌆 Misterios de Tarde</h2>
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                        <h2 class="text-xl font-bold text-white">🌆 Misterios de Tarde</h2>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <div id="tarde-duration-filters" class="flex gap-1.5 flex-wrap">
+                                <button data-duration="all"   class="tarde-filter-btn active-filter text-xs font-semibold py-1.5 px-3 rounded-full transition">Todas</button>
+                                <button data-duration="lt45"  class="tarde-filter-btn text-xs font-semibold py-1.5 px-3 rounded-full transition">&lt; 45 min</button>
+                                <button data-duration="45-90" class="tarde-filter-btn text-xs font-semibold py-1.5 px-3 rounded-full transition">45–90 min</button>
+                                <button data-duration="gt90"  class="tarde-filter-btn text-xs font-semibold py-1.5 px-3 rounded-full transition">90+ min</button>
+                            </div>
+                            <select id="tarde-difficulty-filter" class="bg-gray-800 border border-gray-700 rounded-full text-xs font-semibold py-1.5 px-3 text-gray-300">
+                                <option value="all">Toda dificultad</option>
+                                <option value="Fácil">Fácil 😇</option>
+                                <option value="Medio">Medio 🧐</option>
+                                <option value="Difícil">Difícil 😈</option>
+                            </select>
+                        </div>
+                    </div>
                     <div id="tarde-games-container">
                         <div class="animate-pulse space-y-3">
                             <div class="h-32 bg-gray-800/50 rounded-2xl"></div>
@@ -1081,7 +1111,13 @@
             id_equipo   : 'entry.162536459', // ← ID del campo «ID Equipo»
             solucion    : 'entry.937270726', // ← ID del campo «Solución»
             explicacion : 'entry.840963808', // ← ID del campo «Explicación»
-            presentes   : 'entry.1130374355'  // ← ID del campo «Miembros presentes»
+            presentes   : 'entry.1130374355', // ← ID del campo «Miembros presentes»
+            // ── Nuevos campos (cronómetro) — hay que añadirlos al Google Form y pegar aquí sus entry.XXXX ──
+            session_id        : 'entry.0000000001', // ← ID del campo «ID de sesión»
+            tiempo_segundos   : 'entry.0000000002', // ← ID del campo «Tiempo (segundos)»
+            pistas_usadas     : 'entry.0000000003', // ← ID del campo «Pistas usadas»
+            intentos_fallidos : 'entry.0000000004', // ← ID del campo «Intentos fallidos»
+            scoring_config    : 'entry.0000000005'  // ← ID del campo «Config. puntuación (JSON)»
         };
         // Entry IDs del formulario
         const FORM_ENTRIES = {
@@ -5173,7 +5209,7 @@
         </div>
     </div>
     </div><!-- /#main-app-view -->
-    <!-- ═══ TARDE GAME MODAL (step-based) ═══════════════════════════════════ -->
+    <!-- ═══ TARDE GAME MODAL (info + inicio de sesión) ═══════════════════════ -->
     <div id="tarde-game-modal" class="tarde-modal-overlay hidden" role="dialog" aria-modal="true">
         <div class="tarde-modal-box">
 
@@ -5182,7 +5218,7 @@
                 <div class="flex items-center gap-3 min-w-0">
                     <button id="tgm-back-btn" class="hidden text-gray-400 hover:text-white transition text-sm font-medium flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline -mt-0.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                        Pistas
+                        Atrás
                     </button>
                     <span class="tarde-badge text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" id="tgm-type-badge">Tarde</span>
                     <h2 class="text-sm font-bold text-white truncate" id="tgm-title">—</h2>
@@ -5198,11 +5234,11 @@
                 <p class="text-gray-500 text-sm mb-5">Selecciona el equipo para este misterio.</p>
                 <div id="tgm-team-list" class="space-y-2 mb-4"></div>
                 <button id="tgm-spectate-btn" class="w-full text-gray-500 hover:text-gray-300 text-sm py-2 transition underline">
-                    Solo quiero ver el misterio (sin enviar respuesta)
+                    Solo quiero ver la info (sin jugar)
                 </button>
             </div>
 
-            <!-- STEP 1: Misterio + pistas -->
+            <!-- STEP 1: Info del misterio (SIN pistas — para evitar trampas solo se ven una vez dentro de la sesión) -->
             <div id="tgm-step-game" class="hidden">
                 <!-- Team bar -->
                 <div id="tgm-team-bar" class="hidden px-5 py-2.5 border-b border-gray-700/40 flex items-center gap-2">
@@ -5214,18 +5250,11 @@
                 <div class="p-5 space-y-5">
                     <!-- Mystery description -->
                     <div id="tgm-mystery-text" class="hidden bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 text-gray-300 leading-relaxed text-sm"></div>
+                    <p id="tgm-notes-text" class="text-gray-400 text-sm"></p>
 
-                    <!-- Clues: revealed one by one -->
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pistas</span>
-                            <span id="tgm-clue-counter" class="text-xs text-gray-500"></span>
-                        </div>
-                        <div id="tgm-clues-container" class="space-y-3"></div>
-                        <button id="tgm-reveal-btn" class="mt-4 w-full border border-amber-500/30 text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 rounded-xl transition text-sm hidden">
-                            Ver pista 1
-                        </button>
-                        <p id="tgm-no-more-clues" class="hidden text-center text-xs text-gray-600 mt-3 italic">Todas las pistas visibles reveladas</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-500">
+                        <span id="tgm-info-difficulty">📊 —</span>
+                        <span id="tgm-info-duration">🕐 —</span>
                     </div>
 
                     <!-- Solved state -->
@@ -5239,46 +5268,131 @@
                         <div id="tgm-explanation" class="mt-4 bg-gray-800/50 rounded-xl p-4 text-gray-300 text-sm hidden"></div>
                     </div>
 
-                    <!-- Responder button (only for unsolved + has team) -->
-                    <div id="tgm-open-answer-area" class="hidden">
-                        <button id="tgm-open-answer-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">
-                            Enviar respuesta
-                        </button>
+                    <!-- Ya jugado por alguien del equipo -->
+                    <div id="tgm-blocked-notice" class="hidden bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 text-sm text-gray-400">
+                        Este equipo ya no puede jugar este misterio (alguien ya lo resolvió o lo intentó antes).
                     </div>
+
+                    <!-- Botón para iniciar sesión (solo admin/capitán, misterio abierto) -->
+                    <div id="tgm-start-area" class="hidden">
+                        <button id="tgm-goto-presentes-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">
+                            🚀 Jugar (empieza el cronómetro)
+                        </button>
+                        <p class="text-xs text-gray-500 mt-2 text-center">Las pistas solo se pueden ver dentro de la partida, para que nadie haga trampas.</p>
+                    </div>
+                    <div id="tgm-not-admin-notice" class="hidden text-center text-amber-300/70 text-xs">Solo el capitán o un admin del equipo puede iniciar la partida.</div>
                 </div>
             </div>
 
-            <!-- STEP 2: Formulario de respuesta -->
-            <div id="tgm-step-answer" class="hidden p-5 space-y-4">
-                <h3 class="font-bold text-white text-base mb-1">Tu respuesta</h3>
+            <!-- STEP 2: Selección de presentes ANTES de empezar -->
+            <div id="tgm-step-presentes" class="hidden p-5 space-y-4">
+                <h3 class="font-bold text-white text-base mb-1">👥 ¿Quién está jugando ahora?</h3>
+                <p class="text-gray-500 text-xs mb-2">Si alguno de los marcados ya resolvió este misterio, no podréis empezar la partida.</p>
+                <div id="tgm-presentes-inicio-list" class="space-y-1.5"></div>
+                <button id="tgm-start-session-btn" class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition">
+                    Empezar misterio
+                </button>
+                <p id="tgm-presentes-error" class="text-red-400 text-xs text-center hidden"></p>
+            </div>
 
-                <div>
-                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Solución</label>
-                    <input id="tgm-answer-input" type="text" placeholder="¿Cuál es la intersección?" maxlength="200"
-                           class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 transition">
+        </div>
+    </div>
+
+    <!-- ═══ TARDE — CONFIRMAR ABANDONO ═══════════════════════════════════════ -->
+    <div id="tarde-abandon-modal" class="tarde-modal-overlay hidden" style="z-index:250">
+        <div class="tarde-modal-box" style="max-width:420px">
+            <div class="p-6 text-center">
+                <div class="text-3xl mb-3">⚠️</div>
+                <h3 class="text-lg font-bold text-white mb-2">¿Abandonar esta partida?</h3>
+                <p class="text-gray-400 text-sm mb-5">
+                    Si abandonáis ahora, <strong class="text-amber-300">ninguno de los que están jugando esta partida podrá volver a intentar este misterio</strong> con este ni con otro equipo — es para evitar que se hagan trampas viendo pistas y reiniciando con otra gente.
+                </p>
+                <div class="flex gap-3">
+                    <button id="tarde-abandon-cancel-btn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl transition">Seguir jugando</button>
+                    <button id="tarde-abandon-confirm-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-xl transition">Sí, abandonar</button>
                 </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- ═══ TARDE — SESIÓN A PANTALLA COMPLETA (bloqueada) ═══════════════════ -->
+    <div id="tarde-session-overlay" class="hidden tarde-session-locked">
+        <div class="max-w-2xl mx-auto p-4 md:p-6 space-y-5">
+
+            <!-- Header: timer + puntos en vivo -->
+            <div class="sticky top-0 z-10 bg-gray-950/95 backdrop-blur border-b border-gray-800 -mx-4 md:-mx-6 px-4 md:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                    <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Tiempo</div>
+                    <div id="tso-timer" class="text-2xl font-mono font-bold text-white">00:00</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Puntos ahora</div>
+                    <div id="tso-live-points" class="text-2xl font-mono font-bold text-green-400">—</div>
+                </div>
+                <button id="tso-abandon-btn" class="text-xs text-red-400 hover:text-red-300 font-semibold py-2 px-3 rounded-lg hover:bg-red-900/20 transition">
+                    Abandonar
+                </button>
+            </div>
+
+            <h2 id="tso-title" class="text-xl font-bold text-white">—</h2>
+            <div id="tso-team-name" class="text-xs text-amber-400 font-semibold -mt-3"></div>
+
+            <!-- Pistas -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pistas (cada una resta puntos)</span>
+                    <span id="tso-clue-counter" class="text-xs text-gray-500"></span>
+                </div>
+                <div id="tso-clues-container" class="space-y-3"></div>
+                <button id="tso-reveal-btn" class="mt-3 w-full border border-amber-500/30 text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 rounded-xl transition text-sm">
+                    Revelar siguiente pista
+                </button>
+                <p id="tso-no-more-clues" class="hidden text-center text-xs text-gray-600 mt-3 italic">No quedan más pistas</p>
+            </div>
+
+            <!-- Bloc de notas -->
+            <div>
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">📝 Bloc de notas</div>
+                <textarea id="tso-notepad" rows="5" placeholder="Apunta aquí vuestras deducciones…"
+                    class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-600 focus:border-amber-500 transition text-sm resize-y"></textarea>
+            </div>
+
+            <!-- Respuesta -->
+            <div class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 space-y-3">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Vuestra respuesta</div>
+                <input id="tso-answer-input" type="text" placeholder="¿Cuál es la intersección?" maxlength="200"
+                    class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 transition">
+                <button id="tso-check-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">
+                    Comprobar respuesta
+                </button>
+                <p id="tso-feedback" class="text-center text-sm hidden"></p>
+                <p class="text-center text-xs text-gray-600">Intentos fallidos: <span id="tso-wrong-count">0</span> · cada uno resta puntos</p>
+            </div>
+
+            <!-- Éxito: reconfirmar presentes y enviar -->
+            <div id="tso-success-area" class="hidden bg-green-900/20 border border-green-500/30 rounded-xl p-5 space-y-4">
+                <div class="text-center">
+                    <div class="text-3xl mb-1">🎉</div>
+                    <h3 class="font-bold text-green-400 text-lg">¡Respuesta correcta!</h3>
+                    <p class="text-gray-300 text-sm">Puntos finales: <span id="tso-final-points" class="font-mono font-bold"></span></p>
+                </div>
                 <div>
                     <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Explicación <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
-                    <textarea id="tgm-explain-input" placeholder="Razonamiento o comentario…" rows="3" maxlength="500"
-                           class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm resize-none"></textarea>
+                    <textarea id="tso-explain-input" placeholder="Razonamiento o comentario…" rows="2" maxlength="500"
+                        class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm resize-none"></textarea>
                 </div>
-
-                <!-- Present members picker -->
-                <div class="bg-amber-900/15 border border-amber-500/20 rounded-xl p-4">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-amber-300 font-semibold text-sm">👥 ¿Quién estaba presente?</span>
-                        <span class="text-xs text-gray-500" id="tgm-marker-role"></span>
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-amber-300 font-semibold text-sm">👥 ¿Quién sigue presente ahora?</span>
+                        <span class="text-xs text-gray-500">Por si alguien se unió o se fue mientras jugabais</span>
                     </div>
-                    <div id="tgm-members-list" class="space-y-1.5"></div>
+                    <div id="tso-presentes-final-list" class="space-y-1.5"></div>
                 </div>
-
-                <button id="tgm-submit-btn" class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition">
-                    Enviar respuesta
+                <button id="tso-submit-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition">
+                    Enviar y terminar
                 </button>
-                <p id="tgm-submit-error" class="text-red-400 text-xs text-center hidden"></p>
+                <p id="tso-submit-error" class="text-red-400 text-xs text-center hidden"></p>
             </div>
-
         </div>
     </div>
 
@@ -5349,14 +5463,26 @@
 const TARDE_INDEX_PATH = 'tarde/index.json';
 
 // ── Estado global tarde ──────────────────────────────────────────────────────
-let tardeGames   = [];
-let myTeams      = [];
-let tardePodio   = [];
-let tardeLoaded  = false;
+let tardeGames    = [];
+let myTeams       = [];
+let tardePodio    = [];
+let tardeLoaded   = false;
+let myParticipados = []; // mystery_id que YA jugué (filtro rápido en el selector)
 
-// Juego abierto en el modal
+let tardeDurationFilter   = 'all';
+let tardeDifficultyFilter = 'all';
+
+// Juego/equipo elegidos en el modal de info, antes de empezar sesión
 let currentTardeGame = null;
 let currentTardeTeam = null;
+
+// ── Sesión de tarde activa (cronómetro a pantalla completa) ─────────────────
+let tardeSession = null;        // { sessionId, teamId, mysteryId, startTime, presentMembers }
+let tardeSessionGame = null;    // el gameState (JSON) del misterio en juego
+let tardeClueIndex = -1;        // -1 = ninguna pista revelada
+let tardeWrongAttempts = 0;
+let tardeTimerInterval = null;
+let tardeAnswerLocked = false;  // true tras respuesta correcta (ya no se puede seguir jugando)
 
 // ── Carga de datos ───────────────────────────────────────────────────────────
 
@@ -5373,7 +5499,13 @@ async function loadTardeData(force = false) {
 
     // Load each section independently — each updates its own UI when ready
     teamsDataLoading = true;
-    _loadMyTeams().then(() => { teamsDataLoading = false; _renderMyTeams(); });
+    _loadMyTeams().then(async () => {
+        teamsDataLoading = false;
+        _renderMyTeams();
+        await _loadMyParticipados();
+        _renderTardeGames();
+        await _checkForActiveTardeSession();
+    });
     _loadTardeGames().then(_renderTardeGames);
     _loadTardePodio().then(_renderTardePodio);
 }
@@ -5405,6 +5537,40 @@ async function _loadTardePodio() {
         const data = await res.json();
         tardePodio = Array.isArray(data) ? data : [];
     } catch { tardePodio = []; }
+}
+
+// Misterios que YO ya he jugado (filtro rápido, no es la regla de bloqueo definitiva)
+async function _loadMyParticipados() {
+    if (!userId) { myParticipados = []; return; }
+    try {
+        const pubId = getPublicId(userId) || '';
+        const res   = await fetch(`${APPS_SCRIPT_URL}?action=getMyTardeParticipados&user=${encodeURIComponent(pubId)}`);
+        const data  = await res.json();
+        myParticipados = Array.isArray(data) ? data : [];
+    } catch { myParticipados = []; }
+}
+
+// Al abrir la pestaña / cargar datos: ¿hay una sesión activa en alguno de mis equipos?
+async function _checkForActiveTardeSession() {
+    const banner = document.getElementById('tarde-resume-banner');
+    if (!banner) return;
+    if (!userId || myTeams.length === 0) { banner.classList.add('hidden'); return; }
+
+    for (const team of myTeams) {
+        try {
+            const res  = await fetch(`${APPS_SCRIPT_URL}?action=getActiveTardeSession&teamId=${encodeURIComponent(team.id)}`);
+            const data = await res.json();
+            if (data && data.active && data.session) {
+                const game = tardeGames.find(g => g.id === data.session.mysteryId);
+                document.getElementById('tarde-resume-info').textContent =
+                    `${team.name} · ${game ? game.title : data.session.mysteryId}`;
+                banner.classList.remove('hidden');
+                banner.dataset.teamId = team.id;
+                return;
+            }
+        } catch { /* sigue probando con otros equipos */ }
+    }
+    banner.classList.add('hidden');
 }
 
 // ── Renderizado de la sección tarde ─────────────────────────────────────────
@@ -5483,6 +5649,16 @@ function _teamCardHTML(team, pubId) {
         </div>`;
 }
 
+// ── Filtros del selector de misterios ────────────────────────────────────────
+
+function _durationMatches(minutes, filter) {
+    const m = minutes || 90;
+    if (filter === 'lt45')  return m < 45;
+    if (filter === '45-90') return m >= 45 && m <= 90;
+    if (filter === 'gt90')  return m > 90;
+    return true;
+}
+
 function _renderTardeGames() {
     const el = document.getElementById('tarde-games-container');
     if (!el) return;
@@ -5492,17 +5668,27 @@ function _renderTardeGames() {
         return;
     }
 
-    const active = tardeGames.filter(g => !g.isSolved);
-    const solved = tardeGames.filter(g => g.isSolved);
+    const filtered = tardeGames.filter(g =>
+        _durationMatches(g.estimatedMinutes, tardeDurationFilter) &&
+        (tardeDifficultyFilter === 'all' || g.difficulty === tardeDifficultyFilter)
+    );
 
+    const active = filtered.filter(g => !g.isSolved);
+    const solved = filtered.filter(g => g.isSolved);
+    const yaJugado = g => myParticipados.includes(g.id);
+
+    // NOTA: en la lista NUNCA se muestran las pistas, solo título/descripción/dificultad/duración,
+    // para que nadie pueda verlas sin haber empezado la partida.
     const cardHTML = g => `
         <div onclick="openTardeModal('${g.id}')"
-             class="cursor-pointer bg-gray-800/40 border border-gray-700/40 rounded-2xl p-5 hover:border-amber-500/40 hover:bg-gray-800/70 transition group">
+             class="cursor-pointer bg-gray-800/40 border border-gray-700/40 rounded-2xl p-5 hover:border-amber-500/40 hover:bg-gray-800/70 transition group ${yaJugado(g) && !g.isSolved ? 'opacity-60' : ''}">
             <div class="flex items-start justify-between mb-3">
                 <span class="tarde-badge text-xs font-bold px-2 py-0.5 rounded-full">${_esc(g.type || 'Tarde')}</span>
                 ${g.isSolved
                     ? `<span class="text-xs text-green-400 font-semibold">✓ Resuelto</span>`
-                    : `<span class="text-xs text-gray-500">Abierto</span>`}
+                    : yaJugado(g)
+                        ? `<span class="text-xs text-gray-500 font-semibold">Ya jugado por ti</span>`
+                        : `<span class="text-xs text-gray-500">Abierto</span>`}
             </div>
             <h3 class="font-bold text-white text-lg leading-tight mb-2 group-hover:text-amber-300 transition">${_esc(g.title)}</h3>
             ${g.mystery ? `<p class="text-gray-400 text-sm line-clamp-2 mb-3">${_esc(g.mystery)}</p>` : ''}
@@ -5514,10 +5700,11 @@ function _renderTardeGames() {
         </div>`;
 
     el.innerHTML = `
-        ${active.length ? `<h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">En Curso</h3>
+        ${active.length ? `<h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Disponibles</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">${active.map(cardHTML).join('')}</div>` : ''}
         ${solved.length ? `<h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Resueltos</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${solved.map(cardHTML).join('')}</div>` : ''}`;
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${solved.map(cardHTML).join('')}</div>` : ''}
+        ${active.length === 0 && solved.length === 0 ? `<p class="text-gray-500 text-center py-10 italic text-sm">Ningún misterio coincide con estos filtros.</p>` : ''}`;
 }
 
 function _renderTardePodio() {
@@ -5560,74 +5747,51 @@ function _renderTardePodio() {
         </div>`;
 }
 
-// ── Tarde game modal — step-based ────────────────────────────────────────────
+// ── Normalización y auto-check de respuestas ─────────────────────────────────
 
-let currentTardeClueIndex = -1; // -1 = ninguna revelada aún
+const TARDE_LEADING_ARTICLES = ['el','la','los','las','un','una','unos','unas'];
 
-// Muestra solo las pistas publicadas
-function _getTardeVisibleClues() {
-    const now = Date.now();
-    return (currentTardeGame?.clues || []).filter(
-        c => !c.publishDate || new Date(c.publishDate).getTime() <= now
-    );
-}
-
-// Renderiza una sola pista
-function _renderTardeClue(c, i) {
-    return `<div class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 animate-in fade-in" style="animation:fadeIn 0.3s ease">
-        <div class="text-xs text-gray-500 mb-2 font-medium">Pista ${i + 1}</div>
-        ${c.type === 'text'        ? `<p class="text-gray-200 text-sm leading-relaxed">${_esc(c.content||'')}</p>` : ''}
-        ${c.type === 'image'       ? `<img src="${_esc(c.content||'')}" alt="Pista ${i+1}" class="max-w-full rounded-lg">` : ''}
-        ${c.type === 'interactive' ? `<div class="rounded-lg overflow-hidden"><iframe srcdoc="${_esc(c.content||'')}" style="width:100%;min-height:${c.minHeight||200}px;border:none;border-radius:0.5rem" sandbox="allow-scripts"></iframe></div>` : ''}
-        ${c.type === 'audio'       ? `<audio controls class="w-full"><source src="${_esc(c.content||'')}"></audio>` : ''}
-        ${c.type === 'video'       ? `<video controls class="w-full rounded-lg"><source src="${_esc(c.content||'')}"></video>` : ''}
-    </div>`;
-}
-
-function _updateTardeCluesUI() {
-    const visible  = _getTardeVisibleClues();
-    const shown    = visible.slice(0, currentTardeClueIndex + 1);
-    const remaining = visible.length - shown.length;
-
-    document.getElementById('tgm-clues-container').innerHTML =
-        shown.length ? shown.map((c, i) => _renderTardeClue(c, i)).join('') :
-        `<p class="text-gray-600 text-sm italic text-center py-4">Pulsa el botón para revelar la primera pista.</p>`;
-
-    document.getElementById('tgm-clue-counter').textContent =
-        `${shown.length} / ${visible.length}`;
-
-    const revBtn = document.getElementById('tgm-reveal-btn');
-    const noMore = document.getElementById('tgm-no-more-clues');
-    if (visible.length === 0) {
-        revBtn.classList.add('hidden');
-        noMore.classList.add('hidden');
-    } else if (remaining > 0) {
-        revBtn.textContent = shown.length === 0 ? 'Ver primera pista' : `Ver siguiente pista (${remaining} más)`;
-        revBtn.classList.remove('hidden');
-        noMore.classList.add('hidden');
-    } else {
-        revBtn.classList.add('hidden');
-        noMore.classList.remove('hidden');
+function _normalizeTardeAnswer(str) {
+    let s = String(str || '').toLowerCase().trim();
+    s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // quitar tildes
+    s = s.replace(/[¿?¡!.,;:"'()«»]/g, ' ');
+    s = s.replace(/\s+/g, ' ').trim();
+    const parts = s.split(' ');
+    if (parts.length > 1 && TARDE_LEADING_ARTICLES.includes(parts[0])) {
+        s = parts.slice(1).join(' ');
     }
+    return s.trim();
 }
 
-// ── Step navigation ───────────────────────────────────────────────────────────
+// true si la respuesta es válida: coincide alguna keyword (basta UNA) Y ninguna frase excluida está presente
+function _checkTardeAnswer(game, rawAnswer) {
+    if (!game.autoCheck) return null; // sin auto-check no podemos validar aquí
+    const norm = _normalizeTardeAnswer(rawAnswer);
+    if (!norm) return false;
+
+    const excluded = (game.excludedPhrases || []).map(_normalizeTardeAnswer).filter(Boolean);
+    if (excluded.some(p => norm.includes(p))) return false; // veto, aunque coincida una keyword
+
+    const keywords = (game.correctKeywords || []).map(_normalizeTardeAnswer).filter(Boolean);
+    if (keywords.length === 0) return false;
+    return keywords.some(k => norm.includes(k));
+}
+
+// ── Modal de info + inicio de sesión ─────────────────────────────────────────
 
 function _tgmShowStep(step) {
-    ['tgm-step-team','tgm-step-game','tgm-step-answer'].forEach(id => {
+    ['tgm-step-team','tgm-step-game','tgm-step-presentes'].forEach(id => {
         document.getElementById(id)?.classList.add('hidden');
     });
     document.getElementById(`tgm-step-${step}`)?.classList.remove('hidden');
-    document.getElementById('tgm-back-btn').classList.toggle('hidden', step !== 'answer');
+    document.getElementById('tgm-back-btn').classList.toggle('hidden', step === 'team');
 }
 
 function openTardeModal(gameId) {
     const game = tardeGames.find(g => g.id === gameId);
     if (!game) return;
-    currentTardeGame  = game;
-    currentTardeClueIndex = -1;
+    currentTardeGame = game;
 
-    // Header
     document.getElementById('tgm-type-badge').textContent = game.type || 'Tarde';
     document.getElementById('tgm-title').textContent = game.title;
 
@@ -5635,21 +5799,17 @@ function openTardeModal(gameId) {
     document.body.style.overflow = 'hidden';
 
     if (game.isSolved) {
-        // Solved: skip team step, show game step with solution
         _tgmShowStep('game');
-        _buildGameStep(true);
+        _buildInfoStep(true);
     } else if (!userId || myTeams.length === 0) {
-        // No session or no teams: go directly to game in spectate mode
         currentTardeTeam = null;
         _tgmShowStep('game');
-        _buildGameStep(false);
+        _buildInfoStep(false);
     } else if (myTeams.length === 1) {
-        // Single team: auto-select and go to game
         currentTardeTeam = myTeams[0];
         _tgmShowStep('game');
-        _buildGameStep(false);
+        _buildInfoStep(false);
     } else {
-        // Multiple teams: show team selection step
         _buildTeamStep();
         _tgmShowStep('team');
     }
@@ -5668,11 +5828,11 @@ function _buildTeamStep() {
 function _selectTardeTeam(teamId) {
     currentTardeTeam = myTeams.find(t => t.id === teamId) || null;
     _tgmShowStep('game');
-    _buildGameStep(false);
+    _buildInfoStep(false);
 }
 
-function _buildGameStep(isSolved) {
-    // Team bar
+// Paso "info": SOLO título/descripción/dificultad/duración. Nunca pistas.
+function _buildInfoStep(isSolved) {
     const teamBar  = document.getElementById('tgm-team-bar');
     const teamName = document.getElementById('tgm-team-bar-name');
     const teamRole = document.getElementById('tgm-team-bar-role');
@@ -5687,74 +5847,62 @@ function _buildGameStep(isSolved) {
         teamBar.classList.add('hidden');
     }
 
-    // Mystery text
-    const mystEl = document.getElementById('tgm-mystery-text');
     const game = currentTardeGame;
+    const mystEl = document.getElementById('tgm-mystery-text');
     if (game.mystery && game.showMystery !== false) {
         mystEl.textContent = game.mystery;
         mystEl.classList.remove('hidden');
     } else {
         mystEl.classList.add('hidden');
     }
+    document.getElementById('tgm-notes-text').textContent = game.notes || '';
+    document.getElementById('tgm-info-difficulty').textContent = `📊 ${game.difficulty || 'Sin especificar'}`;
+    document.getElementById('tgm-info-duration').textContent   = `🕐 ~${game.estimatedMinutes || 90} min`;
 
-    // Clues
-    _updateTardeCluesUI();
-
-    // Solved vs open
     const solvedEl   = document.getElementById('tgm-solved-section');
-    const answerArea = document.getElementById('tgm-open-answer-area');
+    const startArea  = document.getElementById('tgm-start-area');
+    const notAdmin   = document.getElementById('tgm-not-admin-notice');
+    const blockedEl  = document.getElementById('tgm-blocked-notice');
 
     if (isSolved) {
         solvedEl.classList.remove('hidden');
-        answerArea.classList.add('hidden');
+        startArea.classList.add('hidden');
+        notAdmin.classList.add('hidden');
+        blockedEl.classList.add('hidden');
         document.getElementById('tgm-solution-text').textContent = `Solución: ${game.solution || '—'}`;
         document.getElementById('tgm-winner-team').textContent = game.winner ? `Ganador: ${game.winner}` : '';
         const expEl = document.getElementById('tgm-explanation');
         if (game.explanation) { expEl.textContent = game.explanation; expEl.classList.remove('hidden'); }
         else { expEl.classList.add('hidden'); }
-    } else {
-        solvedEl.classList.add('hidden');
-        answerArea.classList.toggle('hidden', !currentTardeTeam);
+        return;
     }
-}
 
-function _openAnswerStep() {
-    document.getElementById('tgm-answer-input').value = '';
-    document.getElementById('tgm-explain-input').value = '';
-    document.getElementById('tgm-submit-error').classList.add('hidden');
-    _buildMembersPicker();
-    _tgmShowStep('answer');
-}
+    solvedEl.classList.add('hidden');
 
-function _buildMembersPicker() {
-    const team   = currentTardeTeam;
-    const listEl = document.getElementById('tgm-members-list');
-    const roleEl = document.getElementById('tgm-marker-role');
-    if (!listEl) return;
-
-    if (!team) {
-        listEl.innerHTML = `<p class="text-gray-500 text-xs italic">Sin equipo seleccionado.</p>`;
+    if (!currentTardeTeam) {
+        startArea.classList.add('hidden');
+        notAdmin.classList.add('hidden');
+        blockedEl.classList.add('hidden');
         return;
     }
 
     const pubId   = getPublicId(userId) || '';
-    const isAdmin = team.captain === pubId || (team.admins||[]).includes(pubId);
+    const isAdmin = currentTardeTeam.captain === pubId || (currentTardeTeam.admins||[]).includes(pubId);
+    const yaJugado = myParticipados.includes(game.id);
 
-    if (!isAdmin) {
-        listEl.innerHTML = `<p class="text-amber-300/70 text-xs">Solo el capitán o un admin puede marcar la asistencia.</p>`;
-        if (roleEl) roleEl.textContent = 'Solo lectura';
-        return;
+    if (yaJugado) {
+        blockedEl.classList.remove('hidden');
+        startArea.classList.add('hidden');
+        notAdmin.classList.add('hidden');
+    } else if (isAdmin) {
+        blockedEl.classList.add('hidden');
+        startArea.classList.remove('hidden');
+        notAdmin.classList.add('hidden');
+    } else {
+        blockedEl.classList.add('hidden');
+        startArea.classList.add('hidden');
+        notAdmin.classList.remove('hidden');
     }
-    if (roleEl) roleEl.textContent = pubId === team.captain ? '👑 Capitán' : '⭐ Admin';
-
-    listEl.innerHTML = (team.members||[]).map(m => `
-        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
-            <input type="checkbox" class="tarde-present-check accent-amber-500 w-4 h-4" value="${m}" checked>
-            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…
-                ${m === team.captain ? '<span class="text-amber-400 text-xs ml-1">👑</span>' : ''}
-                ${(team.admins||[]).includes(m) && m !== team.captain ? '<span class="text-yellow-300 text-xs ml-1">⭐</span>' : ''}
-            </span>
-        </label>`).join('');
 }
 
 function closeTardeModal() {
@@ -5762,65 +5910,310 @@ function closeTardeModal() {
     document.body.style.overflow = '';
     currentTardeGame = null;
     currentTardeTeam = null;
-    currentTardeClueIndex = -1;
 }
 
-async function submitTardeAnswer() {
-    const game   = currentTardeGame;
-    const team   = currentTardeTeam;
-    const errEl  = document.getElementById('tgm-submit-error');
-    const btn    = document.getElementById('tgm-submit-btn');
+// ── Paso presentes-inicio → arranca la sesión ────────────────────────────────
 
+function _openPresentesInicioStep() {
+    const listEl = document.getElementById('tgm-presentes-inicio-list');
+    const team   = currentTardeTeam;
+    document.getElementById('tgm-presentes-error').classList.add('hidden');
+    listEl.innerHTML = (team.members||[]).map(m => `
+        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
+            <input type="checkbox" class="tarde-inicio-present-check accent-amber-500 w-4 h-4" value="${m}" checked>
+            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…
+                ${m === team.captain ? '<span class="text-amber-400 text-xs ml-1">👑</span>' : ''}
+                ${(team.admins||[]).includes(m) && m !== team.captain ? '<span class="text-yellow-300 text-xs ml-1">⭐</span>' : ''}
+            </span>
+        </label>`).join('');
+    _tgmShowStep('presentes');
+}
+
+async function _startTardeSessionFromModal() {
+    const game = currentTardeGame;
+    const team = currentTardeTeam;
+    const errEl = document.getElementById('tgm-presentes-error');
+    const btn   = document.getElementById('tgm-start-session-btn');
     errEl.classList.add('hidden');
 
-    if (!userId) { _tardeErr(errEl, 'Debes iniciar sesión para enviar.'); return; }
-    if (!team)   { _tardeErr(errEl, 'Selecciona un equipo.'); return; }
+    const presentPubIds = [...document.querySelectorAll('.tarde-inicio-present-check:checked')].map(cb => cb.value);
+    if (presentPubIds.length === 0) { _tardeErr(errEl, 'Marca al menos un miembro presente.'); return; }
 
-    const answer  = (document.getElementById('tgm-answer-input').value || '').trim();
-    const explain = (document.getElementById('tgm-explain-input').value || '').trim();
-    if (!answer)  { _tardeErr(errEl, 'Escribe tu respuesta antes de enviar.'); return; }
+    btn.disabled = true; btn.textContent = 'Empezando…';
+    const pubId = getPublicId(userId) || '';
+    const res = await _postTarde({
+        action: 'startTardeSession',
+        teamId: team.id, mysteryId: game.id, presentPubIds, markerPubId: pubId
+    });
+    btn.disabled = false; btn.textContent = 'Empezar misterio';
 
-    const pubId   = getPublicId(userId) || '';
-    const isAdmin = team.captain === pubId || (team.admins||[]).includes(pubId);
+    if (res.error) { _tardeErr(errEl, res.error); return; }
 
-    // Gather present members
-    let presentPubIds = [];
-    if (isAdmin) {
-        document.querySelectorAll('.tarde-present-check:checked').forEach(cb => presentPubIds.push(cb.value));
-        if (presentPubIds.length === 0) { _tardeErr(errEl, 'Marca al menos un miembro presente.'); return; }
-    } else {
-        // Si no es admin, presentes = todos (el admin lo confirmará en admin panel si es necesario)
-        presentPubIds = team.members || [];
+    tardeSession = { sessionId: res.sessionId, teamId: team.id, mysteryId: game.id, startTime: res.startTime, presentMembers: presentPubIds };
+    tardeSessionGame = game;
+    closeTardeModal();
+    _openTardeSessionOverlay(true);
+}
+
+// ── Sesión a pantalla completa ────────────────────────────────────────────────
+
+async function _resumeTardeSessionFromBanner() {
+    const teamId = document.getElementById('tarde-resume-banner')?.dataset.teamId;
+    if (!teamId) return;
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=getActiveTardeSession&teamId=${encodeURIComponent(teamId)}`).then(r=>r.json()).catch(()=>null);
+    if (!res || !res.active) { showToast('La sesión ya no está activa.', true); return; }
+
+    const game = tardeGames.find(g => g.id === res.session.mysteryId);
+    if (!game) { showToast('No se encontró el misterio de esa sesión.', true); return; }
+
+    tardeSession = res.session;
+    tardeSessionGame = game;
+    _openTardeSessionOverlay(false);
+}
+
+function _localKey(suffix) { return `tarde_session_${tardeSession.sessionId}_${suffix}`; }
+
+function _openTardeSessionOverlay(isNew) {
+    tardeClueIndex = -1;
+    tardeWrongAttempts = 0;
+    tardeAnswerLocked = false;
+
+    if (!isNew) {
+        // Reanudación: recuperar progreso local si existe (pistas/intentos/notas)
+        tardeClueIndex      = parseInt(localStorage.getItem(_localKey('clueIndex')))  || -1;
+        tardeWrongAttempts  = parseInt(localStorage.getItem(_localKey('wrong')))      || 0;
     }
 
-    btn.disabled = true;
-    btn.textContent = 'Enviando…';
+    document.getElementById('tso-title').textContent = tardeSessionGame.title;
+    const team = myTeams.find(t => t.id === tardeSession.teamId);
+    document.getElementById('tso-team-name').textContent = team ? `👥 ${team.name}` : '';
+    document.getElementById('tso-notepad').value = localStorage.getItem(_localKey('notes')) || '';
+    document.getElementById('tso-answer-input').value = '';
+    document.getElementById('tso-wrong-count').textContent = tardeWrongAttempts;
+    document.getElementById('tso-success-area').classList.add('hidden');
+    document.getElementById('tso-feedback').classList.add('hidden');
 
-    // Mismo mecanismo exacto que los misterios normales
+    _updateTardeSessionClues();
+    _startTardeTimer();
+
+    const overlay = document.getElementById('tarde-session-overlay');
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    try { overlay.requestFullscreen?.(); } catch(_) { /* best-effort, el overlay ya cubre toda la pantalla igualmente */ }
+}
+
+function _getTardeSessionVisibleClues() {
+    return (tardeSessionGame?.clues || []); // dentro de la sesión, las pistas se revelan bajo demanda (no por fecha)
+}
+
+function _renderTardeSessionClue(c, i) {
+    return `<div class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-4">
+        <div class="text-xs text-gray-500 mb-2 font-medium">Pista ${i + 1}</div>
+        ${c.type === 'text'        ? `<p class="text-gray-200 text-sm leading-relaxed">${_esc(c.content||c.text||'')}</p>` : ''}
+        ${c.type === 'image'       ? `<img src="${_esc(c.content||'')}" alt="Pista ${i+1}" class="max-w-full rounded-lg">` : ''}
+        ${c.type === 'interactive' ? `<div class="rounded-lg overflow-hidden"><iframe srcdoc="${_esc(c.content||'')}" style="width:100%;min-height:${c.minHeight||200}px;border:none;border-radius:0.5rem" sandbox="allow-scripts"></iframe></div>` : ''}
+        ${c.type === 'audio'       ? `<audio controls class="w-full"><source src="${_esc(c.content||'')}"></audio>` : ''}
+        ${c.type === 'video'       ? `<video controls class="w-full rounded-lg"><source src="${_esc(c.content||'')}"></video>` : ''}
+    </div>`;
+}
+
+function _updateTardeSessionClues() {
+    const all = _getTardeSessionVisibleClues();
+    const shown = all.slice(0, tardeClueIndex + 1);
+    document.getElementById('tso-clues-container').innerHTML =
+        shown.length ? shown.map((c,i) => _renderTardeSessionClue(c,i)).join('') :
+        `<p class="text-gray-600 text-sm italic text-center py-4">Aún no habéis revelado ninguna pista.</p>`;
+    document.getElementById('tso-clue-counter').textContent = `${shown.length} / ${all.length}`;
+
+    const revBtn = document.getElementById('tso-reveal-btn');
+    const noMore = document.getElementById('tso-no-more-clues');
+    if (shown.length >= all.length) {
+        revBtn.classList.add('hidden');
+        noMore.classList.remove('hidden');
+    } else {
+        revBtn.classList.remove('hidden');
+        noMore.classList.add('hidden');
+    }
+}
+
+function _revealNextTardeClue() {
+    if (tardeAnswerLocked) return;
+    const all = _getTardeSessionVisibleClues();
+    if (tardeClueIndex + 1 >= all.length) return;
+    tardeClueIndex++;
+    localStorage.setItem(_localKey('clueIndex'), tardeClueIndex);
+    _updateTardeSessionClues();
+}
+
+function _startTardeTimer() {
+    if (tardeTimerInterval) clearInterval(tardeTimerInterval);
+    const startMs = new Date(tardeSession.startTime).getTime();
+    const tick = () => {
+        const elapsedSec = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+        const mm = String(Math.floor(elapsedSec / 60)).padStart(2,'0');
+        const ss = String(elapsedSec % 60).padStart(2,'0');
+        document.getElementById('tso-timer').textContent = `${mm}:${ss}`;
+        document.getElementById('tso-live-points').textContent = Math.round(_computeTardePoints(elapsedSec));
+    };
+    tick();
+    tardeTimerInterval = setInterval(tick, 1000);
+}
+
+function _computeTardePoints(elapsedSeconds) {
+    const sc = tardeSessionGame.scoring || {};
+    const base = sc.base ?? 1000, min = sc.minPoints ?? 50;
+    const perMin = sc.perMinute ?? 0, perHint = sc.perHint ?? 0, perWrong = sc.perWrongAttempt ?? 0;
+    const minutes = elapsedSeconds / 60;
+    const hintsUsed = tardeClueIndex + 1;
+    return Math.max(min, base - (minutes*perMin) - (hintsUsed*perHint) - (tardeWrongAttempts*perWrong));
+}
+
+function _saveTardeNotepad() {
+    localStorage.setItem(_localKey('notes'), document.getElementById('tso-notepad').value || '');
+}
+
+function _checkTardeAnswerClick() {
+    if (tardeAnswerLocked) return;
+    const raw = document.getElementById('tso-answer-input').value || '';
+    const feedback = document.getElementById('tso-feedback');
+    if (!raw.trim()) return;
+
+    const ok = _checkTardeAnswer(tardeSessionGame, raw);
+    if (ok === null) {
+        // Este misterio no tiene auto-check configurado: no podemos validar en el cliente.
+        feedback.className = 'text-center text-sm text-amber-300';
+        feedback.textContent = 'Este misterio requiere revisión manual del admin — habla con él tras vuestra respuesta.';
+        feedback.classList.remove('hidden');
+        _lockTardeAnswerSuccess(raw);
+        return;
+    }
+
+    if (ok) {
+        feedback.className = 'text-center text-sm text-green-400 font-semibold';
+        feedback.textContent = '¡Correcto!';
+        feedback.classList.remove('hidden');
+        _lockTardeAnswerSuccess(raw);
+    } else {
+        tardeWrongAttempts++;
+        localStorage.setItem(_localKey('wrong'), tardeWrongAttempts);
+        document.getElementById('tso-wrong-count').textContent = tardeWrongAttempts;
+        feedback.className = 'text-center text-sm text-red-400';
+        feedback.textContent = 'Incorrecto — seguid intentando (cada intento resta puntos).';
+        feedback.classList.remove('hidden');
+    }
+}
+
+function _lockTardeAnswerSuccess(finalAnswer) {
+    tardeAnswerLocked = true;
+    clearInterval(tardeTimerInterval);
+    document.getElementById('tso-answer-input').disabled = true;
+    document.getElementById('tso-check-btn').disabled = true;
+    document.getElementById('tso-reveal-btn').disabled = true;
+
+    const elapsedSec = Math.max(0, Math.floor((Date.now() - new Date(tardeSession.startTime).getTime()) / 1000));
+    const finalPoints = Math.round(_computeTardePoints(elapsedSec));
+    document.getElementById('tso-final-points').textContent = finalPoints;
+    document.getElementById('tso-final-points').dataset.answer = finalAnswer;
+    document.getElementById('tso-final-points').dataset.elapsedSec = elapsedSec;
+
+    // Reconfirmar quién sigue presente ahora
+    const team = myTeams.find(t => t.id === tardeSession.teamId) || { members: tardeSession.presentMembers, captain:'', admins:[] };
+    document.getElementById('tso-presentes-final-list').innerHTML = (team.members||tardeSession.presentMembers).map(m => `
+        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
+            <input type="checkbox" class="tarde-final-present-check accent-amber-500 w-4 h-4" value="${m}" ${tardeSession.presentMembers.includes(m) ? 'checked' : ''}>
+            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…</span>
+        </label>`).join('');
+
+    document.getElementById('tso-success-area').classList.remove('hidden');
+    document.getElementById('tso-success-area').scrollIntoView({ behavior:'smooth' });
+}
+
+async function _submitTardeSessionAnswer() {
+    const errEl = document.getElementById('tso-submit-error');
+    const btn   = document.getElementById('tso-submit-btn');
+    errEl.classList.add('hidden');
+
+    const presentPubIds = [...document.querySelectorAll('.tarde-final-present-check:checked')].map(cb => cb.value);
+    if (presentPubIds.length === 0) { _tardeErr(errEl, 'Marca al menos un miembro presente.'); return; }
+
+    const finalAnswer = document.getElementById('tso-final-points').dataset.answer || '';
+    const elapsedSec  = document.getElementById('tso-final-points').dataset.elapsedSec || '0';
+    const explain = (document.getElementById('tso-explain-input').value || '').trim();
+
+    btn.disabled = true; btn.textContent = 'Enviando…';
+
     const body = new URLSearchParams();
-    body.append(TARDE_FORM_ENTRIES.id_misterio, game.id   || '');
-    body.append(TARDE_FORM_ENTRIES.id_privado,  userId    || '');
-    body.append(TARDE_FORM_ENTRIES.id_equipo,   team.id   || '');
-    body.append(TARDE_FORM_ENTRIES.solucion,    answer);
-    body.append(TARDE_FORM_ENTRIES.explicacion, explain   || '');
-    body.append(TARDE_FORM_ENTRIES.presentes,   presentPubIds.join(','));
+    body.append(TARDE_FORM_ENTRIES.id_misterio,       tardeSession.mysteryId);
+    body.append(TARDE_FORM_ENTRIES.id_privado,        userId || '');
+    body.append(TARDE_FORM_ENTRIES.id_equipo,         tardeSession.teamId);
+    body.append(TARDE_FORM_ENTRIES.solucion,          finalAnswer);
+    body.append(TARDE_FORM_ENTRIES.explicacion,       explain);
+    body.append(TARDE_FORM_ENTRIES.presentes,         presentPubIds.join(','));
+    body.append(TARDE_FORM_ENTRIES.session_id,        tardeSession.sessionId);
+    body.append(TARDE_FORM_ENTRIES.tiempo_segundos,   elapsedSec);
+    body.append(TARDE_FORM_ENTRIES.pistas_usadas,     String(tardeClueIndex + 1));
+    body.append(TARDE_FORM_ENTRIES.intentos_fallidos, String(tardeWrongAttempts));
+    body.append(TARDE_FORM_ENTRIES.scoring_config,    JSON.stringify(tardeSessionGame.scoring || {}));
 
     try {
-        // Google Forms no devuelve CORS headers, pero el envío sí llega
-        await fetch(TARDE_FORM_SUBMIT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body
-        });
+        await fetch(TARDE_FORM_SUBMIT_URL, { method: 'POST', mode: 'no-cors', body });
     } catch(e) { /* no-cors siempre lanza, es esperado */ }
 
-    btn.disabled = false;
-    btn.textContent = 'Enviar respuesta';
-    showToast('✅ Respuesta enviada. Pendiente de revisión.');
-    closeTardeModal();
+    // Limpiar progreso local de esta sesión
+    ['clueIndex','wrong','notes'].forEach(k => localStorage.removeItem(_localKey(k)));
+
+    btn.disabled = false; btn.textContent = 'Enviar y terminar';
+    showToast('✅ ¡Misterio resuelto! Puntos añadidos a vuestro equipo.');
+    _closeTardeSessionOverlay();
+    await _loadMyParticipados();
+    await _loadTardePodio(); _renderTardePodio();
+    _renderTardeGames();
+}
+
+function _closeTardeSessionOverlay() {
+    clearInterval(tardeTimerInterval);
+    document.getElementById('tarde-session-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+    if (document.fullscreenElement) { try { document.exitFullscreen(); } catch(_) {} }
+    document.getElementById('tso-answer-input').disabled = false;
+    document.getElementById('tso-check-btn').disabled = false;
+    document.getElementById('tso-reveal-btn').disabled = false;
+    tardeSession = null;
+    tardeSessionGame = null;
+}
+
+// ── Abandonar sesión (con confirmación anti-trampas) ─────────────────────────
+
+function _openAbandonConfirm() {
+    document.getElementById('tarde-abandon-modal').classList.remove('hidden');
+}
+function _closeAbandonConfirm() {
+    document.getElementById('tarde-abandon-modal').classList.add('hidden');
+}
+async function _confirmAbandonTardeSession() {
+    const btn = document.getElementById('tarde-abandon-confirm-btn');
+    btn.disabled = true; btn.textContent = 'Abandonando…';
+    const pubId = getPublicId(userId) || '';
+    const res = await _postTarde({ action: 'abandonTardeSession', sessionId: tardeSession.sessionId, userPubId: pubId });
+    btn.disabled = false; btn.textContent = 'Sí, abandonar';
+    _closeAbandonConfirm();
+    if (res.error) { showToast(res.error, true); return; }
+
+    ['clueIndex','wrong','notes'].forEach(k => localStorage.removeItem(_localKey(k)));
+    showToast('Partida abandonada. Ese misterio ya no se puede reintentar con esos jugadores.');
+    _closeTardeSessionOverlay();
+    await _loadMyParticipados();
+    _renderTardeGames();
 }
 
 function _tardeErr(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+
+window.addEventListener('beforeunload', (e) => {
+    if (tardeSession && !tardeAnswerLocked) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
 
 // ── Team management ──────────────────────────────────────────────────────────
 
@@ -6043,36 +6436,56 @@ function _esc(str) {
 // ── Event listeners ──────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Close tarde game modal
+    // Close tarde info modal
     document.getElementById('tgm-close-btn')?.addEventListener('click', closeTardeModal);
     document.getElementById('tarde-game-modal')?.addEventListener('click', e => {
         if (e.target === e.currentTarget) closeTardeModal();
     });
 
-    // Back to game step from answer step
+    // Back to info step from presentes-inicio step
     document.getElementById('tgm-back-btn')?.addEventListener('click', () => _tgmShowStep('game'));
 
-    // Open answer step
-    document.getElementById('tgm-open-answer-btn')?.addEventListener('click', _openAnswerStep);
+    // Ir a seleccionar presentes para empezar la sesión
+    document.getElementById('tgm-goto-presentes-btn')?.addEventListener('click', _openPresentesInicioStep);
 
-    // Spectate (no team)
+    // Empezar sesión
+    document.getElementById('tgm-start-session-btn')?.addEventListener('click', _startTardeSessionFromModal);
+
+    // Spectate (solo ver info, sin equipo)
     document.getElementById('tgm-spectate-btn')?.addEventListener('click', () => {
         currentTardeTeam = null;
         _tgmShowStep('game');
-        _buildGameStep(false);
+        _buildInfoStep(false);
     });
 
-    // Reveal next clue
-    document.getElementById('tgm-reveal-btn')?.addEventListener('click', () => {
-        const visible = _getTardeVisibleClues();
-        if (currentTardeClueIndex < visible.length - 1) {
-            currentTardeClueIndex++;
-            _updateTardeCluesUI();
-        }
+    // Filtros del selector de misterios
+    document.querySelectorAll('.tarde-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tarde-filter-btn').forEach(b => b.classList.remove('active-filter'));
+            btn.classList.add('active-filter');
+            tardeDurationFilter = btn.dataset.duration;
+            _renderTardeGames();
+        });
+    });
+    document.getElementById('tarde-difficulty-filter')?.addEventListener('change', e => {
+        tardeDifficultyFilter = e.target.value;
+        _renderTardeGames();
     });
 
-    // Submit tarde answer (una sola vez)
-    document.getElementById('tgm-submit-btn')?.addEventListener('click', submitTardeAnswer);
+    // Banner de reanudar sesión
+    document.getElementById('tarde-resume-btn')?.addEventListener('click', _resumeTardeSessionFromBanner);
+
+    // Overlay de sesión: revelar pista / comprobar respuesta / notas / abandonar / enviar
+    document.getElementById('tso-reveal-btn')?.addEventListener('click', _revealNextTardeClue);
+    document.getElementById('tso-check-btn')?.addEventListener('click', _checkTardeAnswerClick);
+    document.getElementById('tso-answer-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') _checkTardeAnswerClick(); });
+    document.getElementById('tso-notepad')?.addEventListener('input', _saveTardeNotepad);
+    document.getElementById('tso-abandon-btn')?.addEventListener('click', _openAbandonConfirm);
+    document.getElementById('tso-submit-btn')?.addEventListener('click', _submitTardeSessionAnswer);
+
+    // Confirmación de abandono (anti-trampas)
+    document.getElementById('tarde-abandon-cancel-btn')?.addEventListener('click', _closeAbandonConfirm);
+    document.getElementById('tarde-abandon-confirm-btn')?.addEventListener('click', _confirmAbandonTardeSession);
 
     // Create team
     document.getElementById('create-team-submit-btn')?.addEventListener('click', _submitCreateTeam);
