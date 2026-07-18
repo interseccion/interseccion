@@ -6169,7 +6169,7 @@ function _computeTardePoints(elapsedSeconds) {
     const sc = tardeSessionGame.scoring || {};
     const base = sc.base ?? 1000, min = sc.minPoints ?? 50;
     const perMin = sc.perMinute ?? 0, perHint = sc.perHint ?? 0, perWrong = sc.perWrongAttempt ?? 0;
-    const minutes = elapsedSeconds / 60;
+    const minutes = Math.floor(elapsedSeconds / 60);
     const hintsUsed = tardeClueIndex + 1;
     return Math.max(min, base - (minutes*perMin) - (hintsUsed*perHint) - (tardeWrongAttempts*perWrong));
 }
