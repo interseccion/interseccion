@@ -1999,10 +1999,15 @@
             else showToast(`Juego no encontrado (${id})`, true);
         };
 
-        window.openProfileById = (id) => {
+        window.openProfileById = async (id) => {
             if (!id) return;
             // Si se pasa un ID privado (contiene ~), convertir a público primero
             const publicId = id.includes('~') ? getPublicId(id) : id;
+
+            // Si el leaderboard aún no se ha cargado, esperamos ANTES de buscar
+            // (si no, la primera vez siempre caía en "Usuario Desconocido")
+            if (leaderboardData.length === 0) await loadLeaderboard(null);
+
             const user = leaderboardData.find(u => u.id === publicId);
             if (user) {
                 openProfileModal(user);
