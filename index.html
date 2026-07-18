@@ -1066,9 +1066,27 @@
                 <div id="notif-detail-msg" class="text-gray-300 text-sm bg-gray-900/50 p-4 rounded-lg whitespace-pre-line leading-relaxed max-h-60 overflow-y-auto modal-content-scroll"></div>
             </div>
             <div class="p-4 pt-0 flex justify-end gap-3">
+                <button id="notif-detail-decline-invite-btn" class="hidden bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm">Rechazar</button>
+                <button id="notif-detail-accept-invite-btn" class="hidden bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-lg text-sm">🤝 Unirme al equipo</button>
                 <button id="notif-detail-open-mystery-btn" class="hidden bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm">🔍 Abrir misterio</button>
                 <a id="notif-detail-link-btn" href="#" target="_blank" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Abrir enlace →</a>
                 <button id="notif-detail-close-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ TARDE — INVITACIÓN POR ENLACE ═══════════════════════════════════ -->
+    <div id="tarde-link-invite-modal" class="tarde-modal-overlay hidden" style="z-index:270">
+        <div class="tarde-modal-box" style="max-width:420px">
+            <div class="p-6 text-center">
+                <div class="text-4xl mb-3">🤝</div>
+                <h3 class="text-lg font-bold text-white mb-2">Te invitan a un equipo</h3>
+                <p class="text-gray-400 text-sm mb-5">Te han compartido un enlace para unirte a <strong class="text-amber-300" id="tli-team-name">—</strong>.</p>
+                <div class="flex gap-3">
+                    <button id="tli-cancel-btn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl transition">Ahora no</button>
+                    <button id="tli-join-btn" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl transition">Unirme</button>
+                </div>
+                <p id="tli-error" class="text-red-400 text-xs text-center mt-3 hidden"></p>
             </div>
         </div>
     </div>
@@ -4571,7 +4589,7 @@
         }
 
         function getNotifIcon(tipo) {
-            const icons = { respuesta: '📬', anuncio: '📢', nuevo_misterio: '🔍', general: '🔔' };
+            const icons = { respuesta: '📬', anuncio: '📢', nuevo_misterio: '🔍', general: '🔔', team_invite: '🤝' };
             return icons[tipo] || '🔔';
         }
 
@@ -4961,6 +4979,34 @@
                 openMysteryBtn.classList.add('hidden');
             }
 
+            // Botón especial para tipo 'team_invite' — aceptar/rechazar la invitación
+            const acceptBtn  = document.getElementById('notif-detail-accept-invite-btn');
+            const declineBtn = document.getElementById('notif-detail-decline-invite-btn');
+            if (notif.tipo === 'team_invite' && notif.link?.startsWith('#team_invite=')) {
+                const inviteId = decodeURIComponent(notif.link.replace('#team_invite=', ''));
+                acceptBtn.classList.remove('hidden');
+                declineBtn.classList.remove('hidden');
+                acceptBtn.disabled = false; acceptBtn.textContent = '🤝 Unirme al equipo';
+                acceptBtn.onclick = async () => {
+                    acceptBtn.disabled = true; acceptBtn.textContent = 'Uniéndose…';
+                    const res = await _postTarde({ action:'respondTeamInvite', inviteId, userPubId: getPublicId(userId)||'', accept: true });
+                    if (res.error) { showToast(res.error, true); acceptBtn.disabled = false; acceptBtn.textContent = '🤝 Unirme al equipo'; return; }
+                    showToast(`✅ Te has unido a "${res.teamName}"`);
+                    dom.notifDetailModal.classList.add('hidden');
+                    tardeLoaded = false; await loadTardeData(true);
+                };
+                declineBtn.onclick = async () => {
+                    declineBtn.disabled = true;
+                    await _postTarde({ action:'respondTeamInvite', inviteId, userPubId: getPublicId(userId)||'', accept: false });
+                    declineBtn.disabled = false;
+                    showToast('Invitación rechazada');
+                    dom.notifDetailModal.classList.add('hidden');
+                };
+            } else {
+                acceptBtn.classList.add('hidden');
+                declineBtn.classList.add('hidden');
+            }
+
             // Botón especial para tipo 'reparar_id' — restaura la sesión con el nuevo ID
             if (notif.tipo === 'reparar_id' && notif.link?.startsWith('#restore_id=')) {
                 dom.notifDetailLinkBtn.href      = 'javascript:void(0)';
@@ -4984,7 +5030,7 @@
                     setTimeout(() => location.reload(), 1500);
                 };
             // Botón de enlace externo (solo si el link no es interno)
-            } else if (notif.link && !notif.link.startsWith('#mystery=') && !notif.link.startsWith('#restore_id=')) {
+            } else if (notif.link && !notif.link.startsWith('#mystery=') && !notif.link.startsWith('#restore_id=') && !notif.link.startsWith('#team_invite=')) {
                 dom.notifDetailLinkBtn.onclick    = null;
                 dom.notifDetailLinkBtn.href       = notif.link;
                 try {
@@ -5256,6 +5302,10 @@
                         <span id="tgm-info-difficulty">📊 —</span>
                         <span id="tgm-info-duration">🕐 —</span>
                     </div>
+
+                    <button id="tgm-podio-btn" class="text-xs font-semibold text-amber-400 hover:text-amber-300 border border-amber-500/30 rounded-full px-3 py-1.5 transition">
+                        🏆 Ver podio de este misterio
+                    </button>
 
                     <!-- Solved state -->
                     <div id="tgm-solved-section" class="hidden">
@@ -5673,9 +5723,12 @@ function _teamCardHTML(team, pubId) {
                 <div class="flex-1 bg-gray-900/70 rounded-lg px-4 py-2 font-mono text-amber-300 tracking-widest font-bold text-sm text-center select-all">
                     ${team.code || '——'}
                 </div>
+                <button onclick="event.stopPropagation();tardeCopyInviteLink('${team.code || ''}')" class="text-xs text-gray-400 hover:text-amber-300 border border-gray-600/40 hover:border-amber-500/40 rounded-lg px-3 py-2 transition whitespace-nowrap">
+                    🔗 Enlace
+                </button>
             </div>
             <div class="flex flex-wrap gap-1.5 mt-3">
-                ${(team.members || []).map(m => `<span class="member-chip">${_esc(m.substring(0,8))}…</span>`).join('')}
+                ${(team.members || []).map(m => `<span class="member-chip" style="cursor:pointer" onclick="event.stopPropagation();openProfileById('${m}')">${_esc(m.substring(0,8))}…</span>`).join('')}
             </div>
         </div>`;
 }
@@ -5919,14 +5972,18 @@ function _buildInfoStep(isSolved) {
 
     const pubId   = getPublicId(userId) || '';
     const isAdmin = currentTardeTeam.captain === pubId || (currentTardeTeam.admins||[]).includes(pubId);
-    const yaJugado = myParticipados.includes(game.id);
+    const yaJugadoYo = myParticipados.includes(game.id);
 
-    if (yaJugado) {
-        blockedEl.classList.remove('hidden');
-        startArea.classList.add('hidden');
-        notAdmin.classList.add('hidden');
-    } else if (isAdmin) {
-        blockedEl.classList.add('hidden');
+    if (isAdmin) {
+        // Aviso informativo si tú ya lo jugaste, pero NO bloquea: el equipo puede intentarlo
+        // sin ti. El bloqueo real (si alguno de los PRESENTES seleccionados ya lo jugó) lo
+        // decide el servidor al pulsar "Jugar", según a quién marquéis presente.
+        if (yaJugadoYo) {
+            blockedEl.textContent = 'Ya jugaste este misterio tú — si vais a intentarlo, desmárcate en el siguiente paso.';
+            blockedEl.classList.remove('hidden');
+        } else {
+            blockedEl.classList.add('hidden');
+        }
         startArea.classList.remove('hidden');
         notAdmin.classList.add('hidden');
     } else {
@@ -5948,15 +6005,20 @@ function closeTardeModal() {
 function _openPresentesInicioStep() {
     const listEl = document.getElementById('tgm-presentes-inicio-list');
     const team   = currentTardeTeam;
+    const myPubId = getPublicId(userId) || '';
     document.getElementById('tgm-presentes-error').classList.add('hidden');
-    listEl.innerHTML = (team.members||[]).map(m => `
+    listEl.innerHTML = (team.members||[]).map(m => {
+        const yaJugoEste = m === myPubId && myParticipados.includes(currentTardeGame.id);
+        return `
         <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
-            <input type="checkbox" class="tarde-inicio-present-check accent-amber-500 w-4 h-4" value="${m}" checked>
+            <input type="checkbox" class="tarde-inicio-present-check accent-amber-500 w-4 h-4" value="${m}" ${yaJugoEste ? '' : 'checked'}>
             <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…
                 ${m === team.captain ? '<span class="text-amber-400 text-xs ml-1">👑</span>' : ''}
                 ${(team.admins||[]).includes(m) && m !== team.captain ? '<span class="text-yellow-300 text-xs ml-1">⭐</span>' : ''}
+                ${yaJugoEste ? '<span class="text-red-400 text-xs ml-1">(ya lo jugaste)</span>' : ''}
             </span>
-        </label>`).join('');
+        </label>`;
+    }).join('');
     _tgmShowStep('presentes');
 }
 
@@ -6385,6 +6447,43 @@ async function _deleteTeam(teamId) {
     } else showToast('❌ ' + (res.error||'Error'));
 }
 
+async function showTardeMysteryPodio() {
+    const game = currentTardeGame;
+    if (!game) return;
+    try {
+        const res  = await fetch(`${APPS_SCRIPT_URL}?action=getTardeMysteryPodio&mysteryId=${encodeURIComponent(game.id)}`);
+        const data = await res.json();
+        if (data.error) { showToast(data.error, true); return; }
+
+        const teamName = (teamId) => {
+            const t = myTeams.find(x => x.id === teamId);
+            return t ? t.name : teamId.substring(0,12) + '…';
+        };
+        const block = (label, entries, fmt) => {
+            if (!entries || !entries.length) {
+                return `<div class="mb-4"><p class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">${label}</p><p class="text-gray-500 text-sm italic">Nadie lo ha resuelto todavía.</p></div>`;
+            }
+            const medals = ['🥇','🥈','🥉'];
+            return `<div class="mb-4">
+                <p class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">${label}</p>
+                <div class="space-y-1.5">
+                    ${entries.slice(0,5).map((e,i) => `
+                        <div class="flex items-center justify-between bg-gray-800/50 rounded-lg px-3 py-2 text-sm">
+                            <span class="text-gray-200">${i<3?medals[i]:`#${i+1}`} ${_esc(teamName(e.teamId))}</span>
+                            <span class="font-mono font-bold text-green-400">${fmt(e)}</span>
+                        </div>`).join('')}
+                </div>
+            </div>`;
+        };
+
+        const content = block('⚡ Por puntos', data.byPoints, e => `${e.points} pts`)
+            + block('⏱️ Por tiempo', data.byTime, e => _fmtTardeSeconds(e.timeSeconds))
+            + block('💡 Por pistas usadas', data.byHints, e => `${e.hints} pista${e.hints===1?'':'s'}`);
+
+        renderModal(null, 'info', { title: `🏆 Podio — ${game.title}`, content });
+    } catch(e) { showToast('Error cargando el podio', true); }
+}
+
 async function showTeamProfile(teamId) {
     try {
         const res  = await fetch(`${APPS_SCRIPT_URL}?action=getTeam&teamId=${encodeURIComponent(teamId)}`);
@@ -6414,7 +6513,7 @@ async function showTeamProfile(teamId) {
                 <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">Miembros</div>
                 <div class="flex flex-wrap gap-1.5">
                     ${team.members.map(m => `
-                        <span class="member-chip">
+                        <span class="member-chip" style="cursor:pointer" onclick="openProfileById('${m}')">
                             ${m === team.captain ? '👑 ' : (team.admins.includes(m) ? '⭐ ' : '')}${_esc(m.substring(0,12))}…
                         </span>`).join('')}
                 </div>
@@ -6491,6 +6590,59 @@ function tardeCopyCode(code) {
     navigator.clipboard?.writeText(code).then(() => showToast(`📋 Código copiado: ${code}`));
 }
 
+function tardeCopyInviteLink(code) {
+    if (!code) return;
+    const url = `${location.origin}${location.pathname}?joinTeam=${encodeURIComponent(code)}`;
+    navigator.clipboard?.writeText(url).then(() => showToast('🔗 Enlace de invitación copiado'));
+}
+
+// ── Invitación por enlace: ?joinTeam=CODE ────────────────────────────────────
+
+async function _checkLinkInvite() {
+    const params = new URLSearchParams(location.search);
+    let code = params.get('joinTeam') || sessionStorage.getItem('pending_join_code');
+    if (!code) return;
+
+    // Si aún no ha iniciado sesión, guardamos el código para retomarlo tras el login
+    if (!userId) { sessionStorage.setItem('pending_join_code', code); return; }
+    sessionStorage.removeItem('pending_join_code');
+
+    try {
+        const res = await fetch(`${APPS_SCRIPT_URL}?action=validateTeamCode&code=${encodeURIComponent(code)}`);
+        const data = await res.json();
+        if (!data.ok) { showToast('El enlace de invitación ya no es válido.', true); return; }
+
+        document.getElementById('tli-team-name').textContent = data.teamName;
+        document.getElementById('tli-error').classList.add('hidden');
+        document.getElementById('tarde-link-invite-modal').classList.remove('hidden');
+        document.getElementById('tli-join-btn').dataset.code = code;
+    } catch(e) { /* enlace inválido, ignoramos en silencio */ }
+}
+
+async function _joinTeamFromLink() {
+    const btn  = document.getElementById('tli-join-btn');
+    const code = btn.dataset.code;
+    const errEl = document.getElementById('tli-error');
+    errEl.classList.add('hidden');
+    btn.disabled = true; btn.textContent = 'Uniéndose…';
+
+    const res = await _postTarde({ action:'joinTeam', code, userPubId: getPublicId(userId)||'', userPrivId: userId });
+    btn.disabled = false; btn.textContent = 'Unirme';
+
+    if (res.ok) {
+        document.getElementById('tarde-link-invite-modal').classList.add('hidden');
+        showToast(`✅ Te has unido a "${res.teamName}"`);
+        // Limpiar el parámetro de la URL para que no se repita el popup
+        const url = new URL(location.href);
+        url.searchParams.delete('joinTeam');
+        history.replaceState({}, '', url);
+        tardeLoaded = false; await loadTardeData(true);
+    } else {
+        errEl.textContent = res.error || 'No se pudo unir al equipo.';
+        errEl.classList.remove('hidden');
+    }
+}
+
 function _esc(str) {
     return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -6509,6 +6661,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ir a seleccionar presentes para empezar la sesión
     document.getElementById('tgm-goto-presentes-btn')?.addEventListener('click', _openPresentesInicioStep);
+    document.getElementById('tgm-podio-btn')?.addEventListener('click', showTardeMysteryPodio);
 
     // Empezar sesión
     document.getElementById('tgm-start-session-btn')?.addEventListener('click', _startTardeSessionFromModal);
@@ -6547,6 +6700,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tarde-result-close-btn')?.addEventListener('click', () => {
         document.getElementById('tarde-result-modal').classList.add('hidden');
     });
+
+    // Invitación por enlace (?joinTeam=CODE)
+    document.getElementById('tli-cancel-btn')?.addEventListener('click', () => {
+        document.getElementById('tarde-link-invite-modal').classList.add('hidden');
+        const url = new URL(location.href); url.searchParams.delete('joinTeam'); history.replaceState({}, '', url);
+    });
+    document.getElementById('tli-join-btn')?.addEventListener('click', _joinTeamFromLink);
+    _checkLinkInvite();
+    // Si al cargar la página el usuario aún no había iniciado sesión, reintentamos
+    // la invitación pendiente en cuanto complete el login (máx. 60s de espera).
+    let _joinCheckTries = 0;
+    const _joinCheckInterval = setInterval(() => {
+        _joinCheckTries++;
+        if (userId && sessionStorage.getItem('pending_join_code')) { _checkLinkInvite(); }
+        if (!sessionStorage.getItem('pending_join_code') || _joinCheckTries > 30) clearInterval(_joinCheckInterval);
+    }, 2000);
 
     // Confirmación de abandono (anti-trampas)
     document.getElementById('tarde-abandon-cancel-btn')?.addEventListener('click', _closeAbandonConfirm);
