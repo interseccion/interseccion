@@ -5560,6 +5560,7 @@ const TARDE_INDEX_PATH = 'tarde/index.json';
 let tardeGames    = [];
 let myTeams       = [];
 let tardePodio    = [];
+let allTardeTeams = []; // todos los equipos (no solo los míos), para poder mostrar el nombre de equipos rivales
 let tardeLoaded   = false;
 let myParticipados = []; // mystery_id que YA jugué (filtro rápido en el selector)
 
@@ -5602,6 +5603,7 @@ async function loadTardeData(force = false) {
     });
     _loadTardeGames().then(_renderTardeGames);
     _loadTardePodio().then(_renderTardePodio);
+    _loadAllTardeTeams().then(_renderTardePodio); // vuelve a pintar cuando ya sepamos los nombres de los rivales
 }
 
 async function _loadTardeGames() {
@@ -5631,6 +5633,21 @@ async function _loadTardePodio() {
         const data = await res.json();
         tardePodio = Array.isArray(data) ? data : [];
     } catch { tardePodio = []; }
+}
+
+// Todos los equipos (no solo los míos) — necesario para mostrar el nombre de equipos rivales en el podio
+async function _loadAllTardeTeams() {
+    try {
+        const res  = await fetch(`${APPS_SCRIPT_URL}?action=getAllTeams`);
+        const data = await res.json();
+        allTardeTeams = Array.isArray(data) ? data : [];
+    } catch { allTardeTeams = []; }
+}
+
+// Devuelve el nombre de un equipo por su id, buscando primero en los míos y luego en todos
+function _tardeTeamName(teamId) {
+    const team = myTeams.find(t => t.id === teamId) || allTardeTeams.find(t => t.id === teamId);
+    return team ? team.name : teamId.substring(0,10) + '…';
 }
 
 // Misterios que YO ya he jugado (filtro rápido, no es la regla de bloqueo definitiva)
@@ -5827,8 +5844,7 @@ function _renderTardePodio() {
                 </thead>
                 <tbody>
                     ${tardePodio.map((entry, i) => {
-                        const team = myTeams.find(t => t.id === entry.teamId);
-                        const name = team ? team.name : entry.teamId.substring(0,10)+'…';
+                        const name = _tardeTeamName(entry.teamId);
                         const isMyTeam = myTeams.some(t => t.id === entry.teamId);
                         return `
                         <tr class="border-b border-gray-700/20 hover:bg-gray-800/40 transition ${isMyTeam ? 'bg-amber-900/10' : ''}"
@@ -6489,14 +6505,12 @@ async function showTardeMysteryPodio() {
     const game = currentTardeGame;
     if (!game) return;
     try {
+        if (allTardeTeams.length === 0) await _loadAllTardeTeams();
         const res  = await fetch(`${APPS_SCRIPT_URL}?action=getTardeMysteryPodio&mysteryId=${encodeURIComponent(game.id)}`);
         const data = await res.json();
         if (data.error) { showToast(data.error, true); return; }
 
-        const teamName = (teamId) => {
-            const t = myTeams.find(x => x.id === teamId);
-            return t ? t.name : teamId.substring(0,12) + '…';
-        };
+        const teamName = (teamId) => _tardeTeamName(teamId);
         const block = (label, entries, fmt) => {
             if (!entries || !entries.length) {
                 return `<div class="mb-4"><p class="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">${label}</p><p class="text-gray-500 text-sm italic">Nadie lo ha resuelto todavía.</p></div>`;
