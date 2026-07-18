@@ -5407,11 +5407,16 @@
                     class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-600 focus:border-amber-500 transition text-sm resize-y"></textarea>
             </div>
 
-            <!-- Respuesta -->
+            <!-- Respuesta + explicación (ambas obligatorias antes de comprobar, para evitar trampas por prueba y error) -->
             <div class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 space-y-3">
                 <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Vuestra respuesta</div>
                 <input id="tso-answer-input" type="text" placeholder="¿Cuál es la intersección?" maxlength="200"
                     class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 transition">
+                <div>
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Explicación <span class="text-red-400 font-normal normal-case">(obligatoria antes de comprobar)</span></label>
+                    <textarea id="tso-explain-input" placeholder="Razonamiento o comentario… (hay que rellenarlo antes de comprobar la respuesta)" rows="2" maxlength="500"
+                        class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm resize-none"></textarea>
+                </div>
                 <button id="tso-check-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">
                     Comprobar respuesta
                 </button>
@@ -5425,11 +5430,6 @@
                     <div class="text-3xl mb-1">🎉</div>
                     <h3 class="font-bold text-green-400 text-lg">¡Respuesta correcta!</h3>
                     <p class="text-gray-300 text-sm">Puntos estimados: <span id="tso-final-points" class="font-mono font-bold"></span> <span class="text-gray-500 text-xs">(se confirman al enviar)</span></p>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Explicación <span class="text-red-400 font-normal normal-case">(obligatoria)</span></label>
-                    <textarea id="tso-explain-input" placeholder="Razonamiento o comentario… (necesario para enviar)" rows="2" maxlength="500"
-                        class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm resize-none"></textarea>
                 </div>
                 <div>
                     <div class="flex items-center justify-between mb-2">
@@ -6082,6 +6082,11 @@ function _openTardeSessionOverlay(isNew) {
     document.getElementById('tso-team-name').textContent = team ? `👥 ${team.name}` : '';
     document.getElementById('tso-notepad').value = localStorage.getItem(_localKey('notes')) || '';
     document.getElementById('tso-answer-input').value = '';
+    document.getElementById('tso-answer-input').disabled = false;
+    document.getElementById('tso-explain-input').value = '';
+    document.getElementById('tso-explain-input').disabled = false;
+    document.getElementById('tso-check-btn').disabled = false;
+    document.getElementById('tso-reveal-btn').disabled = false;
     document.getElementById('tso-wrong-count').textContent = tardeWrongAttempts;
     document.getElementById('tso-success-area').classList.add('hidden');
     document.getElementById('tso-feedback').classList.add('hidden');
@@ -6168,8 +6173,17 @@ function _saveTardeNotepad() {
 function _checkTardeAnswerClick() {
     if (tardeAnswerLocked) return;
     const raw = document.getElementById('tso-answer-input').value || '';
+    const explain = document.getElementById('tso-explain-input').value || '';
     const feedback = document.getElementById('tso-feedback');
     if (!raw.trim()) return;
+
+    if (!explain.trim()) {
+        feedback.className = 'text-center text-sm text-amber-300';
+        feedback.textContent = 'Rellenad la explicación antes de comprobar la respuesta (para evitar ir probando a lo loco).';
+        feedback.classList.remove('hidden');
+        document.getElementById('tso-explain-input').focus();
+        return;
+    }
 
     const ok = _checkTardeAnswer(tardeSessionGame, raw);
     if (ok === null) {
@@ -6177,7 +6191,7 @@ function _checkTardeAnswerClick() {
         feedback.className = 'text-center text-sm text-amber-300';
         feedback.textContent = 'Este misterio requiere revisión manual del admin — habla con él tras vuestra respuesta.';
         feedback.classList.remove('hidden');
-        _lockTardeAnswerSuccess(raw);
+        _lockTardeAnswerSuccess(raw, explain);
         return;
     }
 
@@ -6185,7 +6199,7 @@ function _checkTardeAnswerClick() {
         feedback.className = 'text-center text-sm text-green-400 font-semibold';
         feedback.textContent = '¡Correcto!';
         feedback.classList.remove('hidden');
-        _lockTardeAnswerSuccess(raw);
+        _lockTardeAnswerSuccess(raw, explain);
     } else {
         tardeWrongAttempts++;
         localStorage.setItem(_localKey('wrong'), tardeWrongAttempts);
@@ -6196,10 +6210,11 @@ function _checkTardeAnswerClick() {
     }
 }
 
-function _lockTardeAnswerSuccess(finalAnswer) {
+function _lockTardeAnswerSuccess(finalAnswer, explain) {
     tardeAnswerLocked = true;
     clearInterval(tardeTimerInterval);
     document.getElementById('tso-answer-input').disabled = true;
+    document.getElementById('tso-explain-input').disabled = true;
     document.getElementById('tso-check-btn').disabled = true;
     document.getElementById('tso-reveal-btn').disabled = true;
 
@@ -6207,6 +6222,7 @@ function _lockTardeAnswerSuccess(finalAnswer) {
     const finalPoints = Math.round(_computeTardePoints(elapsedSec));
     document.getElementById('tso-final-points').textContent = finalPoints;
     document.getElementById('tso-final-points').dataset.answer = finalAnswer;
+    document.getElementById('tso-final-points').dataset.explain = explain;
     document.getElementById('tso-final-points').dataset.elapsedSec = elapsedSec;
 
     // Reconfirmar quién sigue presente ahora
@@ -6226,7 +6242,7 @@ async function _submitTardeSessionAnswer() {
     const btn   = document.getElementById('tso-submit-btn');
     errEl.classList.add('hidden');
 
-    const explain = (document.getElementById('tso-explain-input').value || '').trim();
+    const explain = (document.getElementById('tso-final-points').dataset.explain || '').trim();
     if (!explain) { _tardeErr(errEl, 'La explicación es obligatoria — cuéntanos brevemente cómo habéis llegado a la solución.'); return; }
 
     const presentPubIds = [...document.querySelectorAll('.tarde-final-present-check:checked')].map(cb => cb.value);
@@ -6300,6 +6316,7 @@ function _closeTardeSessionOverlay() {
     document.body.style.overflow = '';
     if (document.fullscreenElement) { try { document.exitFullscreen(); } catch(_) {} }
     document.getElementById('tso-answer-input').disabled = false;
+    document.getElementById('tso-explain-input').disabled = false;
     document.getElementById('tso-check-btn').disabled = false;
     document.getElementById('tso-reveal-btn').disabled = false;
     tardeSession = null;
