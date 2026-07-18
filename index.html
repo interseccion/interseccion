@@ -4615,6 +4615,14 @@
             return text.replace(new RegExp(mysteryId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), title);
         }
 
+        // Para vistas previas (lista de notificaciones): las menciones se muestran como texto plano, sin enlace clicable
+        function stripMentionMarkup(text) {
+            if (!text) return '';
+            return text
+                .replace(/@\{([^|]+)\|([^}]+)\}/g, (m, id, name) => `@${name}`)
+                .replace(/#\{([^|]+)\|([^}]+)\}/g, (m, id, name) => `#${name}`);
+        }
+
         function renderNotifPanel(notifs) {
             const readIds = getReadIds();
             const unread  = notifs.filter(n => !readIds.has(n.id));
@@ -4640,8 +4648,8 @@
                 const isRead    = readIds.has(n.id);
                 const fecha     = (() => { try { return new Date(n.fecha).toLocaleDateString('es', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); } catch(e) { return ''; } })();
                 const mystId    = getMysteryIdFromLink(n.link);
-                const titulo    = resolveNotifText(n.titulo || '', mystId);
-                const msgPreview = resolveNotifText(n.mensaje || '', mystId);
+                const titulo    = stripMentionMarkup(resolveNotifText(n.titulo || '', mystId));
+                const msgPreview = stripMentionMarkup(resolveNotifText(n.mensaje || '', mystId));
                 return `<div class="notif-item px-4 py-3 hover:bg-gray-700/50 cursor-pointer transition ${isRead ? 'opacity-60' : ''}" data-notif-id="${n.id}">
                     <div class="flex items-start gap-3">
                         <span class="text-lg flex-shrink-0 mt-0.5">${getNotifIcon(n.tipo)}</span>
@@ -4954,12 +4962,12 @@
         function calcPotentialPoints(info) { return calcPoints(info, 0).pts; }
         function openNotifDetailModal(notif) {
             const mystId  = getMysteryIdFromLink(notif.link);
-            const titulo  = resolveNotifText(notif.titulo || '', mystId);
-            const mensaje = resolveNotifText(notif.mensaje || '', mystId);
+            const titulo  = stripMentionMarkup(resolveNotifText(notif.titulo || '', mystId));
+            const mensaje = processAdText(resolveNotifText(notif.mensaje || '', mystId));
 
             dom.notifDetailIcon.textContent  = getNotifIcon(notif.tipo);
             dom.notifDetailTitle.textContent = titulo;
-            dom.notifDetailMsg.textContent   = mensaje;
+            dom.notifDetailMsg.innerHTML     = mensaje;
             const fecha = (() => {
                 try { return new Date(notif.fecha).toLocaleString('es', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }); }
                 catch(e) { return ''; }
@@ -5823,7 +5831,7 @@ function _renderTardePodio() {
                             <td class="py-3 px-4 font-bold ${i < 3 ? 'text-xl' : 'text-gray-400'}">${i < 3 ? medals[i] : `#${i+1}`}</td>
                             <td class="py-3 px-4 font-semibold text-white">${_esc(name)} ${isMyTeam ? '<span class="text-amber-400 text-xs">(tú)</span>' : ''}</td>
                             <td class="py-3 px-4 text-right text-gray-400">${entry.solved}</td>
-                            <td class="py-3 px-4 text-right font-bold text-green-400 font-mono">${entry.totalPoints}</td>
+                            <td class="py-3 px-4 text-right font-bold text-green-400 font-mono">${Math.round(entry.totalPoints)}</td>
                         </tr>`;
                     }).join('')}
                 </tbody>
@@ -6304,10 +6312,18 @@ function _showTardeResultModal(res) {
 }
 
 function _fmtTardeSeconds(seconds) {
-    const s = Math.round(seconds || 0);
-    const mm = Math.floor(s / 60);
-    const ss = s % 60;
-    return `${mm}:${String(ss).padStart(2,'0')}`;
+    let s = Math.round(seconds || 0);
+    const days = Math.floor(s / 86400); s -= days * 86400;
+    const hours = Math.floor(s / 3600); s -= hours * 3600;
+    const minutes = Math.floor(s / 60); s -= minutes * 60;
+    const secs = s;
+
+    const parts = [];
+    if (days)    parts.push(`${days} día${days === 1 ? '' : 's'}`);
+    if (hours)   parts.push(`${hours} h`);
+    if (minutes) parts.push(`${minutes} min`);
+    if (secs || parts.length === 0) parts.push(`${secs} s`);
+    return parts.join(' ');
 }
 
 function _closeTardeSessionOverlay() {
@@ -6493,7 +6509,7 @@ async function showTardeMysteryPodio() {
             </div>`;
         };
 
-        const content = block('⚡ Por puntos', data.byPoints, e => `${e.points} pts`)
+        const content = block('⚡ Por puntos', data.byPoints, e => `${Math.round(e.points)} pts`)
             + block('⏱️ Por tiempo', data.byTime, e => _fmtTardeSeconds(e.timeSeconds))
             + block('💡 Por pistas usadas', data.byHints, e => `${e.hints} pista${e.hints===1?'':'s'}`);
 
@@ -6503,9 +6519,13 @@ async function showTardeMysteryPodio() {
 
 async function showTeamProfile(teamId) {
     try {
-        const res  = await fetch(`${APPS_SCRIPT_URL}?action=getTeam&teamId=${encodeURIComponent(teamId)}`);
-        const team = await res.json();
-        if (team.error) return;
+        // Si ya pertenece a este equipo, sus datos ya están en memoria (myTeams) — evitamos el viaje al servidor
+        let team = myTeams.find(t => t.id === teamId);
+        if (!team) {
+            const res = await fetch(`${APPS_SCRIPT_URL}?action=getTeam&teamId=${encodeURIComponent(teamId)}`);
+            team = await res.json();
+            if (team.error) return;
+        }
         const pts   = tardePodio.find(p => p.teamId === teamId);
         const content = `
             <div class="text-center pb-5 mb-5" style="border-bottom:1px solid rgba(255,255,255,0.08)">
@@ -6518,7 +6538,7 @@ async function showTeamProfile(teamId) {
             ${pts ? `
             <div class="grid grid-cols-2 gap-3 mb-5">
                 <div class="rounded-xl p-3 text-center" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2)">
-                    <div class="text-xl font-black text-green-400">${pts.totalPoints}</div>
+                    <div class="text-xl font-black text-green-400">${Math.round(pts.totalPoints)}</div>
                     <div class="text-xs text-gray-500 mt-0.5">Puntos</div>
                 </div>
                 <div class="rounded-xl p-3 text-center" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2)">
