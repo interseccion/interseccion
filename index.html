@@ -277,6 +277,21 @@
         .panel-violet  { --panel-strip: linear-gradient(90deg,#6d28d9,#8b5cf6,#c4b5fd); }
         .panel-emerald { --panel-strip: linear-gradient(90deg,#047857,#10b981,#6ee7b7); }
 
+        /* Variante sólida del panel para modales con texto denso (perfiles, podios, temporadas...)
+           donde el cristal translúcido dificultaría la lectura — mismo borde/acento, fondo opaco. */
+        .modal-panel {
+            background: #1f2937;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .modal-panel::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--panel-strip, linear-gradient(90deg,#4f46e5,#818cf8,#a5b4fc));
+            opacity: 0.85;
+        }
+
         /* ── Título de sección: mismo tratamiento tipográfico que la portada ── */
         .section-hero-title {
             font-weight: 800;
@@ -713,8 +728,8 @@
 
     <!-- Modal Structure (Used for Games and Alerts) -->
     <div id="game-modal" class="modal fixed inset-0 bg-black bg-opacity-80 items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-            <header class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center gap-4">
+        <div class="modal-panel panel-indigo rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <header class="flex-shrink-0 p-4 border-b border-white/10 flex justify-between items-center gap-4">
                 <div class="flex-grow min-w-0">
                     <h2 id="modal-title" class="text-2xl font-bold text-white truncate"></h2>
                     <div id="modal-badges" class="flex items-center gap-2 mt-1"></div>
@@ -722,7 +737,7 @@
                 <button id="modal-close-btn" class="flex-shrink-0 text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
             </header>
             <div id="modal-content" class="p-6 overflow-y-auto modal-content-scroll"></div>
-            <footer id="modal-footer" class="flex-shrink-0 p-4 border-t border-gray-700"></footer>
+            <footer id="modal-footer" class="flex-shrink-0 p-4 border-t border-white/10"></footer>
         </div>
     </div>
 
