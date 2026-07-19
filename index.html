@@ -159,8 +159,8 @@
             grid-template-columns: 1fr 1fr;
             grid-template-rows:
                 clamp(110px, min(20vw, 18vh), 175px)
-                clamp(100px, min(17vw, 15vh), 155px)
-                clamp(100px, min(17vw, 15vh), 155px)
+                clamp(112px, min(18vw, 16vh), 155px)
+                clamp(112px, min(18vw, 16vh), 155px)
                 clamp(80px,  min(14vw, 12vh), 120px);
             grid-template-areas:
                 "misterios misterios"
@@ -391,7 +391,7 @@
                 </button>
 
                 <!-- Podio -->
-                <button class="home-card card-amber bento-podio group flex flex-col justify-between" data-home-nav="podio">
+                <button class="home-card card-amber bento-podio group flex flex-col items-center text-center justify-between" data-home-nav="podio">
                     <div class="card-strip"></div>
                     <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">🏆</span>
                     <div class="relative z-10">
@@ -401,7 +401,7 @@
                 </button>
 
                 <!-- Archivo -->
-                <button class="home-card card-sky bento-archivo group flex flex-col justify-between" data-home-nav="archivo">
+                <button class="home-card card-sky bento-archivo group flex flex-col items-center text-center justify-between" data-home-nav="archivo">
                     <div class="card-strip"></div>
                     <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">📁</span>
                     <div class="relative z-10">
@@ -411,7 +411,7 @@
                 </button>
 
                 <!-- Mi Cuenta -->
-                <button class="home-card card-violet bento-cuenta group flex flex-col justify-between" data-home-nav="cuenta">
+                <button class="home-card card-violet bento-cuenta group flex flex-col items-center text-center justify-between" data-home-nav="cuenta">
                     <div class="card-strip"></div>
                     <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">👤</span>
                     <div class="relative z-10">
@@ -421,7 +421,7 @@
                 </button>
 
                 <!-- Sobre el Proyecto -->
-                <button class="home-card card-emerald bento-sobre group flex flex-col justify-between" data-home-nav="sobre">
+                <button class="home-card card-emerald bento-sobre group flex flex-col items-center text-center justify-between" data-home-nav="sobre">
                     <div class="card-strip"></div>
                     <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">ℹ️</span>
                     <div class="relative z-10">
@@ -3263,7 +3263,7 @@
                     break;
 
                  case 'pre-solved':
-                    contentHTML = `<div class="text-center space-y-4 p-4"><p>Este misterio ya ha sido resuelto.</p><div class="flex flex-col sm:flex-row justify-center gap-4"><button id="play-solved-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg">Jugar (Spoiler Oculto)</button><button id="show-solution-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Ver Solución Completa</button></div><div class="mt-4 border-t border-gray-700 pt-4"><button id="view-game-podium-btn" class="text-yellow-400 hover:text-yellow-300 font-bold underline">🏆 Ver Podio de este Juego</button></div></div>`;
+                    contentHTML = `<div class="text-center space-y-4 p-4"><p>Este misterio ya ha sido resuelto.</p><div class="flex flex-col sm:flex-row justify-center gap-4"><button id="play-solved-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg">Jugar (Spoiler Oculto)</button><button id="view-clue-index-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">📋 Ver Índice de Pistas</button><button id="show-solution-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Ver Solución Completa</button></div><div class="mt-4 border-t border-gray-700 pt-4"><button id="view-game-podium-btn" class="text-yellow-400 hover:text-yellow-300 font-bold underline">🏆 Ver Podio de este Juego</button></div></div>`;
                     footerHTML = '';
                     break;
 
@@ -3675,10 +3675,15 @@
                     ${(() => {
                         if (userData.id !== currentPublicId() || !userId) return '';
                         const jd = getJoinDate(userId);
-                        if (!jd) return '';
-                        return `<div class="text-xs text-gray-500 mt-1">📅 Desde ${jd.toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</div>`;
+                        return `${jd ? `<div class="text-xs text-gray-500 mt-1">📅 Desde ${jd.toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
+                        <button id="profile-account-settings-btn" class="mt-3 text-xs font-semibold text-gray-400 hover:text-white border border-white/10 hover:border-white/20 rounded-full px-3 py-1.5 transition inline-flex items-center gap-1.5">
+                            ⚙️ Ajustes de cuenta
+                        </button>`;
                     })()}
                 </div>
+
+                <!-- ── Equipos de Tarde ── -->
+                <div id="profile-teams-section" class="mb-5"></div>
 
                 <!-- ── Estadísticas rápidas (datos disponibles ya) ── -->
                 <div class="grid grid-cols-4 gap-2 mb-5">
@@ -3709,6 +3714,26 @@
                 </div>`;
 
             renderModal(null, 'info', { title: 'Perfil de Jugador', content: skeletonContent, isProfile: true });
+            document.getElementById('profile-account-settings-btn')?.addEventListener('click', () => { closeModal(); openIdModal(); });
+
+            // Equipos de Tarde a los que pertenece (lectura pública, sin datos sensibles)
+            (async () => {
+                const teamsSection = document.getElementById('profile-teams-section');
+                if (!teamsSection) return;
+                try {
+                    const res   = await fetch(`${APPS_SCRIPT_URL}?action=getMyTeams&user=${encodeURIComponent(userData.id)}`);
+                    const teams = await res.json();
+                    if (!Array.isArray(teams) || teams.length === 0) return;
+                    teamsSection.innerHTML = `
+                        <div class="text-[10px] uppercase tracking-widest text-amber-400 font-semibold mb-2">🌆 Equipos de Tarde</div>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${teams.map(t => `<button class="profile-team-link text-xs font-semibold bg-amber-900/15 border border-amber-500/25 text-amber-300 hover:bg-amber-900/30 rounded-full px-3 py-1.5 transition" data-team-id="${t.id}">${_esc(t.name)}</button>`).join('')}
+                        </div>`;
+                    teamsSection.querySelectorAll('.profile-team-link').forEach(btn => {
+                        btn.addEventListener('click', () => showTeamProfile(btn.dataset.teamId));
+                    });
+                } catch(_) { /* si falla, simplemente no se muestra la sección */ }
+            })();
 
             // CÁLCULOS ASÍNCRONOS DETALLADOS
             setTimeout(async () => {
@@ -4101,13 +4126,14 @@
                     showMainApp('tarde');
                     return;
                 }
-                // "Mi Cuenta" siempre requiere sesión
+                // "Mi Cuenta" siempre requiere sesión — ahora abre tu perfil primero
+                // (desde ahí hay un botón "⚙️ Ajustes de cuenta" para ID/frase semilla/cerrar sesión)
                 if (navTarget === 'cuenta') {
                     if (!userId) {
                         sessionStorage.setItem('home_pending_nav', 'cuenta');
                         dom.welcomeModal.classList.add('active');
                     } else {
-                        openIdModal();
+                        openProfileById(getPublicId(userId));
                     }
                     return;
                 }
@@ -4138,7 +4164,7 @@
                     if (pending) {
                         sessionStorage.removeItem('home_pending_nav');
                         if (pending === 'cuenta') {
-                            if (userId) openIdModal();
+                            if (userId) openProfileById(getPublicId(userId));
                         } else {
                             showMainApp(pending);
                         }
@@ -4428,6 +4454,7 @@
                 }
                 if (target.matches('#view-game-podium-btn')) { _beginModalNavigation(); renderModal(currentGameData, 'game-podium'); }
                 if (target.matches('.view-clue-btn')) { _beginModalNavigation(); renderModal(currentGameData, 'single-clue', { clueIndex: parseInt(target.dataset.clueIndex, 10) }); }
+                if (target.matches('#view-clue-index-btn')) { _beginModalNavigation(); renderModal(currentGameData, 'summary'); }
                 if (target.matches('#show-solution-btn') || target.matches('.view-all-clues-btn')) { _beginModalNavigation(); renderModal(currentGameData, 'all-clues'); }
                 if (target.matches('.back-to-summary-btn')) goBackModal();
                 if (target.matches('.download-html-btn')) downloadGameAsHTML(currentGameData);
