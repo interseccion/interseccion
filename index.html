@@ -18,7 +18,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #111827; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; }
-        .tab-button.active { background-color: #4f46e5; color: #ffffff; }
+        .tab-button.active { background-color: #4f46e5; color: #ffffff; border-color: rgba(129,140,248,0.6); }
         .modal { display: none; }
         .modal.active { display: flex; }
         .modal-content-scroll::-webkit-scrollbar { width: 8px; }
@@ -195,6 +195,7 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            border-radius: 1.25rem;
             padding: clamp(14px, 3vw, 22px);
             transition: transform 0.18s ease, box-shadow 0.2s ease, border-color 0.18s ease, background 0.18s ease;
         }
@@ -254,7 +255,43 @@
         #top-bar { pointer-events: none; }
         #top-bar > * { pointer-events: auto; }
 
-        /* ── Tarde ── */
+        /* ── Panel "cristal" reutilizable para cajas de contenido (no clicables) ── */
+        .panel {
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .panel::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--panel-strip, linear-gradient(90deg,#4f46e5,#818cf8,#a5b4fc));
+            opacity: 0.85;
+        }
+        .panel-indigo  { --panel-strip: linear-gradient(90deg,#4f46e5,#818cf8,#a5b4fc); }
+        .panel-amber   { --panel-strip: linear-gradient(90deg,#b45309,#f59e0b,#fde68a); }
+        .panel-sky     { --panel-strip: linear-gradient(90deg,#0369a1,#0ea5e9,#7dd3fc); }
+        .panel-violet  { --panel-strip: linear-gradient(90deg,#6d28d9,#8b5cf6,#c4b5fd); }
+        .panel-emerald { --panel-strip: linear-gradient(90deg,#047857,#10b981,#6ee7b7); }
+
+        /* ── Título de sección: mismo tratamiento tipográfico que la portada ── */
+        .section-hero-title {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(130deg, #e0e7ff 0%, #a5b4fc 40%, #c4b5fd 75%, #f0abfc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .section-eyebrow {
+            color: #64748b; font-size: 0.7rem; letter-spacing: 0.2em;
+            text-transform: uppercase; font-weight: 600;
+        }
+
+
         .tarde-badge { background:rgba(217,119,6,0.15); border:1px solid rgba(217,119,6,0.3); color:#fbbf24; }
         .tarde-modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:1rem; }
         .tarde-modal-box { background:#1f2937;border:1px solid rgba(255,255,255,0.1);border-radius:1.25rem;width:100%;max-width:780px;max-height:90vh;overflow-y:auto;position:relative; }
@@ -396,24 +433,30 @@
     <!-- ═══ VISTA PRINCIPAL (tabs + contenido) ════════════════════════════ -->
     <div id="main-app-view" class="hidden container mx-auto px-4 pb-8 md:px-8 md:pb-8 max-w-4xl relative">
         <header class="text-center mb-6 relative">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">La Intersección</h1>
-            <p class="mt-1 text-base text-gray-400">Un juego de misterios semanales.</p>
+            <h1 class="section-hero-title text-3xl md:text-4xl tracking-tight">La Intersección</h1>
+            <p class="mt-2 text-base text-gray-400">Un juego de misterios semanales.</p>
         </header>
 
     <!-- Modal de notas: bloc de notas global guardado en localStorage. Un único bloc
          compartido para todos los misterios — simple y fácil de encontrar. -->
 
         <!-- Ajuste Nav: justify-start en mobile para scroll sin cortes, md:justify-center -->
-        <nav id="main-tabs-nav" class="flex justify-start md:justify-center border-b border-gray-700 mb-8 overflow-x-auto no-scrollbar pb-1">
-            <button id="home-btn" class="tab-button text-gray-400 hover:bg-gray-700/50 font-semibold py-3 px-4 transition whitespace-nowrap flex items-center gap-1.5 text-sm border-r border-gray-700/60 mr-1">
+        <nav id="main-tabs-nav" class="flex justify-center mb-8">
+            <button id="home-btn" class="tab-button text-gray-400 hover:bg-white/10 font-semibold py-2.5 px-5 rounded-full border border-white/10 transition whitespace-nowrap flex items-center gap-1.5 text-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 Inicio
             </button>
-            <button data-tab="en-curso" class="tab-button text-gray-300 hover:bg-gray-700/50 font-semibold py-3 px-6 transition active whitespace-nowrap">Misterios en Curso</button>
-            <button data-tab="archivo" class="tab-button text-gray-300 hover:bg-gray-700/50 font-semibold py-3 px-6 transition whitespace-nowrap">Archivo</button>
-            <button data-tab="podio" class="tab-button text-gray-300 hover:bg-gray-700/50 font-semibold py-3 px-6 transition whitespace-nowrap">Podio</button>
-            <button data-tab="sobre" class="tab-button text-gray-300 hover:bg-gray-700/50 font-semibold py-3 px-6 transition whitespace-nowrap">Sobre el Proyecto</button>
-            <button data-tab="tarde" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-3 px-6 transition whitespace-nowrap flex items-center gap-1.5">🌆 Tarde</button>
+            <!-- Estas pestañas ya están duplicadas como tarjetas en la portada, así que se ocultan aquí
+                 para no repetir la navegación. Se mantienen en el DOM (no se borran) porque el tour
+                 guiado interactivo navega haciendo clic directamente sobre ellas — .click() funciona
+                 igual en un elemento oculto, así que el tutorial sigue funcionando sin tocarlo. -->
+            <div class="hidden">
+                <button data-tab="en-curso" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition active whitespace-nowrap">Misterios en Curso</button>
+                <button data-tab="archivo" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Archivo</button>
+                <button data-tab="podio" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Podio</button>
+                <button data-tab="sobre" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Sobre el Proyecto</button>
+                <button data-tab="tarde" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 px-6 rounded-full border border-amber-500/20 transition whitespace-nowrap flex items-center gap-1.5">🌆 Tarde</button>
+            </div>
         </nav>
 
         <main>
@@ -475,13 +518,13 @@
 
             <!-- Nueva Pestaña Podio -->
             <div id="podio" class="tab-content hidden fade-in">
-                <div class="bg-gray-800 rounded-xl shadow-lg p-6 md:p-8 relative">
+                <div class="panel panel-amber p-6 md:p-8 relative">
                     <!-- Botón de Información de Puntos (z-index y margen para no tapar) -->
                     <button id="scoring-info-btn" class="absolute top-4 right-4 z-10 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center transition shadow-lg" title="Cómo se calculan los puntos">ℹ️</button>
 
                     <!-- Selector de Temporada en Podio -->
                     <div class="flex flex-col items-center mb-6 mt-4 md:mt-0">
-                        <h2 class="text-3xl font-bold text-indigo-400 mb-2 text-center" id="podium-title">Clasificación General</h2>
+                        <h2 class="section-hero-title text-3xl mb-2 text-center" id="podium-title">Clasificación General</h2>
 
                         <!-- Contenedor para el selector de temporada -->
                         <div class="relative inline-block w-64">
@@ -549,12 +592,12 @@
 
             <div id="sobre" class="tab-content hidden relative pb-8">
                  <div class="space-y-8 fade-in">
-                    <div class="bg-gray-800 rounded-xl shadow-lg p-8">
+                    <div class="panel panel-emerald p-8">
                         <h2 class="text-3xl font-bold text-indigo-400 mb-4">¿Qué es «La Intersección»?</h2>
                         <p class="text-gray-300 leading-relaxed">Este es un pequeño proyecto de entretenimiento inspirado en el famoso concurso «Saber y Ganar». El objetivo es adivinar «la intersección» (que puede ser una persona, un lugar, una película, una canción o cualquier cosa imaginable) a partir de pequeñas pistas que se irán revelando semanalmente. Es un reto a la paciencia, la deducción y la cultura general.</p>
                     </div>
                      <div class="grid md:grid-cols-5 gap-8">
-                        <div class="md:col-span-3 bg-gray-800 rounded-xl shadow-lg p-8">
+                        <div class="md:col-span-3 panel panel-indigo p-8">
                             <h3 class="text-2xl font-bold text-indigo-400 mb-6">¿Cómo se juega?</h3>
                             <ol class="space-y-5">
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">1</div><div class="pt-1">Visita la pestaña <strong>Misterios en Curso</strong> o el <strong>Archivo</strong> para elegir un juego.</div></li>
@@ -567,7 +610,7 @@
                                 <button id="instructions-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105">Instrucciones detalladas</button>
                             </div>
                         </div>
-                         <div class="md:col-span-2 bg-gray-800 rounded-xl shadow-lg p-8 flex flex-col">
+                         <div class="md:col-span-2 panel panel-violet p-8 flex flex-col">
                              <h3 class="text-2xl font-bold text-indigo-400 mb-6">Contacto y Opiniones</h3>
                              <div class="space-y-4 flex-grow flex flex-col justify-center">
                                 <a href="https://www.instagram.com/interseccion_juego?igsh=MWw5c3YxYXcwa3Vmbg==" target="_blank" rel="noopener noreferrer" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all">
@@ -605,7 +648,7 @@
                  <div class="absolute bottom-2 right-2 text-xs text-gray-600">v13.0 — tildes + PARTICIPADOS</div>
             </div>
             <!-- ═══ TARDE TAB ════════════════════════════════════════════════════ -->
-            <div id="tarde" class="tab-content hidden">
+            <div id="tarde" class="tab-content hidden fade-in">
 
                 <!-- Mis Equipos -->
                 <section class="mb-8">
@@ -2857,7 +2900,7 @@
 
         // --- FUNCIONES DE RENDERIZADO ---
 
-        function renderSummaryCard(game) {
+        function renderSummaryCard(game, accentClass = 'card-indigo') {
             const typeData = getTypeData(game.type);
             const difficultyData = getDifficultyData(game.difficulty);
             const statusPill = game.isSolved ? `<span class="bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full">Resuelto</span>` : `<span class="bg-yellow-500 text-gray-900 text-xs font-semibold px-2 py-1 rounded-full">En curso</span>`;
@@ -2889,8 +2932,9 @@
             }
 
             const card = document.createElement('div');
-            card.className = 'bg-gray-800/80 hover:bg-gray-800 transition-colors cursor-pointer rounded-xl shadow-lg p-5 flex flex-col justify-between fade-in relative group';
+            card.className = `home-card ${accentClass} cursor-pointer flex flex-col justify-between fade-in relative group`;
             card.innerHTML = `
+                <div class="card-strip"></div>
                 <div class="absolute top-4 right-4 z-10 p-1 rounded-full hover:bg-gray-700/50 fav-btn-wrapper" data-game-id="${game.id}">
                     ${starIcon}
                 </div>
@@ -3863,7 +3907,7 @@
                 dom.archivoGrid.innerHTML = `<p class="text-center text-gray-400 col-span-full">${showFavoritesOnly ? 'No tienes favoritos guardados.' : 'No se encontraron misterios resueltos.'}</p>`;
             } else {
                 const visibleArchivo = filteredArchivoGames.slice(0, archivoPage * ARCHIVO_PAGE_SIZE);
-                visibleArchivo.forEach(game => dom.archivoGrid.appendChild(renderSummaryCard(game)));
+                visibleArchivo.forEach(game => dom.archivoGrid.appendChild(renderSummaryCard(game, 'card-sky')));
                 if (visibleArchivo.length < filteredArchivoGames.length) {
                     const remaining = filteredArchivoGames.length - visibleArchivo.length;
                     const btn = document.createElement('div');
