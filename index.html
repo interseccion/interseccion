@@ -5771,18 +5771,42 @@ async function loadTardeData(force = false) {
     _renderTardeGames();
     _renderTardePodio();
 
-    // Load each section independently — each updates its own UI when ready
-    teamsDataLoading = true;
-    _loadMyTeams().then(async () => {
-        teamsDataLoading = false;
-        _renderMyTeams();
-        await _loadMyParticipados();
-        _renderTardeGames();
-        await _checkForActiveTardeSession();
-    });
+    // Misterios (JSON estático, va aparte del backend)
     _loadTardeGames().then(_renderTardeGames);
-    _loadTardePodio().then(_renderTardePodio);
-    _loadAllTardeTeams().then(_renderTardePodio); // vuelve a pintar cuando ya sepamos los nombres de los rivales
+
+    // Todo lo demás (equipos, participados, sesión activa, podio) en UNA sola llamada,
+    // en vez de 5-6 peticiones por separado — esto era lo que hacía lenta la pestaña.
+    teamsDataLoading = true;
+    try {
+        const pubId = getPublicId(userId) || '';
+        const res   = await fetch(`${APPS_SCRIPT_URL}?action=getTardeTabData&user=${encodeURIComponent(pubId)}`);
+        const data  = await res.json();
+        if (!data.error) {
+            allTardeTeams   = data.allTeams || [];
+            myTeams         = data.myTeams || [];
+            myParticipados  = data.myParticipados || [];
+            tardePodio      = data.podio || [];
+            teamsDataLoading = false;
+            _renderMyTeams();
+            _renderTardeGames();
+            _renderTardePodio();
+            _renderTardeResumeBanner(data.activeSession);
+        } else {
+            teamsDataLoading = false;
+        }
+    } catch { teamsDataLoading = false; }
+}
+
+function _renderTardeResumeBanner(session) {
+    const banner = document.getElementById('tarde-resume-banner');
+    if (!banner) return;
+    if (!session) { banner.classList.add('hidden'); return; }
+    const team = myTeams.find(t => t.id === session.teamId);
+    const game = tardeGames.find(g => g.id === session.mysteryId);
+    document.getElementById('tarde-resume-info').textContent =
+        `${team ? team.name : ''} · ${game ? game.title : session.mysteryId}`;
+    banner.classList.remove('hidden');
+    banner.dataset.teamId = session.teamId;
 }
 
 async function _loadTardeGames() {
