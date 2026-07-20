@@ -5761,10 +5761,14 @@ let tardeAnswerLocked = false;  // true tras respuesta correcta (ya no se puede 
 // ── Carga de datos ───────────────────────────────────────────────────────────
 
 let teamsDataLoading = false;
+let tardeGamesLoading = true;
 
 async function loadTardeData(force = false) {
     if (tardeLoaded && !force) return;
     tardeLoaded = true;
+
+    teamsDataLoading = true;
+    tardeGamesLoading = true;
 
     // Render UI immediately so buttons appear at once, no waiting
     _renderMyTeams();
@@ -5776,7 +5780,6 @@ async function loadTardeData(force = false) {
 
     // Todo lo demás (equipos, participados, sesión activa, podio) en UNA sola llamada,
     // en vez de 5-6 peticiones por separado — esto era lo que hacía lenta la pestaña.
-    teamsDataLoading = true;
     try {
         const pubId = getPublicId(userId) || '';
         const res   = await fetch(`${APPS_SCRIPT_URL}?action=getTardeTabData&user=${encodeURIComponent(pubId)}`);
@@ -5818,6 +5821,7 @@ async function _loadTardeGames() {
         );
         tardeGames = games.filter(Boolean);
     } catch { tardeGames = []; }
+    tardeGamesLoading = false;
 }
 
 async function _loadMyTeams() {
@@ -5981,7 +5985,9 @@ function _renderTardeGames() {
     if (!el) return;
 
     if (tardeGames.length === 0) {
-        el.innerHTML = `<p class="text-gray-500 text-center py-10 italic text-sm">No hay misterios de tarde disponibles todavía.</p>`;
+        el.innerHTML = tardeGamesLoading
+            ? `<div class="animate-pulse space-y-3"><div class="h-32 bg-gray-800/50 rounded-2xl"></div><div class="h-32 bg-gray-800/50 rounded-2xl"></div></div>`
+            : `<p class="text-gray-500 text-center py-10 italic text-sm">No hay misterios de tarde disponibles todavía.</p>`;
         return;
     }
 
@@ -6029,7 +6035,9 @@ function _renderTardePodio() {
     if (!el) return;
 
     if (tardePodio.length === 0) {
-        el.innerHTML = `<p class="text-gray-500 text-center py-8 text-sm italic">El podio está vacío todavía.</p>`;
+        el.innerHTML = teamsDataLoading
+            ? `<div class="animate-pulse space-y-2"><div class="h-10 bg-gray-800/50 rounded-lg"></div><div class="h-10 bg-gray-800/50 rounded-lg"></div><div class="h-10 bg-gray-800/50 rounded-lg"></div></div>`
+            : `<p class="text-gray-500 text-center py-8 text-sm italic">El podio está vacío todavía.</p>`;
         return;
     }
 
