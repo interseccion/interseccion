@@ -704,6 +704,11 @@
                                 <option value="Medio">Medio 🧐</option>
                                 <option value="Difícil">Difícil 😈</option>
                             </select>
+                            <select id="tarde-team-filter" class="bg-gray-800 border border-gray-700 rounded-full text-xs font-semibold py-1.5 px-3 text-gray-300">
+                                <option value="all">Cualquier equipo</option>
+                                <option value="solved">✅ Resueltos por mi equipo</option>
+                                <option value="unsolved">◻️ No resueltos por mi equipo</option>
+                            </select>
                         </div>
                     </div>
                     <div id="tarde-games-container">
@@ -5494,9 +5499,13 @@
                         <span id="tgm-info-difficulty">📊 —</span>
                         <span id="tgm-info-duration">🕐 —</span>
                     </div>
+                    <p id="tgm-scoring-formula" class="text-xs text-gray-500"></p>
 
                     <button id="tgm-podio-btn" class="text-xs font-semibold text-amber-400 hover:text-amber-300 border border-amber-500/30 rounded-full px-3 py-1.5 transition">
                         🏆 Ver podio de este misterio
+                    </button>
+                    <button id="tgm-share-btn" class="text-xs font-semibold text-gray-400 hover:text-gray-200 border border-gray-600/40 rounded-full px-3 py-1.5 transition ml-2">
+                        🔗 Compartir
                     </button>
 
                     <!-- Solved state -->
@@ -5508,6 +5517,21 @@
                             <p class="text-gray-400 text-xs mt-2" id="tgm-winner-team"></p>
                         </div>
                         <div id="tgm-explanation" class="mt-4 bg-gray-800/50 rounded-xl p-4 text-gray-300 text-sm hidden"></div>
+                    </div>
+
+                    <!-- No ha iniciado sesión -->
+                    <div id="tgm-no-login-notice" class="hidden bg-indigo-900/20 border border-indigo-500/30 rounded-xl p-4 text-center">
+                        <p class="text-gray-300 text-sm mb-3">Inicia sesión para poder jugar misterios de tarde.</p>
+                        <button id="tgm-goto-login-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-xl transition text-sm">Iniciar sesión</button>
+                    </div>
+
+                    <!-- Sin equipo -->
+                    <div id="tgm-no-team-notice" class="hidden bg-amber-900/15 border border-amber-500/25 rounded-xl p-4 text-center">
+                        <p class="text-gray-300 text-sm mb-3">Necesitas pertenecer a un equipo para jugar misterios de tarde.</p>
+                        <div class="flex gap-3 justify-center">
+                            <button id="tgm-goto-create-team-btn" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-xl transition text-sm">+ Crear equipo</button>
+                            <button id="tgm-goto-join-team-btn" class="border border-gray-600/40 text-gray-300 hover:bg-gray-700/40 font-bold py-2 px-4 rounded-xl transition text-sm">Código de invitación</button>
+                        </div>
                     </div>
 
                     <!-- Ya jugado por alguien del equipo -->
@@ -5630,6 +5654,19 @@
                     </div>
                     <div id="tso-presentes-final-list" class="space-y-1.5"></div>
                 </div>
+                <div class="border-t border-white/10 pt-4">
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">¿Qué tal os ha parecido este misterio? <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
+                    <div class="flex gap-2 mb-3" id="tso-rating-stars">
+                        <button type="button" data-val="1" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="2" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="3" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="4" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="5" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                    </div>
+                    <input type="hidden" id="tso-rating-value" value="">
+                    <textarea id="tso-rating-comment" rows="2" maxlength="500" placeholder="Comentario opcional sobre el misterio…"
+                        class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm resize-none"></textarea>
+                </div>
                 <button id="tso-submit-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition">
                     Enviar y terminar
                 </button>
@@ -5745,6 +5782,7 @@ let myParticipados = []; // mystery_id que YA jugué (filtro rápido en el selec
 
 let tardeDurationFilter   = 'all';
 let tardeDifficultyFilter = 'all';
+let tardeTeamFilter       = 'all'; // 'all' | 'solved' | 'unsolved' — según MIS equipos
 
 // Juego/equipo elegidos en el modal de info, antes de empezar sesión
 let currentTardeGame = null;
@@ -5980,6 +6018,17 @@ function _durationMatches(minutes, filter) {
     return true;
 }
 
+/** IDs de misterios de tarde ya resueltos por CUALQUIERA de mis equipos (según el historial del podio) */
+function _myTeamsSolvedMysteryIds() {
+    const myTeamIds = myTeams.map(t => t.id);
+    const solved = new Set();
+    tardePodio.forEach(entry => {
+        if (!myTeamIds.includes(entry.teamId)) return;
+        (entry.history || []).forEach(h => solved.add(h.mysteryId));
+    });
+    return solved;
+}
+
 function _renderTardeGames() {
     const el = document.getElementById('tarde-games-container');
     if (!el) return;
@@ -5991,9 +6040,13 @@ function _renderTardeGames() {
         return;
     }
 
+    const myTeamsSolved = _myTeamsSolvedMysteryIds();
     const filtered = tardeGames.filter(g =>
         _durationMatches(g.estimatedMinutes, tardeDurationFilter) &&
-        (tardeDifficultyFilter === 'all' || g.difficulty === tardeDifficultyFilter)
+        (tardeDifficultyFilter === 'all' || g.difficulty === tardeDifficultyFilter) &&
+        (tardeTeamFilter === 'all'
+            || (tardeTeamFilter === 'solved'   && myTeamsSolved.has(g.id))
+            || (tardeTeamFilter === 'unsolved' && !myTeamsSolved.has(g.id)))
     );
 
     const active = filtered.filter(g => !g.isSolved);
@@ -6182,17 +6235,22 @@ function _buildInfoStep(isSolved) {
     document.getElementById('tgm-notes-text').textContent = game.notes || '';
     document.getElementById('tgm-info-difficulty').textContent = `📊 ${game.difficulty || 'Sin especificar'}`;
     document.getElementById('tgm-info-duration').textContent   = `🕐 ~${game.estimatedMinutes || 90} min`;
+    _renderTardeScoringFormula(game);
 
-    const solvedEl   = document.getElementById('tgm-solved-section');
-    const startArea  = document.getElementById('tgm-start-area');
-    const notAdmin   = document.getElementById('tgm-not-admin-notice');
-    const blockedEl  = document.getElementById('tgm-blocked-notice');
+    const solvedEl      = document.getElementById('tgm-solved-section');
+    const startArea      = document.getElementById('tgm-start-area');
+    const notAdmin       = document.getElementById('tgm-not-admin-notice');
+    const blockedEl      = document.getElementById('tgm-blocked-notice');
+    const noLoginNotice  = document.getElementById('tgm-no-login-notice');
+    const noTeamNotice   = document.getElementById('tgm-no-team-notice');
 
     if (isSolved) {
         solvedEl.classList.remove('hidden');
         startArea.classList.add('hidden');
         notAdmin.classList.add('hidden');
         blockedEl.classList.add('hidden');
+        noLoginNotice.classList.add('hidden');
+        noTeamNotice.classList.add('hidden');
         document.getElementById('tgm-solution-text').textContent = `Solución: ${game.solution || '—'}`;
         document.getElementById('tgm-winner-team').textContent = game.winner ? `Ganador: ${game.winner}` : '';
         const expEl = document.getElementById('tgm-explanation');
@@ -6203,12 +6261,24 @@ function _buildInfoStep(isSolved) {
 
     solvedEl.classList.add('hidden');
 
+    if (!userId) {
+        startArea.classList.add('hidden');
+        notAdmin.classList.add('hidden');
+        blockedEl.classList.add('hidden');
+        noTeamNotice.classList.add('hidden');
+        noLoginNotice.classList.remove('hidden');
+        return;
+    }
+    noLoginNotice.classList.add('hidden');
+
     if (!currentTardeTeam) {
         startArea.classList.add('hidden');
         notAdmin.classList.add('hidden');
         blockedEl.classList.add('hidden');
+        noTeamNotice.classList.remove('hidden');
         return;
     }
+    noTeamNotice.classList.add('hidden');
 
     const pubId   = getPublicId(userId) || '';
     const isAdmin = currentTardeTeam.captain === pubId || (currentTardeTeam.admins||[]).includes(pubId);
@@ -6231,6 +6301,16 @@ function _buildInfoStep(isSolved) {
         startArea.classList.add('hidden');
         notAdmin.classList.remove('hidden');
     }
+}
+
+/** Muestra, con los valores concretos de este misterio, la fórmula de puntuación por tiempo/pistas/intentos */
+function _renderTardeScoringFormula(game) {
+    const el = document.getElementById('tgm-scoring-formula');
+    if (!el) return;
+    const sc = game.scoring || {};
+    const base = sc.base ?? 1000, min = sc.minPoints ?? 50;
+    const perMin = sc.perMinute ?? 0, perHint = sc.perHint ?? 0, perWrong = sc.perWrongAttempt ?? 0;
+    el.innerHTML = `📐 <strong class="text-gray-400">Puntos</strong> = máx(${min}, ${base} − ${perMin}×minuto − ${perHint}×pista − ${perWrong}×fallo)`;
 }
 
 function closeTardeModal() {
@@ -6330,6 +6410,9 @@ function _openTardeSessionOverlay(isNew) {
     document.getElementById('tso-wrong-count').textContent = tardeWrongAttempts;
     document.getElementById('tso-success-area').classList.add('hidden');
     document.getElementById('tso-feedback').classList.add('hidden');
+    document.getElementById('tso-rating-value').value = '';
+    document.getElementById('tso-rating-comment').value = '';
+    document.querySelectorAll('.tarde-star-btn').forEach(b => { b.classList.remove('text-yellow-400'); b.classList.add('text-gray-600'); });
 
     _updateTardeSessionClues();
     _startTardeTimer();
@@ -6489,6 +6572,8 @@ async function _submitTardeSessionAnswer() {
     if (presentPubIds.length === 0) { _tardeErr(errEl, 'Marca al menos un miembro presente.'); return; }
 
     const finalAnswer = document.getElementById('tso-final-points').dataset.answer || '';
+    const rating  = parseInt(document.getElementById('tso-rating-value').value) || 0;
+    const ratingComment = (document.getElementById('tso-rating-comment').value || '').trim();
 
     btn.disabled = true; btn.textContent = 'Enviando…';
 
@@ -6501,7 +6586,9 @@ async function _submitTardeSessionAnswer() {
         senderPrivId: userId || '',
         hintsUsed: tardeClueIndex + 1,
         wrongAttempts: tardeWrongAttempts,
-        scoringConfig: tardeSessionGame.scoring || {}
+        scoringConfig: tardeSessionGame.scoring || {},
+        rating,
+        ratingComment
     });
 
     btn.disabled = false; btn.textContent = 'Enviar y terminar';
@@ -6888,6 +6975,25 @@ async function _checkLinkInvite() {
     } catch(e) { /* enlace inválido, ignoramos en silencio */ }
 }
 
+async function _checkTardeShareLink() {
+    const params = new URLSearchParams(location.search);
+    const mysteryId = params.get('tarde');
+    if (!mysteryId) return;
+
+    showMainApp('tarde');
+    await loadTardeData();
+    if (tardeGames.length === 0) await _loadTardeGames();
+
+    if (tardeGames.find(g => g.id === mysteryId)) {
+        openTardeModal(mysteryId);
+    } else {
+        showToast('No se encontró ese misterio de tarde.', true);
+    }
+    const url = new URL(location.href);
+    url.searchParams.delete('tarde');
+    history.replaceState({}, '', url);
+}
+
 async function _joinTeamFromLink() {
     const btn  = document.getElementById('tli-join-btn');
     const code = btn.dataset.code;
@@ -6931,6 +7037,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ir a seleccionar presentes para empezar la sesión
     document.getElementById('tgm-goto-presentes-btn')?.addEventListener('click', _openPresentesInicioStep);
     document.getElementById('tgm-podio-btn')?.addEventListener('click', showTardeMysteryPodio);
+    document.getElementById('tgm-share-btn')?.addEventListener('click', () => {
+        if (!currentTardeGame) return;
+        const url = `${location.origin}${location.pathname}?tarde=${encodeURIComponent(currentTardeGame.id)}`;
+        navigator.clipboard?.writeText(url).then(() => showToast('🔗 Enlace del misterio copiado'));
+    });
+    document.getElementById('tgm-goto-login-btn')?.addEventListener('click', () => {
+        closeTardeModal();
+        dom.welcomeModal.classList.add('active');
+    });
+    document.getElementById('tgm-goto-create-team-btn')?.addEventListener('click', () => {
+        closeTardeModal();
+        openCreateTeamModal();
+    });
+    document.getElementById('tgm-goto-join-team-btn')?.addEventListener('click', () => {
+        closeTardeModal();
+        openJoinTeamModal();
+    });
 
     // Empezar sesión
     document.getElementById('tgm-start-session-btn')?.addEventListener('click', _startTardeSessionFromModal);
@@ -6955,6 +7078,10 @@ document.addEventListener('DOMContentLoaded', () => {
         tardeDifficultyFilter = e.target.value;
         _renderTardeGames();
     });
+    document.getElementById('tarde-team-filter')?.addEventListener('change', e => {
+        tardeTeamFilter = e.target.value;
+        _renderTardeGames();
+    });
 
     // Banner de reanudar sesión
     document.getElementById('tarde-resume-btn')?.addEventListener('click', _resumeTardeSessionFromBanner);
@@ -6964,6 +7091,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tso-check-btn')?.addEventListener('click', _checkTardeAnswerClick);
     document.getElementById('tso-answer-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') _checkTardeAnswerClick(); });
     document.getElementById('tso-notepad')?.addEventListener('input', _saveTardeNotepad);
+    document.querySelectorAll('.tarde-star-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = parseInt(btn.dataset.val);
+            document.getElementById('tso-rating-value').value = val;
+            document.querySelectorAll('.tarde-star-btn').forEach(b => {
+                const bVal = parseInt(b.dataset.val);
+                b.classList.toggle('text-yellow-400', bVal <= val);
+                b.classList.toggle('text-gray-600',   bVal >  val);
+            });
+        });
+    });
     document.getElementById('tso-abandon-btn')?.addEventListener('click', _openAbandonConfirm);
     document.getElementById('tso-submit-btn')?.addEventListener('click', _submitTardeSessionAnswer);
     document.getElementById('tarde-result-close-btn')?.addEventListener('click', () => {
@@ -6977,6 +7115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('tli-join-btn')?.addEventListener('click', _joinTeamFromLink);
     _checkLinkInvite();
+    _checkTardeShareLink();
     // Si al cargar la página el usuario aún no había iniciado sesión, reintentamos
     // la invitación pendiente en cuanto complete el login (máx. 60s de espera).
     let _joinCheckTries = 0;
