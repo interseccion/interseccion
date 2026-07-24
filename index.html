@@ -160,15 +160,13 @@
             grid-template-rows:
                 clamp(110px, min(20vw, 18vh), 175px)
                 clamp(112px, min(18vw, 16vh), 155px)
-                clamp(112px, min(18vw, 16vh), 155px)
                 clamp(80px,  min(14vw, 12vh), 120px)
                 clamp(80px,  min(14vw, 12vh), 120px);
             grid-template-areas:
                 "misterios misterios"
                 "podio     archivo"
-                "cuenta    sobre"
-                "tardemist tardemist"
-                "equipos   escape";
+                "tarde     tarde"
+                "sobre     sobre";
             gap: clamp(8px, min(1.5vw, 1.4vh), 14px);
         }
         @media (max-width: 340px) {
@@ -176,7 +174,7 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: none;
                 grid-template-areas:
-                    "misterios" "podio" "archivo" "cuenta" "sobre" "tardemist" "equipos" "escape";
+                    "misterios" "podio" "archivo" "tarde" "sobre";
             }
             .bento-misterios { min-height: 88px; }
         }
@@ -184,11 +182,8 @@
         .bento-misterios { grid-area: misterios; }
         .bento-podio     { grid-area: podio; }
         .bento-archivo   { grid-area: archivo; }
-        .bento-cuenta    { grid-area: cuenta; }
-        .bento-sobre     { grid-area: sobre; }
-        .bento-tardemist { grid-area: tardemist; border-radius: clamp(18px,3vw,28px); }
-        .bento-equipos   { grid-area: equipos; border-radius: clamp(18px,3vw,28px); }
-        .bento-escape    { grid-area: escape; border-radius: clamp(18px,3vw,28px); }
+        .bento-sobre     { grid-area: sobre; border-radius: clamp(18px,3vw,28px); }
+        .bento-tarde     { grid-area: tarde; border-radius: clamp(18px,3vw,28px); }
 
         /* Tarjeta base — cristal con borde sutil */
         .home-card {
@@ -226,8 +221,7 @@
         .bento-misterios { border-radius: clamp(20px,3.5vw,32px); }                                                                   /* uniforme, protagonista */
         .bento-podio     { border-radius: clamp(20px,3.5vw,32px) clamp(12px,2vw,18px) clamp(12px,2vw,18px) clamp(20px,3.5vw,32px); } /* redondo izquierda */
         .bento-archivo   { border-radius: clamp(12px,2vw,18px) clamp(20px,3.5vw,32px) clamp(20px,3.5vw,32px) clamp(12px,2vw,18px); } /* redondo derecha */
-        .bento-cuenta    { border-radius: clamp(20px,3.5vw,32px) clamp(12px,2vw,18px) clamp(20px,3.5vw,32px) clamp(20px,3.5vw,32px); }
-        .bento-sobre     { border-radius: clamp(12px,2vw,18px) clamp(20px,3.5vw,32px) clamp(20px,3.5vw,32px) clamp(12px,2vw,18px); }
+
 
         /* Misterios: texto más grande, más protagonismo */
         .bento-misterios .card-label { font-size: clamp(1rem, 2.5vw, 1.3rem); }
@@ -248,8 +242,6 @@
         .card-sky     { --card-glow: radial-gradient(ellipse at 10% 10%, rgba(56,189,248,0.1),  transparent 65%);  --card-border: rgba(56,189,248,0.38);   --card-shadow: rgba(14,165,233,0.14);  --strip-bg: linear-gradient(90deg,#0369a1,#0ea5e9,#7dd3fc); }
         .card-violet  { --card-glow: radial-gradient(ellipse at 10% 10%, rgba(167,139,250,0.14),transparent 65%);  --card-border: rgba(167,139,250,0.45);  --card-shadow: rgba(124,58,237,0.2);   --strip-bg: linear-gradient(90deg,#6d28d9,#8b5cf6,#c4b5fd); }
         .card-emerald { --card-glow: radial-gradient(ellipse at 10% 10%, rgba(52,211,153,0.09), transparent 65%);  --card-border: rgba(52,211,153,0.32);   --card-shadow: rgba(16,185,129,0.13);  --strip-bg: linear-gradient(90deg,#047857,#10b981,#6ee7b7); }
-        .card-rose    { --card-glow: radial-gradient(ellipse at 10% 10%, rgba(251,113,133,0.13),transparent 65%);  --card-border: rgba(251,113,133,0.42);  --card-shadow: rgba(225,29,72,0.18);   --strip-bg: linear-gradient(90deg,#be123c,#fb7185,#fda4af); }
-        .card-teal    { --card-glow: radial-gradient(ellipse at 10% 10%, rgba(45,212,191,0.13), transparent 65%);  --card-border: rgba(45,212,191,0.42);   --card-shadow: rgba(13,148,136,0.18);  --strip-bg: linear-gradient(90deg,#0f766e,#2dd4bf,#99f6e4); }
 
         /* Texto con contraste accesible (≥ 4.5:1) */
         .home-card .card-label    { color: #f1f5f9; font-weight: 700; line-height: 1.2; } /* slate-100 */
@@ -416,28 +408,8 @@
                     </div>
                 </button>
 
-                <!-- Mi Cuenta -->
-                <button class="home-card card-violet bento-cuenta group flex flex-col items-center text-center justify-between" data-home-nav="cuenta">
-                    <div class="card-strip"></div>
-                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">👤</span>
-                    <div class="relative z-10">
-                        <div class="card-label">Mi Cuenta</div>
-                        <div class="card-sublabel">Tu identidad</div>
-                    </div>
-                </button>
-
-                <!-- Sobre el Proyecto -->
-                <button class="home-card card-emerald bento-sobre group flex flex-col items-center text-center justify-between" data-home-nav="sobre">
-                    <div class="card-strip"></div>
-                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">ℹ️</span>
-                    <div class="relative z-10">
-                        <div class="card-label">Sobre el Proyecto</div>
-                        <div class="card-sublabel">Cómo funciona</div>
-                    </div>
-                </button>
-
                 <!-- Misterios de Tarde — fila completa -->
-                <button class="home-card card-amber bento-tardemist p-4 text-left group flex items-center gap-4" data-home-nav="tarde-misterios">
+                <button class="home-card card-amber bento-tarde p-4 text-left group flex items-center gap-4" data-home-nav="tarde">
                     <div class="card-strip"></div>
                     <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10 flex-shrink-0" style="font-size:clamp(1.4rem,3.5vw,1.9rem)">🌆</span>
                     <div class="relative z-10 flex-1 min-w-0">
@@ -447,23 +419,13 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0 relative z-10 opacity-35 group-hover:opacity-75 group-hover:translate-x-0.5 transition-all" style="width:14px;height:14px;color:#fbbf24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </button>
 
-                <!-- Equipos -->
-                <button class="home-card card-rose bento-equipos group flex flex-col items-center text-center justify-between" data-home-nav="equipos">
+                <!-- Sobre el Proyecto — fila completa, texto centrado -->
+                <button class="home-card card-emerald bento-sobre p-4 group flex items-center justify-center gap-3 text-center" data-home-nav="sobre">
                     <div class="card-strip"></div>
-                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">👥</span>
+                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10 flex-shrink-0" style="font-size:clamp(1.4rem,3.5vw,1.9rem)">ℹ️</span>
                     <div class="relative z-10">
-                        <div class="card-label">Equipos</div>
-                        <div class="card-sublabel">Crea o únete a uno</div>
-                    </div>
-                </button>
-
-                <!-- Escape Rooms -->
-                <button class="home-card card-teal bento-escape group flex flex-col items-center text-center justify-between" data-home-nav="tarde-escape">
-                    <div class="card-strip"></div>
-                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">🔐</span>
-                    <div class="relative z-10">
-                        <div class="card-label">Escape Rooms</div>
-                        <div class="card-sublabel">Contrarreloj · Por equipos</div>
+                        <div class="card-label" style="font-size:clamp(0.85rem,2.2vw,1.05rem)">Sobre el Proyecto</div>
+                        <div class="card-sublabel">Cómo funciona</div>
                     </div>
                 </button>
 
@@ -496,9 +458,7 @@
                 <button data-tab="archivo" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Archivo</button>
                 <button data-tab="podio" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Podio</button>
                 <button data-tab="sobre" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Sobre el Proyecto</button>
-                <button data-tab="equipos" class="tab-button text-rose-400 hover:bg-rose-900/20 font-semibold py-2.5 px-6 rounded-full border border-rose-500/20 transition whitespace-nowrap flex items-center gap-1.5">👥 Equipos</button>
-                <button data-tab="tarde-misterios" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 px-6 rounded-full border border-amber-500/20 transition whitespace-nowrap flex items-center gap-1.5">🌆 Misterios de Tarde</button>
-                <button data-tab="tarde-escape" class="tab-button text-teal-400 hover:bg-teal-900/20 font-semibold py-2.5 px-6 rounded-full border border-teal-500/20 transition whitespace-nowrap flex items-center gap-1.5">🔐 Escape Rooms</button>
+                <button data-tab="tarde" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 px-6 rounded-full border border-amber-500/20 transition whitespace-nowrap flex items-center gap-1.5">🌆 Tarde</button>
             </div>
         </nav>
 
@@ -564,6 +524,8 @@
                 <div class="panel panel-amber p-6 md:p-8 relative">
                     <!-- Botón de Información de Puntos (z-index y margen para no tapar) -->
                     <button id="scoring-info-btn" class="absolute top-4 right-4 z-10 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center transition shadow-lg" title="Cómo se calculan los puntos">ℹ️</button>
+                    <!-- Botón Ver mi perfil (antes tarjeta "Mi Cuenta" en el inicio) -->
+                    <button id="podio-my-profile-btn" class="absolute top-4 left-4 z-10 text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full text-xs font-semibold px-3 h-8 flex items-center gap-1.5 transition shadow-lg" title="Ver mi perfil">👤 Mi perfil</button>
 
                     <!-- Selector de Temporada en Podio -->
                     <div class="flex flex-col items-center mb-6 mt-4 md:mt-0">
@@ -691,9 +653,10 @@
                  <div class="absolute bottom-2 right-2 text-xs text-gray-600">v13.0 — tildes + PARTICIPADOS</div>
             </div>
             <!-- ═══ TARDE TAB ════════════════════════════════════════════════════ -->
-            <!-- ═══ EQUIPOS ═══ -->
-            <div id="equipos" class="tab-content hidden fade-in">
-                <section>
+            <div id="tarde" class="tab-content hidden fade-in">
+
+                <!-- Mis Equipos -->
+                <section class="mb-8">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-white flex items-center gap-2">👥 Mis Equipos</h2>
                         <button id="tarde-refresh-teams-btn" class="text-xs text-gray-500 hover:text-gray-300 transition">↺ Actualizar</button>
@@ -704,10 +667,6 @@
                         </div>
                     </div>
                 </section>
-            </div>
-
-            <!-- ═══ MISTERIOS DE TARDE ═══ -->
-            <div id="tarde-misterios" class="tab-content hidden fade-in">
 
                 <!-- Sesión activa (reanudar) -->
                 <div id="tarde-resume-banner" class="hidden mb-6 bg-amber-900/20 border border-amber-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 flex-wrap">
@@ -752,41 +711,10 @@
 
                 <!-- Podio de Equipos -->
                 <section>
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-white">🏆 Podio de Equipos</h2>
-                        <button id="tarde-podio-info-btn" class="text-xs font-semibold text-gray-400 hover:text-gray-200 border border-gray-600/40 rounded-full px-3 py-1.5 transition">📐 Cómo se calculan los puntos</button>
-                    </div>
+                    <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">🏆 Podio de Equipos
+                        <button id="tarde-scoring-info-btn" class="text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-7 h-7 flex items-center justify-center transition shadow-lg text-sm" title="Cómo se calculan los puntos">ℹ️</button>
+                    </h2>
                     <div id="tarde-podio-container">
-                        <div class="animate-pulse h-40 bg-gray-800/50 rounded-2xl"></div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- ═══ ESCAPE ROOMS ═══ -->
-            <div id="tarde-escape" class="tab-content hidden fade-in">
-
-                <!-- Sesión activa (reanudar) -->
-                <div id="escape-resume-banner" class="hidden mb-6 bg-teal-900/20 border border-teal-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 flex-wrap">
-                    <div>
-                        <div class="font-bold text-teal-300">⏱️ Tienes un escape room en curso</div>
-                        <div class="text-xs text-gray-400" id="escape-resume-info"></div>
-                    </div>
-                    <button id="escape-resume-btn" class="bg-teal-600 hover:bg-teal-500 text-white font-bold py-2 px-5 rounded-xl transition">Reanudar</button>
-                </div>
-
-                <section class="mb-8">
-                    <h2 class="text-xl font-bold text-white mb-4">🔐 Escape Rooms</h2>
-                    <div id="escape-games-container">
-                        <p class="text-gray-500 text-center py-10 italic text-sm">Aún no hay escape rooms disponibles.</p>
-                    </div>
-                </section>
-
-                <section>
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-white">🏆 Podio de Equipos</h2>
-                        <button id="escape-podio-info-btn" class="text-xs font-semibold text-gray-400 hover:text-gray-200 border border-gray-600/40 rounded-full px-3 py-1.5 transition">📐 Cómo se calculan los puntos</button>
-                    </div>
-                    <div id="escape-podio-container">
                         <div class="animate-pulse h-40 bg-gray-800/50 rounded-2xl"></div>
                     </div>
                 </section>
@@ -4190,6 +4118,11 @@
             }
 
             function handleHomeNav(navTarget) {
+                // "tarde" redirige a la pestaña tarde
+                if (navTarget === 'tarde') {
+                    showMainApp('tarde');
+                    return;
+                }
                 // "Mi Cuenta" siempre requiere sesión — ahora abre tu perfil primero
                 // (desde ahí hay un botón "⚙️ Ajustes de cuenta" para ID/frase semilla/cerrar sesión)
                 if (navTarget === 'cuenta') {
@@ -4594,6 +4527,16 @@
                 </ul>
                 <p class="text-xs text-gray-500">⚠️ Si pierdes el archivo del ID y no tienes la frase semilla guardada no hay forma de recuperar tu cuenta. Guárdalos en un sitio seguro.</p>
             </div>` }); });
+
+            // BOTÓN VER MI PERFIL (antes tarjeta "Mi Cuenta" en el inicio)
+            document.getElementById('podio-my-profile-btn')?.addEventListener('click', () => {
+                if (!userId) {
+                    sessionStorage.setItem('home_pending_nav', 'cuenta');
+                    dom.welcomeModal.classList.add('active');
+                    return;
+                }
+                openProfileById(getPublicId(userId));
+            });
 
             // BOTÓN DE INFO DE PUNTOS
             if(dom.scoringInfoBtn) {
@@ -5558,6 +5501,7 @@
                         <span id="tgm-info-difficulty">📊 —</span>
                         <span id="tgm-info-duration">🕐 —</span>
                     </div>
+                    <p id="tgm-scoring-formula" class="text-xs text-gray-500"></p>
 
                     <button id="tgm-podio-btn" class="text-xs font-semibold text-amber-400 hover:text-amber-300 border border-amber-500/30 rounded-full px-3 py-1.5 transition">
                         🏆 Ver podio de este misterio
@@ -6293,6 +6237,7 @@ function _buildInfoStep(isSolved) {
     document.getElementById('tgm-notes-text').textContent = game.notes || '';
     document.getElementById('tgm-info-difficulty').textContent = `📊 ${game.difficulty || 'Sin especificar'}`;
     document.getElementById('tgm-info-duration').textContent   = `🕐 ~${game.estimatedMinutes || 90} min`;
+    _renderTardeScoringFormula(game);
 
     const solvedEl      = document.getElementById('tgm-solved-section');
     const startArea      = document.getElementById('tgm-start-area');
@@ -6360,12 +6305,32 @@ function _buildInfoStep(isSolved) {
     }
 }
 
-/** Devuelve el texto de la fórmula de puntuación con los valores concretos de un misterio */
-function _tardeScoringFormulaText(game) {
+/** Modal con la fórmula general de puntuación de los misterios de tarde (valores concretos por misterio) */
+function showTardeScoringInfo() {
+    _beginModalNavigation();
+    renderModal(null, 'info', { title: 'Sistema de Puntuación — Tarde', content: `
+        <div class="space-y-4 text-gray-300 text-left">
+            <p><strong>Fórmula:</strong> Puntos = máx(mínimo, base − minutos×penalización − pistas×penalización − fallos×penalización)</p>
+            <ul class="list-disc pl-5 space-y-2">
+                <li><strong>Base:</strong> puntos de partida al empezar el misterio.</li>
+                <li><strong>Minutos:</strong> se resta una penalización por cada minuto que tarda el equipo en resolverlo.</li>
+                <li><strong>Pistas:</strong> se resta una penalización por cada pista usada.</li>
+                <li><strong>Fallos:</strong> se resta una penalización por cada intento incorrecto.</li>
+                <li><strong>Mínimo:</strong> nunca se baja de la puntuación mínima si el equipo acierta.</li>
+            </ul>
+            <p class="text-xs text-gray-500 italic mt-4 pt-3 border-t border-gray-700">📐 Cada misterio de tarde tiene sus propios valores de base, penalizaciones y mínimo — los puedes consultar en la ficha de ese misterio.</p>
+        </div>
+    `});
+}
+
+/** Muestra, con los valores concretos de este misterio, la fórmula de puntuación por tiempo/pistas/intentos */
+function _renderTardeScoringFormula(game) {
+    const el = document.getElementById('tgm-scoring-formula');
+    if (!el) return;
     const sc = game.scoring || {};
     const base = sc.base ?? 1000, min = sc.minPoints ?? 50;
     const perMin = sc.perMinute ?? 0, perHint = sc.perHint ?? 0, perWrong = sc.perWrongAttempt ?? 0;
-    return `📐 <strong class="text-gray-400">Puntos</strong> = máx(${min}, ${base} − ${perMin}×minuto − ${perHint}×pista − ${perWrong}×fallo)`;
+    el.innerHTML = `📐 <strong class="text-gray-400">Puntos</strong> = máx(${min}, ${base} − ${perMin}×minuto − ${perHint}×pista − ${perWrong}×fallo)`;
 }
 
 function closeTardeModal() {
@@ -6882,8 +6847,9 @@ async function showTardeMysteryPodio() {
             </div>`;
         };
 
-        const content = `<button type="button" onclick="this.nextElementSibling.classList.toggle('hidden')" class="text-xs font-semibold text-gray-400 hover:text-gray-200 border border-gray-600/40 rounded-full px-3 py-1.5 transition mb-3">📐 Cómo se calculan los puntos de este misterio</button>
-            <div class="hidden bg-gray-800/50 border border-gray-700/40 rounded-xl p-3 mb-4 text-xs text-gray-400">${_tardeScoringFormulaText(game)}</div>`
+        const content = `<div class="flex justify-end mb-2">
+                <button onclick="showTardeScoringInfo()" class="text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-7 h-7 flex items-center justify-center transition shadow-lg text-sm" title="Cómo se calculan los puntos">ℹ️</button>
+            </div>`
             + block('⚡ Por puntos', data.byPoints, e => `${Math.round(e.points)} pts`)
             + block('⏱️ Por tiempo', data.byTime, e => _fmtTardeSeconds(e.timeSeconds))
             + block('💡 Por pistas usadas', data.byHints, e => `${e.hints} pista${e.hints===1?'':'s'}`);
@@ -7032,23 +6998,23 @@ async function _checkLinkInvite() {
     } catch(e) { /* enlace inválido, ignoramos en silencio */ }
 }
 
-async function handleTardeUrlSharing() {
-    const hash = window.location.hash;
+async function _checkTardeShareLink() {
+    const hash = location.hash;
     if (!hash.startsWith('#tarde=')) return;
     const params = new URLSearchParams(hash.substring(1));
     const mysteryId = params.get('tarde');
     if (!mysteryId) return;
 
-    history.replaceState({}, document.title, window.location.pathname + window.location.search);
-
+    showMainApp('tarde');
     await loadTardeData();
     if (tardeGames.length === 0) await _loadTardeGames();
 
-    const game = tardeGames.find(g => g.id === mysteryId);
-    if (!game) { showToast(`Misterio de tarde con ID ${mysteryId} no encontrado.`, true); return; }
-
-    showMainApp(game.gameType === 'escape' ? 'tarde-escape' : 'tarde-misterios');
-    setTimeout(() => openTardeModal(mysteryId), 300);
+    if (tardeGames.find(g => g.id === mysteryId)) {
+        openTardeModal(mysteryId);
+    } else {
+        showToast('No se encontró ese misterio de tarde.', true);
+    }
+    history.replaceState({}, '', `${location.origin}${location.pathname}`);
 }
 
 async function _joinTeamFromLink() {
@@ -7094,27 +7060,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ir a seleccionar presentes para empezar la sesión
     document.getElementById('tgm-goto-presentes-btn')?.addEventListener('click', _openPresentesInicioStep);
     document.getElementById('tgm-podio-btn')?.addEventListener('click', showTardeMysteryPodio);
-    document.getElementById('tarde-podio-info-btn')?.addEventListener('click', () => {
-        _beginModalNavigation();
-        renderModal(null, 'info', { title: '📐 Cómo se calculan los puntos', content: `
-            <div class="space-y-3 text-gray-300 text-sm text-left">
-                <p>Cada misterio de tarde tiene su propia configuración de puntuación (la fija quien lo crea), pero todos siguen la misma fórmula:</p>
-                <p class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-3 text-gray-400">📐 Puntos = máx(mínimo, base − minutos×penalización − pistas×penalización − intentos fallidos×penalización)</p>
-                <p class="text-gray-500 text-xs">Para ver los valores exactos de un misterio en concreto, abre su propio podio individual (botón "🏆 Ver podio de este misterio" en su ficha).</p>
-            </div>` });
-    });
-    document.getElementById('escape-podio-info-btn')?.addEventListener('click', () => {
-        _beginModalNavigation();
-        renderModal(null, 'info', { title: '📐 Cómo se calculan los puntos', content: `
-            <div class="space-y-3 text-gray-300 text-sm text-left">
-                <p>Cada escape room tiene su propia configuración de puntuación (la fija quien lo crea), pero todos siguen la misma fórmula:</p>
-                <p class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-3 text-gray-400">📐 Puntos = máx(mínimo, base − minutos×penalización − códigos fallados×penalización)</p>
-                <p class="text-gray-500 text-xs">Para ver los valores exactos de un escape room en concreto, abre su propio podio individual.</p>
-            </div>` });
-    });
+    document.getElementById('tarde-scoring-info-btn')?.addEventListener('click', showTardeScoringInfo);
     document.getElementById('tgm-share-btn')?.addEventListener('click', () => {
         if (!currentTardeGame) return;
-        copyToClipboard(`${window.location.origin}${window.location.pathname}#tarde=${currentTardeGame.id}`, '🔗 Enlace del misterio copiado');
+        const url = `${location.origin}${location.pathname}#tarde=${encodeURIComponent(currentTardeGame.id)}`;
+        copyToClipboard(url);
     });
     document.getElementById('tgm-goto-login-btn')?.addEventListener('click', () => {
         closeTardeModal();
@@ -7189,7 +7139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('tli-join-btn')?.addEventListener('click', _joinTeamFromLink);
     _checkLinkInvite();
-    handleTardeUrlSharing();
+    _checkTardeShareLink();
     // Si al cargar la página el usuario aún no había iniciado sesión, reintentamos
     // la invitación pendiente en cuanto complete el login (máx. 60s de espera).
     let _joinCheckTries = 0;
@@ -7216,11 +7166,12 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadTardeData(true);
     });
 
-    // Load tarde data when any of the 3 tabs is clicked (lazy) — comparten los mismos datos (equipos/podio/participados)
-    ['equipos','tarde-misterios','tarde-escape'].forEach(tabId => {
-        document.querySelector(`[data-tab="${tabId}"]`)?.addEventListener('click', () => {
-            loadTardeData();
-        });
+    // Load tarde data when tab is clicked (lazy)
+    document.querySelector('[data-tab="tarde"]')?.addEventListener('click', () => {
+        loadTardeData();
     });
+
+    // Tour: add tarde tab reference
+    document.querySelectorAll('.tab-button[data-tab="tarde"]')?.forEach(btn => btn);
 });
 </script>
