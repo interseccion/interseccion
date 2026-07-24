@@ -160,12 +160,12 @@
             grid-template-rows:
                 clamp(110px, min(20vw, 18vh), 175px)
                 clamp(112px, min(18vw, 16vh), 155px)
-                clamp(80px,  min(14vw, 12vh), 120px)
+                clamp(112px, min(18vw, 16vh), 155px)
                 clamp(80px,  min(14vw, 12vh), 120px);
             grid-template-areas:
                 "misterios misterios"
                 "podio     archivo"
-                "tarde     tarde"
+                "equipos   tarde"
                 "sobre     sobre";
             gap: clamp(8px, min(1.5vw, 1.4vh), 14px);
         }
@@ -174,7 +174,7 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: none;
                 grid-template-areas:
-                    "misterios" "podio" "archivo" "tarde" "sobre";
+                    "misterios" "podio" "archivo" "equipos" "tarde" "sobre";
             }
             .bento-misterios { min-height: 88px; }
         }
@@ -182,8 +182,9 @@
         .bento-misterios { grid-area: misterios; }
         .bento-podio     { grid-area: podio; }
         .bento-archivo   { grid-area: archivo; }
+        .bento-equipos   { grid-area: equipos; border-radius: clamp(20px,3.5vw,32px) clamp(12px,2vw,18px) clamp(12px,2vw,18px) clamp(20px,3.5vw,32px); }
+        .bento-tarde     { grid-area: tarde; border-radius: clamp(12px,2vw,18px) clamp(20px,3.5vw,32px) clamp(20px,3.5vw,32px) clamp(12px,2vw,18px); }
         .bento-sobre     { grid-area: sobre; border-radius: clamp(18px,3vw,28px); }
-        .bento-tarde     { grid-area: tarde; border-radius: clamp(18px,3vw,28px); }
 
         /* Tarjeta base — cristal con borde sutil */
         .home-card {
@@ -408,15 +409,24 @@
                     </div>
                 </button>
 
-                <!-- Misterios de Tarde — fila completa -->
-                <button class="home-card card-amber bento-tarde p-4 text-left group flex items-center gap-4" data-home-nav="tarde">
+                <!-- Equipos -->
+                <button class="home-card card-amber bento-equipos group flex flex-col items-center text-center justify-between" data-home-nav="equipos">
                     <div class="card-strip"></div>
-                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10 flex-shrink-0" style="font-size:clamp(1.4rem,3.5vw,1.9rem)">🌆</span>
-                    <div class="relative z-10 flex-1 min-w-0">
-                        <div class="card-label" style="font-size:clamp(0.85rem,2.2vw,1.05rem)">Misterios de Tarde</div>
-                        <div class="card-sublabel">Por equipos · Una tarde de juego</div>
+                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">👥</span>
+                    <div class="relative z-10">
+                        <div class="card-label">Equipos</div>
+                        <div class="card-sublabel">Crea o únete a uno</div>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0 relative z-10 opacity-35 group-hover:opacity-75 group-hover:translate-x-0.5 transition-all" style="width:14px;height:14px;color:#fbbf24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </button>
+
+                <!-- Misterios de Tarde -->
+                <button class="home-card card-amber bento-tarde group flex flex-col items-center text-center justify-between" data-home-nav="tarde">
+                    <div class="card-strip"></div>
+                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10" style="font-size:clamp(1.3rem,3.5vw,1.8rem)">🌆</span>
+                    <div class="relative z-10">
+                        <div class="card-label">Misterios de Tarde</div>
+                        <div class="card-sublabel">Una tarde de juego</div>
+                    </div>
                 </button>
 
                 <!-- Sobre el Proyecto — fila completa, texto centrado -->
@@ -458,6 +468,7 @@
                 <button data-tab="archivo" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Archivo</button>
                 <button data-tab="podio" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Podio</button>
                 <button data-tab="sobre" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Sobre el Proyecto</button>
+                <button data-tab="equipos" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 px-6 rounded-full border border-amber-500/20 transition whitespace-nowrap flex items-center gap-1.5">👥 Equipos</button>
                 <button data-tab="tarde" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 px-6 rounded-full border border-amber-500/20 transition whitespace-nowrap flex items-center gap-1.5">🌆 Tarde</button>
             </div>
         </nav>
@@ -653,7 +664,7 @@
                  <div class="absolute bottom-2 right-2 text-xs text-gray-600">v13.0 — tildes + PARTICIPADOS</div>
             </div>
             <!-- ═══ TARDE TAB ════════════════════════════════════════════════════ -->
-            <div id="tarde" class="tab-content hidden fade-in">
+            <div id="equipos" class="tab-content hidden fade-in">
 
                 <!-- Mis Equipos -->
                 <section class="mb-8">
@@ -667,6 +678,9 @@
                         </div>
                     </div>
                 </section>
+            </div>
+
+            <div id="tarde" class="tab-content hidden fade-in">
 
                 <!-- Sesión activa (reanudar) -->
                 <div id="tarde-resume-banner" class="hidden mb-6 bg-amber-900/20 border border-amber-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 flex-wrap">
@@ -4116,6 +4130,11 @@
                     }
                 }
             }
+            // showMainApp se define aquí dentro (closure de initEventListeners), pero
+            // el bloque de "Misterios de Tarde" (compartir enlaces, etc.) vive en otro
+            // <script> como funciones de nivel superior y necesita poder llamarla —
+            // por eso se expone también en window.
+            window.showMainApp = showMainApp;
 
             function handleHomeNav(navTarget) {
                 // "tarde" redirige a la pestaña tarde
@@ -7168,6 +7187,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load tarde data when tab is clicked (lazy)
     document.querySelector('[data-tab="tarde"]')?.addEventListener('click', () => {
+        loadTardeData();
+    });
+    document.querySelector('[data-tab="equipos"]')?.addEventListener('click', () => {
         loadTardeData();
     });
 
