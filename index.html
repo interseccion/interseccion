@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <meta name="theme-color" content="#4f46e5">
     <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Intersección">
+    <link rel="apple-touch-icon" href="icon-512.png">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -5470,6 +5474,41 @@
         }
 
         document.addEventListener('DOMContentLoaded', init);
+
+        // ── PWA: registro del Service Worker (caché offline) ──────────────
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then((reg) => {
+                    // Si ya hay un Service Worker esperando (nueva versión descargada
+                    // en una pestaña anterior), avisamos ya mismo.
+                    if (reg.waiting) _notifyNewVersion(reg);
+
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        if (!newWorker) return;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                _notifyNewVersion(reg);
+                            }
+                        });
+                    });
+                }).catch(() => { /* si falla el registro, la app sigue funcionando sin caché offline */ });
+
+                // Cuando el nuevo Service Worker toma el control, recargamos una vez
+                let _swRefreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (_swRefreshing) return;
+                    _swRefreshing = true;
+                    window.location.reload();
+                });
+            });
+        }
+
+        function _notifyNewVersion(reg) {
+            if (typeof showToast === 'function') showToast('🔄 Actualizando a la última versión…');
+            // Pequeño margen para que se vea el aviso antes de recargar
+            setTimeout(() => { reg.waiting?.postMessage('SKIP_WAITING'); }, 1200);
+        }
     </script>
 
     <!-- Botón flotante de notas (FAB) -->
