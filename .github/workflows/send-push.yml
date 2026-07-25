@@ -1,0 +1,55 @@
+name: Enviar notificación push
+
+# Se dispara de 2 formas:
+#  1) repository_dispatch con event_type "send_push" — esto es lo que hace tu
+#     Apps Script (GAS) automáticamente al pulsar "Enviar" en el admin, o
+#     desde un trigger de tiempo programado.
+#  2) workflow_dispatch manual — para poder probarlo tú a mano desde la
+#     pestaña "Actions" de GitHub sin tocar GAS, rellenando los campos.
+on:
+  repository_dispatch:
+    types: [send_push]
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Título de la notificación'
+        required: true
+      body:
+        description: 'Cuerpo de la notificación'
+        required: true
+      url:
+        description: 'URL a abrir al pulsar la notificación (opcional)'
+        required: false
+        default: '/'
+      pubIds:
+        description: 'IDs públicos separados por comas (vacío = enviar a todos)'
+        required: false
+        default: ''
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install web-push
+
+      - name: Enviar notificaciones push
+        env:
+          VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          GAS_URL: ${{ secrets.GAS_URL }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          NOTIF_TITLE: ${{ github.event.client_payload.title || github.event.inputs.title }}
+          NOTIF_BODY: ${{ github.event.client_payload.body || github.event.inputs.body }}
+          NOTIF_URL: ${{ github.event.client_payload.url || github.event.inputs.url }}
+          NOTIF_PUBIDS: ${{ github.event.client_payload.pubIds || github.event.inputs.pubIds }}
+        run: node .github/scripts/send-push.js
