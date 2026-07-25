@@ -161,11 +161,13 @@
                 clamp(110px, min(20vw, 18vh), 175px)
                 clamp(112px, min(18vw, 16vh), 155px)
                 clamp(112px, min(18vw, 16vh), 155px)
+                clamp(80px,  min(14vw, 12vh), 120px)
                 clamp(80px,  min(14vw, 12vh), 120px);
             grid-template-areas:
                 "misterios misterios"
                 "podio     archivo"
                 "equipos   tarde"
+                "escape    escape"
                 "sobre     sobre";
             gap: clamp(8px, min(1.5vw, 1.4vh), 14px);
         }
@@ -174,7 +176,7 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: none;
                 grid-template-areas:
-                    "misterios" "podio" "archivo" "equipos" "tarde" "sobre";
+                    "misterios" "podio" "archivo" "equipos" "tarde" "escape" "sobre";
             }
             .bento-misterios { min-height: 88px; }
         }
@@ -184,6 +186,7 @@
         .bento-archivo   { grid-area: archivo; }
         .bento-equipos   { grid-area: equipos; border-radius: clamp(20px,3.5vw,32px) clamp(12px,2vw,18px) clamp(12px,2vw,18px) clamp(20px,3.5vw,32px); }
         .bento-tarde     { grid-area: tarde; border-radius: clamp(12px,2vw,18px) clamp(20px,3.5vw,32px) clamp(20px,3.5vw,32px) clamp(12px,2vw,18px); }
+        .bento-escape    { grid-area: escape; border-radius: clamp(18px,3vw,28px); }
         .bento-sobre     { grid-area: sobre; border-radius: clamp(18px,3vw,28px); }
 
         /* Tarjeta base — cristal con borde sutil */
@@ -313,6 +316,8 @@
         .tarde-filter-btn.active-filter { background:rgba(217,119,6,0.2); border-color:rgba(217,119,6,0.5); color:#fbbf24; }
         /* Sesión de tarde a pantalla completa (bloqueada) */
         #tarde-session-overlay { position:fixed; inset:0; z-index:200; background:#0b0f1a; overflow-y:auto; }
+        #escape-session-overlay { position:fixed; inset:0; z-index:200; background:#0b0f1a; overflow-y:auto; }
+        .escape-room-frame { width:100%; min-height:220px; border:1px solid rgba(255,255,255,0.1); border-radius:0.75rem; background:#fff; }
         .tarde-session-locked { -webkit-user-select:none; }
         .team-card { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:1rem; }
         .team-card:hover { border-color:rgba(251,191,36,0.3); }
@@ -429,6 +434,16 @@
                     </div>
                 </button>
 
+                <!-- Escape Rooms — fila completa, texto centrado -->
+                <button class="home-card bento-escape p-4 group flex items-center justify-center gap-3 text-center" data-home-nav="escape" style="--card-glow:radial-gradient(ellipse at 10% 10%, rgba(124,58,237,0.14), transparent 65%);--card-border:rgba(167,139,250,0.42);--card-shadow:rgba(124,58,237,0.18);--strip-bg:linear-gradient(90deg,#6d28d9,#8b5cf6,#c4b5fd)">
+                    <div class="card-strip"></div>
+                    <span class="select-none transition-transform duration-200 group-hover:scale-110 relative z-10 flex-shrink-0" style="font-size:clamp(1.4rem,3.5vw,1.9rem)">🔐</span>
+                    <div class="relative z-10">
+                        <div class="card-label" style="font-size:clamp(0.85rem,2.2vw,1.05rem)">Escape Rooms</div>
+                        <div class="card-sublabel">Salas, códigos y contrarreloj</div>
+                    </div>
+                </button>
+
                 <!-- Sobre el Proyecto — fila completa, texto centrado -->
                 <button class="home-card card-emerald bento-sobre p-4 group flex items-center justify-center gap-3 text-center" data-home-nav="sobre">
                     <div class="card-strip"></div>
@@ -470,6 +485,7 @@
                 <button data-tab="sobre" class="tab-button text-gray-300 hover:bg-white/10 font-semibold py-2.5 px-6 rounded-full border border-white/10 transition whitespace-nowrap">Sobre el Proyecto</button>
                 <button data-tab="equipos" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 px-6 rounded-full border border-amber-500/20 transition whitespace-nowrap flex items-center gap-1.5">👥 Equipos</button>
                 <button data-tab="tarde" class="tab-button text-amber-400 hover:bg-amber-900/20 font-semibold py-2.5 px-6 rounded-full border border-amber-500/20 transition whitespace-nowrap flex items-center gap-1.5">🌆 Tarde</button>
+                <button data-tab="escape" class="tab-button text-violet-400 hover:bg-violet-900/20 font-semibold py-2.5 px-6 rounded-full border border-violet-500/20 transition whitespace-nowrap flex items-center gap-1.5">🔐 Escape Rooms</button>
             </div>
         </nav>
 
@@ -730,6 +746,20 @@
                     </h2>
                     <div id="tarde-podio-container">
                         <div class="animate-pulse h-40 bg-gray-800/50 rounded-2xl"></div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="escape" class="tab-content hidden fade-in">
+                <section>
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-2">🔐 Escape Rooms</h2>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-5">Escape rooms de equipo: superad las salas encontrando sus códigos y resolved el código final antes de que se acabe el tiempo.</p>
+                    <div id="escape-games-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="animate-pulse space-y-3 col-span-2">
+                            <div class="h-24 bg-gray-800/50 rounded-2xl"></div>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -5585,7 +5615,218 @@
         </div>
     </div>
 
+    <!-- ═══ ESCAPE ROOM — INFO / EQUIPO / PRESENTES ═══════════════════════════ -->
+    <div id="escape-game-modal" class="tarde-modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="tarde-modal-box">
+
+            <div class="sticky top-0 z-10 bg-gray-900/95 backdrop-blur border-b border-gray-700/60 px-5 py-3.5 flex items-center justify-between rounded-t-2xl gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button id="egm-back-btn" class="hidden text-gray-400 hover:text-white transition text-sm font-medium flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline -mt-0.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                        Atrás
+                    </button>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);color:#c4b5fd;">🔐 Escape Room</span>
+                    <h2 class="text-sm font-bold text-white truncate" id="egm-title">—</h2>
+                </div>
+                <button id="egm-close-btn" class="text-gray-400 hover:text-white transition p-1.5 rounded-lg hover:bg-gray-700 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- STEP 0: Equipo -->
+            <div id="egm-step-team" class="hidden p-6">
+                <h3 class="text-lg font-bold text-white mb-1">¿Con qué equipo jugáis?</h3>
+                <p class="text-gray-500 text-sm mb-5">Selecciona el equipo para este escape room.</p>
+                <div id="egm-team-list" class="space-y-2 mb-4"></div>
+                <button id="egm-spectate-btn" class="w-full text-gray-500 hover:text-gray-300 text-sm py-2 transition underline">
+                    Solo quiero ver la info (sin jugar)
+                </button>
+            </div>
+
+            <!-- STEP 1: Info -->
+            <div id="egm-step-game" class="hidden">
+                <div id="egm-team-bar" class="hidden px-5 py-2.5 border-b border-gray-700/40 flex items-center gap-2">
+                    <span class="text-violet-400 text-xs font-semibold">👥</span>
+                    <span id="egm-team-bar-name" class="text-violet-300 text-sm font-bold"></span>
+                    <span class="text-gray-600 text-xs ml-auto" id="egm-team-bar-role"></span>
+                </div>
+
+                <div class="p-5 space-y-5">
+                    <p id="egm-notes-text" class="text-gray-400 text-sm"></p>
+
+                    <div class="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
+                        <span id="egm-info-difficulty">📊 —</span>
+                        <span id="egm-info-players">👥 —</span>
+                        <span id="egm-info-countdown">⏱️ —</span>
+                        <span id="egm-info-rooms">🚪 —</span>
+                    </div>
+
+                    <button id="egm-formula-btn" class="text-xs font-semibold text-violet-400 hover:text-violet-300 border border-violet-500/30 rounded-full px-3 py-1.5 transition">
+                        ℹ️ Cómo se puntúa
+                    </button>
+
+                    <!-- Podio del escape room (se abre solo, sin botón) -->
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">🏆 Podio de este escape room</h4>
+                        <div id="egm-podio-container" class="text-xs text-gray-500">Cargando...</div>
+                    </div>
+
+                    <!-- No ha iniciado sesión -->
+                    <div id="egm-no-login-notice" class="hidden bg-indigo-900/20 border border-indigo-500/30 rounded-xl p-4 text-center">
+                        <p class="text-gray-300 text-sm mb-3">Inicia sesión para poder jugar escape rooms.</p>
+                        <button id="egm-goto-login-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-xl transition text-sm">Iniciar sesión</button>
+                    </div>
+
+                    <!-- Sin equipo -->
+                    <div id="egm-no-team-notice" class="hidden bg-amber-900/15 border border-amber-500/25 rounded-xl p-4 text-center">
+                        <p class="text-gray-300 text-sm mb-3">Necesitas pertenecer a un equipo para jugar escape rooms.</p>
+                        <div class="flex gap-3 justify-center">
+                            <button id="egm-goto-create-team-btn" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 px-4 rounded-xl transition text-sm">+ Crear equipo</button>
+                            <button id="egm-goto-join-team-btn" class="border border-gray-600/40 text-gray-300 hover:bg-gray-700/40 font-bold py-2 px-4 rounded-xl transition text-sm">Código de invitación</button>
+                        </div>
+                    </div>
+
+                    <!-- Bloqueado (abandonado antes) -->
+                    <div id="egm-blocked-notice" class="hidden bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 text-sm text-gray-400">
+                        Alguien de este grupo abandonó este escape room antes — no podéis volver a intentarlo.
+                    </div>
+
+                    <div id="egm-start-area" class="hidden">
+                        <button id="egm-goto-presentes-btn" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 rounded-xl transition">
+                            🚀 Entrar (empieza la cuenta atrás)
+                        </button>
+                    </div>
+                    <div id="egm-not-admin-notice" class="hidden text-center text-amber-300/70 text-xs">Solo el capitán o un admin del equipo puede iniciar la partida.</div>
+                </div>
+            </div>
+
+            <!-- STEP 2: Presentes -->
+            <div id="egm-step-presentes" class="hidden p-5 space-y-4">
+                <h3 class="font-bold text-white text-base mb-1">👥 ¿Quién está jugando ahora?</h3>
+                <p class="text-gray-500 text-xs mb-2">Si alguno de los marcados ya jugó (o abandonó) este escape room, no podréis empezar.</p>
+                <div id="egm-presentes-inicio-list" class="space-y-1.5"></div>
+                <button id="egm-start-session-btn" class="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition">
+                    Entrar al escape room
+                </button>
+                <p id="egm-presentes-error" class="text-red-400 text-xs text-center hidden"></p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ═══ ESCAPE ROOM — SESIÓN A PANTALLA COMPLETA ═══════════════════════════ -->
+    <div id="escape-session-overlay" class="hidden tarde-session-locked">
+        <div class="max-w-2xl mx-auto p-4 md:p-6 space-y-5">
+
+            <div class="sticky top-0 z-10 bg-gray-950/95 backdrop-blur border-b border-gray-800 -mx-4 md:-mx-6 px-4 md:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                    <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Cuenta atrás</div>
+                    <div id="eso-timer" class="text-2xl font-mono font-bold text-white">00:00</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Sala</div>
+                    <div id="eso-room-counter" class="text-2xl font-mono font-bold text-violet-400">—</div>
+                </div>
+                <button id="eso-abandon-btn" class="text-xs text-red-400 hover:text-red-300 font-semibold py-2 px-3 rounded-lg hover:bg-red-900/20 transition">
+                    Abandonar
+                </button>
+            </div>
+
+            <h2 id="eso-title" class="text-xl font-bold text-white">—</h2>
+            <div id="eso-team-name" class="text-xs text-violet-400 font-semibold -mt-3"></div>
+            <p id="eso-time-up-notice" class="hidden text-xs text-amber-400 bg-amber-900/20 border border-amber-500/30 rounded-lg p-2.5">⏱️ Se acabó el tiempo — podéis seguir jugando, pero ya no puntúa por tiempo (solo una puntuación simbólica si termináis).</p>
+
+            <!-- Sala actual -->
+            <div>
+                <h3 id="eso-room-title" class="text-sm font-bold text-gray-300 mb-2">—</h3>
+                <iframe id="eso-room-frame" class="escape-room-frame"></iframe>
+            </div>
+
+            <!-- Código de sala -->
+            <div id="eso-room-code-area" class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-4 space-y-3">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Código de esta sala</div>
+                <input id="eso-room-code-input" type="text" placeholder="Introduce el código para pasar de sala" maxlength="60"
+                    class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-violet-500 transition font-mono">
+                <button id="eso-room-code-btn" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 rounded-xl transition">
+                    Comprobar código
+                </button>
+                <p id="eso-room-feedback" class="text-center text-sm hidden"></p>
+            </div>
+
+            <!-- Código final -->
+            <div id="eso-final-code-area" class="hidden bg-amber-900/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
+                <div class="text-xs font-bold text-amber-300 uppercase tracking-wider">¡Última sala superada! Introduce el código final</div>
+                <input id="eso-final-code-input" type="text" placeholder="La solución completa del escape room" maxlength="120"
+                    class="w-full bg-gray-900 border border-amber-500/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-400 transition font-mono">
+                <button id="eso-final-code-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">
+                    Comprobar código final
+                </button>
+                <p id="eso-final-feedback" class="text-center text-sm hidden"></p>
+            </div>
+
+            <!-- Códigos ya usados -->
+            <div>
+                <button id="eso-toggle-log-btn" class="text-xs font-semibold text-gray-400 hover:text-gray-200 border border-gray-600/40 rounded-full px-3 py-1.5 transition">
+                    📜 Ver códigos ya usados
+                </button>
+                <div id="eso-codes-log" class="hidden mt-3 space-y-1.5"></div>
+            </div>
+
+            <p class="text-center text-xs text-gray-600">Intentos fallidos: <span id="eso-wrong-count">0</span> · cada uno resta puntos</p>
+
+            <!-- Éxito -->
+            <div id="eso-success-area" class="hidden bg-green-900/20 border border-green-500/30 rounded-xl p-5 space-y-4">
+                <div class="text-center">
+                    <div class="text-3xl mb-1">🎉</div>
+                    <h3 class="font-bold text-green-400 text-lg">¡Escape room resuelto!</h3>
+                    <p class="text-gray-300 text-sm">Puntos estimados: <span id="eso-final-points" class="font-mono font-bold"></span> <span class="text-gray-500 text-xs">(se confirman al enviar)</span></p>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-violet-300 font-semibold text-sm">👥 ¿Quién sigue presente ahora?</span>
+                    </div>
+                    <div id="eso-presentes-final-list" class="space-y-1.5"></div>
+                </div>
+                <div class="border-t border-white/10 pt-4">
+                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">¿Qué tal os ha parecido? <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
+                    <div class="flex gap-2 mb-3" id="eso-rating-stars">
+                        <button type="button" data-val="1" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="2" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="3" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="4" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="5" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                    </div>
+                    <input type="hidden" id="eso-rating-value" value="">
+                    <textarea id="eso-rating-comment" rows="2" maxlength="500" placeholder="Comentario opcional…"
+                        class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-violet-500 transition text-sm resize-none"></textarea>
+                </div>
+                <button id="eso-submit-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition">
+                    Enviar y terminar
+                </button>
+                <p id="eso-submit-error" class="text-red-400 text-xs text-center hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ ESCAPE ROOM — CONFIRMAR ABANDONO ═══════════════════════════════════ -->
+    <div id="escape-abandon-modal" class="tarde-modal-overlay hidden" style="z-index:250">
+        <div class="tarde-modal-box" style="max-width:420px">
+            <div class="p-6 text-center">
+                <div class="text-3xl mb-3">⚠️</div>
+                <h3 class="text-lg font-bold text-white mb-2">¿Abandonar este escape room?</h3>
+                <p class="text-gray-400 text-sm mb-5">
+                    Si abandonáis ahora, <strong class="text-amber-300">ninguno de los presentes podrá volver a intentar este escape room</strong>, con este ni con otro equipo.
+                </p>
+                <div class="flex gap-3">
+                    <button id="escape-abandon-cancel-btn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl transition">Seguir jugando</button>
+                    <button id="escape-abandon-confirm-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-xl transition">Sí, abandonar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ═══ TARDE — CONFIRMAR ABANDONO ═══════════════════════════════════════ -->
+
     <div id="tarde-abandon-modal" class="tarde-modal-overlay hidden" style="z-index:250">
         <div class="tarde-modal-box" style="max-width:420px">
             <div class="p-6 text-center">
@@ -6730,6 +6971,531 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ESCAPE ROOMS — FRONTEND COMPLETO
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ESCAPE_INDEX_PATH = 'escape/index.json';
+
+let escapeGames     = [];
+let escapeLoaded    = false;
+let escapeGamesLoading = true;
+let myEscapeParticipados = []; // escape room ids que ya jugué/abandoné (bloqueo)
+
+let currentEscapeGame = null;
+let currentEscapeTeam = null;
+
+// ── Sesión de escape room activa (cuenta atrás a pantalla completa) ──────────
+let escapeSession = null;        // { sessionId, teamId, gameId, startTime, presentMembers }
+let escapeSessionGame = null;
+let escapeRoomIndex = 0;         // sala actual (0-based)
+let escapeAtFinalCode = false;   // true tras superar la última sala
+let escapeWrongRoomAttempts = 0;
+let escapeWrongFinalAttempts = 0;
+let escapeCodesLog = [];         // [{title, code}] — historial de códigos ya superados
+let escapeTimerInterval = null;
+let escapeTimeUp = false;
+let escapeAnswerLocked = false;
+
+function _normalizeEscapeCode(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+
+async function loadEscapeData(force = false) {
+    if (escapeLoaded && !force) return;
+    if (!escapeGames.length) await _loadEscapeGames();
+    await _loadMyEscapeParticipados();
+    _renderEscapeGames();
+    escapeLoaded = true;
+}
+
+async function _loadEscapeGames() {
+    try {
+        const res   = await fetch(`${ESCAPE_INDEX_PATH}?v=${Date.now()}`);
+        const files = await res.json();
+        const games = await Promise.all(
+            files.map(f => fetch(`escape/${f}?v=${Date.now()}`).then(r => r.json()).catch(() => null))
+        );
+        escapeGames = games.filter(Boolean);
+    } catch { escapeGames = []; }
+    escapeGamesLoading = false;
+    _renderEscapeGames();
+}
+
+async function _loadMyEscapeParticipados() {
+    if (!userId) { myEscapeParticipados = []; return; }
+    try {
+        const pubId = getPublicId(userId) || '';
+        const res   = await fetch(`${APPS_SCRIPT_URL}?action=getMyEscapeParticipados&user=${encodeURIComponent(pubId)}`);
+        const data  = await res.json();
+        myEscapeParticipados = Array.isArray(data) ? data : [];
+    } catch { myEscapeParticipados = []; }
+}
+
+function _renderEscapeGames() {
+    const container = document.getElementById('escape-games-container');
+    if (!container) return;
+    if (escapeGamesLoading) return;
+
+    const active = escapeGames.filter(g => !g.isSolved);
+    if (active.length === 0) {
+        container.innerHTML = `<p class="text-gray-500 text-sm text-center py-8 col-span-2">Todavía no hay escape rooms disponibles.</p>`;
+        return;
+    }
+
+    container.innerHTML = active.map(g => `
+        <button onclick="openEscapeModal('${g.id}')" class="home-card card-amber group flex flex-col items-start text-left p-4 gap-2" style="--card-glow:radial-gradient(ellipse at 10% 10%, rgba(124,58,237,0.14), transparent 65%);--card-border:rgba(167,139,250,0.42);--card-shadow:rgba(124,58,237,0.18);--strip-bg:linear-gradient(90deg,#6d28d9,#8b5cf6,#c4b5fd)">
+            <div class="card-strip"></div>
+            <div class="relative z-10 w-full">
+                <div class="flex items-start justify-between gap-2">
+                    <h3 class="font-bold text-white text-base">🔐 ${_esc(g.title)}</h3>
+                </div>
+                <p class="text-gray-400 text-xs mt-1 line-clamp-2">${_esc(g.notes || '')}</p>
+                <div class="flex items-center gap-3 text-xs text-gray-500 mt-2 flex-wrap">
+                    <span>📊 ${_esc(g.difficulty || '—')}</span>
+                    <span>👥 ${g.minPlayers ?? '?'}–${g.maxPlayers ?? '?'}</span>
+                    <span>⏱️ ${g.countdownMinutes ?? '?'} min</span>
+                    <span>🚪 ${(g.rooms||[]).length} salas</span>
+                </div>
+            </div>
+        </button>`).join('');
+}
+
+// ── Modal de info + inicio de sesión ─────────────────────────────────────────
+
+function _egmShowStep(step) {
+    ['egm-step-team','egm-step-game','egm-step-presentes'].forEach(id => {
+        document.getElementById(id)?.classList.add('hidden');
+    });
+    document.getElementById(`egm-step-${step}`)?.classList.remove('hidden');
+    document.getElementById('egm-back-btn').classList.toggle('hidden', step === 'team');
+}
+
+function openEscapeModal(gameId) {
+    const game = escapeGames.find(g => g.id === gameId);
+    if (!game) return;
+    currentEscapeGame = game;
+
+    document.getElementById('egm-title').textContent = game.title;
+    document.getElementById('escape-game-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    if (!userId || myTeams.length === 0) {
+        currentEscapeTeam = null;
+        _egmShowStep('game');
+        _buildEscapeInfoStep();
+    } else if (myTeams.length === 1) {
+        currentEscapeTeam = myTeams[0];
+        _egmShowStep('game');
+        _buildEscapeInfoStep();
+    } else {
+        _buildEscapeTeamStep();
+        _egmShowStep('team');
+    }
+}
+
+function _buildEscapeTeamStep() {
+    const listEl = document.getElementById('egm-team-list');
+    listEl.innerHTML = myTeams.map(t => `
+        <button onclick="_selectEscapeTeam('${t.id}')"
+                class="w-full text-left team-card p-4 rounded-xl hover:border-violet-500/40 transition group">
+            <div class="font-bold text-white group-hover:text-violet-300 transition">${_esc(t.name)}</div>
+            <div class="text-xs text-gray-500 mt-0.5">${t.members.length} miembro${t.members.length !== 1 ? 's' : ''}</div>
+        </button>`).join('');
+}
+
+function _selectEscapeTeam(teamId) {
+    currentEscapeTeam = myTeams.find(t => t.id === teamId) || null;
+    _egmShowStep('game');
+    _buildEscapeInfoStep();
+}
+
+function _buildEscapeInfoStep() {
+    const teamBar  = document.getElementById('egm-team-bar');
+    const teamName = document.getElementById('egm-team-bar-name');
+    const teamRole = document.getElementById('egm-team-bar-role');
+    if (currentEscapeTeam) {
+        const pubId = getPublicId(userId) || '';
+        const isCap = currentEscapeTeam.captain === pubId;
+        const isAdm = isCap || (currentEscapeTeam.admins||[]).includes(pubId);
+        teamName.textContent = currentEscapeTeam.name;
+        teamRole.textContent = isCap ? '👑 Capitán' : isAdm ? '⭐ Admin' : 'Miembro';
+        teamBar.classList.remove('hidden');
+    } else {
+        teamBar.classList.add('hidden');
+    }
+
+    const game = currentEscapeGame;
+    document.getElementById('egm-notes-text').textContent = game.notes || '';
+    document.getElementById('egm-info-difficulty').textContent = `📊 ${game.difficulty || 'Sin especificar'}`;
+    document.getElementById('egm-info-players').textContent    = `👥 ${game.minPlayers ?? '?'}–${game.maxPlayers ?? '?'} jugadores (orientativo)`;
+    document.getElementById('egm-info-countdown').textContent  = `⏱️ ${game.countdownMinutes ?? '?'} min de cuenta atrás`;
+    document.getElementById('egm-info-rooms').textContent      = `🚪 ${(game.rooms||[]).length} salas`;
+
+    _loadAndRenderEscapePodio(game.id);
+
+    const startArea     = document.getElementById('egm-start-area');
+    const notAdmin       = document.getElementById('egm-not-admin-notice');
+    const blockedEl      = document.getElementById('egm-blocked-notice');
+    const noLoginNotice  = document.getElementById('egm-no-login-notice');
+    const noTeamNotice   = document.getElementById('egm-no-team-notice');
+
+    if (!userId) {
+        startArea.classList.add('hidden'); notAdmin.classList.add('hidden'); blockedEl.classList.add('hidden'); noTeamNotice.classList.add('hidden');
+        noLoginNotice.classList.remove('hidden');
+        return;
+    }
+    noLoginNotice.classList.add('hidden');
+
+    if (!currentEscapeTeam) {
+        startArea.classList.add('hidden'); notAdmin.classList.add('hidden'); blockedEl.classList.add('hidden');
+        noTeamNotice.classList.remove('hidden');
+        return;
+    }
+    noTeamNotice.classList.add('hidden');
+
+    const pubId = getPublicId(userId) || '';
+    const isCap = currentEscapeTeam.captain === pubId;
+    const isAdm = isCap || (currentEscapeTeam.admins||[]).includes(pubId);
+    const teamBlocked = (currentEscapeTeam.members||[]).some(m => myEscapeParticipados.includes(game.id) && m === pubId);
+
+    if (teamBlocked) {
+        startArea.classList.add('hidden'); notAdmin.classList.add('hidden');
+        blockedEl.classList.remove('hidden');
+        return;
+    }
+    blockedEl.classList.add('hidden');
+
+    if (!isAdm) {
+        startArea.classList.add('hidden');
+        notAdmin.classList.remove('hidden');
+        return;
+    }
+    notAdmin.classList.add('hidden');
+    startArea.classList.remove('hidden');
+}
+
+async function _loadAndRenderEscapePodio(gameId) {
+    const container = document.getElementById('egm-podio-container');
+    container.textContent = 'Cargando...';
+    try {
+        const res  = await fetch(`${APPS_SCRIPT_URL}?action=getEscapeMysteryPodio&mysteryId=${encodeURIComponent(gameId)}`);
+        const data = await res.json();
+        if (!data || data.error || !Array.isArray(data.byPoints) || data.byPoints.length === 0) {
+            container.innerHTML = `<p class="text-gray-600 italic">Nadie lo ha completado todavía — ¡podéis ser los primeros!</p>`;
+            return;
+        }
+        const rows = data.byPoints.slice(0, 5).map((e, i) => `
+            <div class="flex items-center justify-between text-xs py-1 border-b border-gray-800/60">
+                <span class="text-gray-300">${i+1}. ${_esc(_tardeTeamName(e.teamId))}</span>
+                <span class="text-violet-300 font-mono">${Math.round(e.points)} pts · ${_fmtTardeSeconds(e.timeSeconds)}</span>
+            </div>`).join('');
+        container.innerHTML = rows;
+    } catch { container.innerHTML = `<p class="text-gray-600 italic">No se pudo cargar el podio.</p>`; }
+}
+
+function closeEscapeModal() {
+    document.getElementById('escape-game-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+    currentEscapeGame = null;
+    currentEscapeTeam = null;
+}
+
+function _openEscapePresentesStep() {
+    const listEl = document.getElementById('egm-presentes-inicio-list');
+    const team   = currentEscapeTeam;
+    const myPubId = getPublicId(userId) || '';
+    document.getElementById('egm-presentes-error').classList.add('hidden');
+    listEl.innerHTML = (team.members||[]).map(m => {
+        const yaParticipo = myEscapeParticipados.includes(currentEscapeGame.id) && m === myPubId;
+        return `
+        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
+            <input type="checkbox" class="escape-inicio-present-check accent-violet-500 w-4 h-4" value="${m}" ${yaParticipo ? '' : 'checked'}>
+            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…
+                ${m === team.captain ? '<span class="text-amber-400 text-xs ml-1">👑</span>' : ''}
+                ${yaParticipo ? '<span class="text-red-400 text-xs ml-1">(bloqueado en este escape room)</span>' : ''}
+            </span>
+        </label>`;
+    }).join('');
+    _egmShowStep('presentes');
+}
+
+async function _startEscapeSessionFromModal() {
+    const game = currentEscapeGame;
+    const team = currentEscapeTeam;
+    const errEl = document.getElementById('egm-presentes-error');
+    const btn   = document.getElementById('egm-start-session-btn');
+    errEl.classList.add('hidden');
+
+    const presentPubIds = [...document.querySelectorAll('.escape-inicio-present-check:checked')].map(cb => cb.value);
+    if (presentPubIds.length === 0) { _tardeErr(errEl, 'Marca al menos un miembro presente.'); return; }
+
+    btn.disabled = true; btn.textContent = 'Empezando…';
+    const pubId = getPublicId(userId) || '';
+    const res = await _postTarde({
+        action: 'startEscapeSession',
+        teamId: team.id, gameId: game.id, presentPubIds, markerPubId: pubId
+    });
+    btn.disabled = false; btn.textContent = 'Entrar al escape room';
+
+    if (res.error) { _tardeErr(errEl, res.error); return; }
+
+    escapeSession = { sessionId: res.sessionId, teamId: team.id, gameId: game.id, startTime: res.startTime, presentMembers: presentPubIds };
+    escapeSessionGame = game;
+    closeEscapeModal();
+    _openEscapeSessionOverlay();
+}
+
+// ── Sesión de escape room a pantalla completa ────────────────────────────────
+
+function _openEscapeSessionOverlay() {
+    escapeRoomIndex = 0;
+    escapeAtFinalCode = false;
+    escapeWrongRoomAttempts = 0;
+    escapeWrongFinalAttempts = 0;
+    escapeCodesLog = [];
+    escapeTimeUp = false;
+    escapeAnswerLocked = false;
+
+    document.getElementById('eso-title').textContent = escapeSessionGame.title;
+    const team = myTeams.find(t => t.id === escapeSession.teamId);
+    document.getElementById('eso-team-name').textContent = team ? `👥 ${team.name}` : '';
+    document.getElementById('eso-time-up-notice').classList.add('hidden');
+    document.getElementById('eso-wrong-count').textContent = 0;
+    document.getElementById('eso-success-area').classList.add('hidden');
+    document.getElementById('eso-final-code-area').classList.add('hidden');
+    document.getElementById('eso-room-code-area').classList.remove('hidden');
+    document.getElementById('eso-codes-log').classList.add('hidden');
+    document.getElementById('eso-codes-log').innerHTML = '';
+    document.getElementById('eso-rating-value').value = '';
+    document.getElementById('eso-rating-comment').value = '';
+    document.querySelectorAll('.escape-star-btn').forEach(b => { b.classList.remove('text-yellow-400'); b.classList.add('text-gray-600'); });
+
+    _renderCurrentEscapeRoom();
+    _startEscapeTimer();
+
+    const overlay = document.getElementById('escape-session-overlay');
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    try { overlay.requestFullscreen?.(); } catch(_) {}
+}
+
+function _renderCurrentEscapeRoom() {
+    const rooms = escapeSessionGame.rooms || [];
+    const room  = rooms[escapeRoomIndex];
+    document.getElementById('eso-room-counter').textContent = `${escapeRoomIndex + 1} / ${rooms.length}`;
+    document.getElementById('eso-room-title').textContent = room ? room.title : '—';
+    document.getElementById('eso-room-frame').srcdoc = room ? (room.html || '') : '';
+    document.getElementById('eso-room-code-input').value = '';
+    document.getElementById('eso-room-feedback').classList.add('hidden');
+}
+
+function _startEscapeTimer() {
+    if (escapeTimerInterval) clearInterval(escapeTimerInterval);
+    const startMs = new Date(escapeSession.startTime).getTime();
+    const totalSec = (escapeSessionGame.countdownMinutes ?? 60) * 60;
+    const tick = () => {
+        const elapsedSec = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+        const remainingSec = totalSec - elapsedSec;
+        if (remainingSec <= 0) {
+            document.getElementById('eso-timer').textContent = '00:00';
+            if (!escapeTimeUp) {
+                escapeTimeUp = true;
+                document.getElementById('eso-time-up-notice').classList.remove('hidden');
+            }
+        } else {
+            const mm = String(Math.floor(remainingSec / 60)).padStart(2,'0');
+            const ss = String(remainingSec % 60).padStart(2,'0');
+            document.getElementById('eso-timer').textContent = `${mm}:${ss}`;
+        }
+    };
+    tick();
+    escapeTimerInterval = setInterval(tick, 1000);
+}
+
+function _computeEscapePoints(elapsedSeconds) {
+    if (escapeTimeUp) {
+        // Se acabó el tiempo: puntuación simbólica, no aplica la fórmula normal
+        return (escapeSession.presentMembers || []).length * 1;
+    }
+    const sc = escapeSessionGame.scoring || {};
+    const base = sc.base ?? 1000, min = sc.minPoints ?? 50;
+    const perMin = sc.perMinute ?? 0;
+    const perWrongRoom  = sc.perWrongRoomAttempt  ?? 0;
+    const perWrongFinal = sc.perWrongFinalAttempt ?? 0;
+    const minutes = Math.floor(elapsedSeconds / 60);
+    return Math.max(min, base - (minutes*perMin) - (escapeWrongRoomAttempts*perWrongRoom) - (escapeWrongFinalAttempts*perWrongFinal));
+}
+
+function _checkEscapeRoomCode() {
+    if (escapeAnswerLocked) return;
+    const room = (escapeSessionGame.rooms||[])[escapeRoomIndex];
+    const input = document.getElementById('eso-room-code-input');
+    const feedback = document.getElementById('eso-room-feedback');
+    const raw = input.value || '';
+    if (!raw.trim()) return;
+
+    if (_normalizeEscapeCode(raw) === _normalizeEscapeCode(room.code)) {
+        escapeCodesLog.push({ title: room.title, code: room.code });
+        _renderEscapeCodesLog();
+        feedback.className = 'text-center text-sm text-green-400 font-semibold';
+        feedback.textContent = '¡Correcto! Pasando de sala…';
+        feedback.classList.remove('hidden');
+
+        const rooms = escapeSessionGame.rooms || [];
+        if (escapeRoomIndex + 1 < rooms.length) {
+            escapeRoomIndex++;
+            setTimeout(() => _renderCurrentEscapeRoom(), 700);
+        } else {
+            // Última sala superada → pedir código final
+            document.getElementById('eso-room-code-area').classList.add('hidden');
+            document.getElementById('eso-final-code-area').classList.remove('hidden');
+        }
+    } else {
+        escapeWrongRoomAttempts++;
+        document.getElementById('eso-wrong-count').textContent = escapeWrongRoomAttempts + escapeWrongFinalAttempts;
+        feedback.className = 'text-center text-sm text-red-400';
+        feedback.textContent = 'Código incorrecto — cada fallo resta puntos.';
+        feedback.classList.remove('hidden');
+    }
+}
+
+function _checkEscapeFinalCode() {
+    if (escapeAnswerLocked) return;
+    const input = document.getElementById('eso-final-code-input');
+    const feedback = document.getElementById('eso-final-feedback');
+    const raw = input.value || '';
+    if (!raw.trim()) return;
+
+    if (_normalizeEscapeCode(raw) === _normalizeEscapeCode(escapeSessionGame.finalCode)) {
+        feedback.className = 'text-center text-sm text-green-400 font-semibold';
+        feedback.textContent = '¡Código final correcto!';
+        feedback.classList.remove('hidden');
+        _lockEscapeSuccess(raw);
+    } else {
+        escapeWrongFinalAttempts++;
+        document.getElementById('eso-wrong-count').textContent = escapeWrongRoomAttempts + escapeWrongFinalAttempts;
+        feedback.className = 'text-center text-sm text-red-400';
+        feedback.textContent = 'Código final incorrecto — cada fallo resta puntos (más que un fallo de sala).';
+        feedback.classList.remove('hidden');
+    }
+}
+
+function _renderEscapeCodesLog() {
+    document.getElementById('eso-codes-log').innerHTML = escapeCodesLog.map((c, i) => `
+        <div class="flex items-center justify-between text-xs bg-gray-800/50 rounded-lg px-3 py-2">
+            <span class="text-gray-300">${i+1}. ${_esc(c.title)}</span>
+            <span class="text-violet-300 font-mono">${_esc(c.code)}</span>
+        </div>`).join('') || '<p class="text-gray-600 italic text-xs">Ningún código superado todavía.</p>';
+}
+
+function _lockEscapeSuccess(finalCode) {
+    escapeAnswerLocked = true;
+    clearInterval(escapeTimerInterval);
+    document.getElementById('eso-final-code-input').disabled = true;
+    document.getElementById('eso-room-code-input').disabled = true;
+
+    const elapsedSec = Math.max(0, Math.floor((Date.now() - new Date(escapeSession.startTime).getTime()) / 1000));
+    const finalPoints = Math.round(_computeEscapePoints(elapsedSec));
+    document.getElementById('eso-final-points').textContent = finalPoints;
+    document.getElementById('eso-final-points').dataset.elapsedSec = elapsedSec;
+
+    const team = myTeams.find(t => t.id === escapeSession.teamId) || { members: escapeSession.presentMembers, captain:'' };
+    document.getElementById('eso-presentes-final-list').innerHTML = (team.members||escapeSession.presentMembers).map(m => `
+        <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
+            <input type="checkbox" class="escape-final-present-check accent-violet-500 w-4 h-4" value="${m}" ${escapeSession.presentMembers.includes(m) ? 'checked' : ''}>
+            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…</span>
+        </label>`).join('');
+
+    document.getElementById('eso-success-area').classList.remove('hidden');
+    document.getElementById('eso-success-area').scrollIntoView({ behavior:'smooth' });
+}
+
+async function _submitEscapeSession() {
+    const errEl = document.getElementById('eso-submit-error');
+    const btn   = document.getElementById('eso-submit-btn');
+    errEl.classList.add('hidden');
+
+    const presentPubIds = [...document.querySelectorAll('.escape-final-present-check:checked')].map(cb => cb.value);
+    if (presentPubIds.length === 0) { _tardeErr(errEl, 'Marca al menos un miembro presente.'); return; }
+
+    const rating = parseInt(document.getElementById('eso-rating-value').value) || 0;
+    const ratingComment = (document.getElementById('eso-rating-comment').value || '').trim();
+
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    const res = await _postTarde({
+        action: 'completeEscapeSession',
+        sessionId: escapeSession.sessionId,
+        presentPubIds,
+        senderPrivId: userId || '',
+        wrongRoomAttempts: escapeWrongRoomAttempts,
+        wrongFinalAttempts: escapeWrongFinalAttempts,
+        timeUp: escapeTimeUp,
+        scoringConfig: escapeSessionGame.scoring || {},
+        rating, ratingComment
+    });
+    btn.disabled = false; btn.textContent = 'Enviar y terminar';
+
+    if (res.error) { _tardeErr(errEl, res.error); return; }
+
+    _closeEscapeSessionOverlay();
+    _showEscapeResultModal(res);
+    await _loadMyEscapeParticipados();
+    _renderEscapeGames();
+}
+
+function _showEscapeResultModal(res) {
+    _beginModalNavigation();
+    renderModal(null, 'info', { title: '🎉 ¡Escape room resuelto!', content: `
+        <div class="space-y-3 text-center">
+            <p class="text-3xl font-mono font-bold text-green-400">${res.points} pts</p>
+            <p class="text-gray-300 text-sm">Posición #${res.position} en resolverlo</p>
+            <p class="text-gray-400 text-sm">⏱️ ${_fmtTardeSeconds(res.elapsedSeconds)}</p>
+            <p class="text-gray-500 text-xs">❌ ${res.wrongRoomAttempts||0} fallo(s) de sala · ${res.wrongFinalAttempts||0} fallo(s) de código final</p>
+        </div>
+    `});
+}
+
+function _closeEscapeSessionOverlay() {
+    clearInterval(escapeTimerInterval);
+    document.getElementById('escape-session-overlay').classList.add('hidden');
+    document.body.style.overflow = '';
+    if (document.fullscreenElement) { try { document.exitFullscreen(); } catch(_) {} }
+    document.getElementById('eso-final-code-input').disabled = false;
+    document.getElementById('eso-room-code-input').disabled = false;
+    escapeSession = null;
+    escapeSessionGame = null;
+}
+
+// ── Abandonar escape room (bloqueo permanente para los presentes) ───────────
+
+function _openEscapeAbandonConfirm() { document.getElementById('escape-abandon-modal').classList.remove('hidden'); }
+function _closeEscapeAbandonConfirm() { document.getElementById('escape-abandon-modal').classList.add('hidden'); }
+
+async function _confirmAbandonEscapeSession() {
+    const btn = document.getElementById('escape-abandon-confirm-btn');
+    btn.disabled = true; btn.textContent = 'Abandonando…';
+    const pubId = getPublicId(userId) || '';
+    const res = await _postTarde({ action: 'abandonEscapeSession', sessionId: escapeSession.sessionId, userPubId: pubId });
+    btn.disabled = false; btn.textContent = 'Sí, abandonar';
+    _closeEscapeAbandonConfirm();
+    if (res.error) { showToast(res.error, true); return; }
+
+    showToast('Escape room abandonado. Esos jugadores ya no pueden reintentarlo.');
+    _closeEscapeSessionOverlay();
+    await _loadMyEscapeParticipados();
+    _renderEscapeGames();
+}
+
+function _showEscapeFormulaInfo() {
+    _beginModalNavigation();
+    const sc = (currentEscapeGame && currentEscapeGame.scoring) || {};
+    renderModal(null, 'info', { title: 'Puntuación de este escape room', content: `
+        <div class="space-y-3 text-gray-300 text-left text-sm">
+            <p><strong>Fórmula:</strong> puntos = máx(${sc.minPoints ?? 0}, ${sc.base ?? 0} − minutos×${sc.perMinute ?? 0} − fallos_sala×${sc.perWrongRoomAttempt ?? 0} − fallos_código_final×${sc.perWrongFinalAttempt ?? 0})</p>
+            <p class="text-xs text-gray-500 italic border-t border-gray-700 pt-3">Si se acaba la cuenta atrás, esta fórmula deja de aplicarse: si aun así termináis, se os da una puntuación simbólica (1 punto por jugador presente).</p>
+        </div>
+    `});
+}
+
 // ── Team management ──────────────────────────────────────────────────────────
 
 function openCreateTeamModal() {
@@ -7171,6 +7937,61 @@ document.addEventListener('DOMContentLoaded', () => {
     // Confirmación de abandono (anti-trampas)
     document.getElementById('tarde-abandon-cancel-btn')?.addEventListener('click', _closeAbandonConfirm);
     document.getElementById('tarde-abandon-confirm-btn')?.addEventListener('click', _confirmAbandonTardeSession);
+
+    // ── ESCAPE ROOMS: listeners ──────────────────────────────────────────────
+    document.getElementById('egm-close-btn')?.addEventListener('click', closeEscapeModal);
+    document.getElementById('escape-game-modal')?.addEventListener('click', e => {
+        if (e.target === e.currentTarget) closeEscapeModal();
+    });
+    document.getElementById('egm-back-btn')?.addEventListener('click', () => _egmShowStep('game'));
+    document.getElementById('egm-goto-presentes-btn')?.addEventListener('click', _openEscapePresentesStep);
+    document.getElementById('egm-formula-btn')?.addEventListener('click', _showEscapeFormulaInfo);
+    document.getElementById('egm-goto-login-btn')?.addEventListener('click', () => {
+        closeEscapeModal();
+        dom.welcomeModal.classList.add('active');
+    });
+    document.getElementById('egm-goto-create-team-btn')?.addEventListener('click', () => {
+        closeEscapeModal();
+        openCreateTeamModal();
+    });
+    document.getElementById('egm-goto-join-team-btn')?.addEventListener('click', () => {
+        closeEscapeModal();
+        openJoinTeamModal();
+    });
+    document.getElementById('egm-start-session-btn')?.addEventListener('click', _startEscapeSessionFromModal);
+    document.getElementById('egm-spectate-btn')?.addEventListener('click', () => {
+        currentEscapeTeam = null;
+        _egmShowStep('game');
+        _buildEscapeInfoStep();
+    });
+
+    // Overlay de sesión: código de sala / código final / códigos usados / abandonar / enviar
+    document.getElementById('eso-room-code-btn')?.addEventListener('click', _checkEscapeRoomCode);
+    document.getElementById('eso-room-code-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') _checkEscapeRoomCode(); });
+    document.getElementById('eso-final-code-btn')?.addEventListener('click', _checkEscapeFinalCode);
+    document.getElementById('eso-final-code-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') _checkEscapeFinalCode(); });
+    document.getElementById('eso-toggle-log-btn')?.addEventListener('click', () => {
+        document.getElementById('eso-codes-log').classList.toggle('hidden');
+    });
+    document.querySelectorAll('.escape-star-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = parseInt(btn.dataset.val);
+            document.getElementById('eso-rating-value').value = val;
+            document.querySelectorAll('.escape-star-btn').forEach(b => {
+                const bVal = parseInt(b.dataset.val);
+                b.classList.toggle('text-yellow-400', bVal <= val);
+                b.classList.toggle('text-gray-600',   bVal >  val);
+            });
+        });
+    });
+    document.getElementById('eso-abandon-btn')?.addEventListener('click', _openEscapeAbandonConfirm);
+    document.getElementById('eso-submit-btn')?.addEventListener('click', _submitEscapeSession);
+    document.getElementById('escape-abandon-cancel-btn')?.addEventListener('click', _closeEscapeAbandonConfirm);
+    document.getElementById('escape-abandon-confirm-btn')?.addEventListener('click', _confirmAbandonEscapeSession);
+
+    document.querySelector('[data-tab="escape"]')?.addEventListener('click', () => {
+        loadEscapeData();
+    });
 
     // Create team
     document.getElementById('create-team-submit-btn')?.addEventListener('click', _submitCreateTeam);
