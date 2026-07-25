@@ -6154,7 +6154,7 @@ async function _loadAllTardeTeams() {
 // Devuelve el nombre de un equipo por su id, buscando primero en los míos y luego en todos
 function _tardeTeamName(teamId) {
     const team = myTeams.find(t => t.id === teamId) || allTardeTeams.find(t => t.id === teamId);
-    return team ? team.name : teamId.substring(0,10) + '…';
+    return team ? team.name : String(teamId||'').substring(0,10) + '…';
 }
 
 // Misterios que YO ya he jugado (filtro rápido, no es la regla de bloqueo definitiva)
@@ -6265,7 +6265,7 @@ function _teamCardHTML(team, pubId) {
                 </button>
             </div>
             <div class="flex flex-wrap gap-1.5 mt-3">
-                ${(team.members || []).map(m => `<span class="member-chip" style="cursor:pointer" onclick="event.stopPropagation();openProfileById('${m}')">${_esc(m.substring(0,8))}…</span>`).join('')}
+                ${(team.members || []).map(m => `<span class="member-chip" style="cursor:pointer" onclick="event.stopPropagation();openProfileById('${m}')">${_esc(String(m).substring(0,8))}…</span>`).join('')}
             </div>
         </div>`;
 }
@@ -6612,7 +6612,7 @@ function _openPresentesInicioStep() {
         return `
         <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
             <input type="checkbox" class="tarde-inicio-present-check accent-amber-500 w-4 h-4" value="${m}" ${yaJugoEste ? '' : 'checked'}>
-            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…
+            <span class="text-gray-200 text-sm font-mono">${String(m).substring(0,14)}…
                 ${m === team.captain ? '<span class="text-amber-400 text-xs ml-1">👑</span>' : ''}
                 ${(team.admins||[]).includes(m) && m !== team.captain ? '<span class="text-yellow-300 text-xs ml-1">⭐</span>' : ''}
                 ${yaJugoEste ? '<span class="text-red-400 text-xs ml-1">(ya lo jugaste)</span>' : ''}
@@ -6833,7 +6833,7 @@ function _lockTardeAnswerSuccess(finalAnswer, explain) {
     document.getElementById('tso-presentes-final-list').innerHTML = (team.members||tardeSession.presentMembers).map(m => `
         <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
             <input type="checkbox" class="tarde-final-present-check accent-amber-500 w-4 h-4" value="${m}" ${tardeSession.presentMembers.includes(m) ? 'checked' : ''}>
-            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…</span>
+            <span class="text-gray-200 text-sm font-mono">${String(m).substring(0,14)}…</span>
         </label>`).join('');
 
     document.getElementById('tso-success-area').classList.remove('hidden');
@@ -7209,7 +7209,7 @@ function _openEscapePresentesStep() {
         return `
         <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
             <input type="checkbox" class="escape-inicio-present-check accent-violet-500 w-4 h-4" value="${m}" ${yaParticipo ? '' : 'checked'}>
-            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…
+            <span class="text-gray-200 text-sm font-mono">${String(m).substring(0,14)}…
                 ${m === team.captain ? '<span class="text-amber-400 text-xs ml-1">👑</span>' : ''}
                 ${yaParticipo ? '<span class="text-red-400 text-xs ml-1">(bloqueado en este escape room)</span>' : ''}
             </span>
@@ -7402,7 +7402,7 @@ function _lockEscapeSuccess(finalCode) {
     document.getElementById('eso-presentes-final-list').innerHTML = (team.members||escapeSession.presentMembers).map(m => `
         <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
             <input type="checkbox" class="escape-final-present-check accent-violet-500 w-4 h-4" value="${m}" ${escapeSession.presentMembers.includes(m) ? 'checked' : ''}>
-            <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…</span>
+            <span class="text-gray-200 text-sm font-mono">${String(m).substring(0,14)}…</span>
         </label>`).join('');
 
     document.getElementById('eso-success-area').classList.remove('hidden');
@@ -7544,7 +7544,7 @@ async function openManageTeamModal(teamId) {
                 <label class="flex items-center gap-3 cursor-pointer hover:bg-gray-700/30 rounded-lg px-2 py-1.5 transition">
                     <input type="checkbox" class="manage-admin-check accent-amber-500 w-4 h-4" value="${m}"
                            ${(team.admins||[]).includes(m) ? 'checked' : ''}>
-                    <span class="text-gray-200 text-sm font-mono">${m.substring(0,14)}…</span>
+                    <span class="text-gray-200 text-sm font-mono">${String(m).substring(0,14)}…</span>
                 </label>`).join('')}
             </div>
             <button onclick="_saveTeamAdmins('${teamId}')" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 rounded-xl transition text-sm">
@@ -7678,7 +7678,7 @@ async function showTeamProfile(teamId) {
                 <div class="flex flex-wrap gap-1.5">
                     ${team.members.map(m => `
                         <span class="member-chip" style="cursor:pointer" onclick="openProfileById('${m}')">
-                            ${m === team.captain ? '👑 ' : (team.admins.includes(m) ? '⭐ ' : '')}${_esc(m.substring(0,12))}…
+                            ${m === team.captain ? '👑 ' : ((team.admins||[]).includes(m) ? '⭐ ' : '')}${_esc(String(m).substring(0,12))}…
                         </span>`).join('')}
                 </div>
             </div>`;
