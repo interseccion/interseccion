@@ -1001,6 +1001,19 @@
                 </div>
             </details>
 
+            <!-- Notificaciones Push -->
+            <div class="text-left mb-4 bg-indigo-900/20 rounded-lg border border-indigo-800/40 p-4">
+                <p class="text-xs text-indigo-300 uppercase tracking-widest mb-2 font-bold">🔔 Notificaciones</p>
+                <p id="push-status-text" class="text-xs text-gray-400 mb-3">Comprobando…</p>
+                <button id="push-enable-btn" class="hidden w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg transition text-sm">
+                    🔔 Activar notificaciones
+                </button>
+                <button id="push-disable-btn" class="hidden w-full bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2.5 px-4 rounded-lg transition text-sm">
+                    🔕 Desactivar notificaciones
+                </button>
+                <p id="push-unsupported-text" class="hidden text-xs text-gray-500 italic">Tu navegador no soporta notificaciones push (o no lo permite en este contexto).</p>
+            </div>
+
             <div class="text-left bg-yellow-900/30 p-4 rounded-lg border border-yellow-700/50 mb-5">
                 <h4 class="font-bold text-yellow-500 mb-1">¡Advertencia!</h4>
                 <p class="text-sm text-gray-300">Si pierdes o borras este archivo, perderás el acceso a tu progreso. Basta con ejecutarlo para volver a entrar.</p>
@@ -1216,6 +1229,10 @@
         // ─── CONFIGURACIÓN ────────────────────────────────────────────────────
         // URL del Apps Script desplegado como Web App
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsBNhS1srBCg44e2jKTIABl5NvXj_EUwKUbQy4ARivUcVxNj_XQR-loX6rZlS-aoI3yw/exec';
+
+        // Clave pública VAPID (la privada solo vive en las Propiedades del Script de GAS, nunca aquí).
+        // ⚠️ Sustituye esto por TU clave pública real (genera tu propio par con `npx web-push generate-vapid-keys`).
+        const VAPID_PUBLIC_KEY = 'REEMPLAZA_ESTO_CON_TU_CLAVE_PUBLICA_VAPID';
 
         // POST sin token: el ID privado en el body ES la credencial del usuario.
         // Usar text/plain evita el preflight CORS manteniendo JSON en el body.
@@ -1873,7 +1890,136 @@
                 genBtn?.classList.toggle('hidden', !!phrase);
             }
             dom.idModal.classList.add('active');
+            _refreshPushStatusUI();
         }
+
+        // ── PUSH: suscripción a notificaciones ────────────────────────────────
+        function _urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+            const rawData = atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+            return outputArray;
+        }
+
+        async function _refreshPushStatusUI() {
+            const statusEl      = document.getElementById('push-status-text');
+            const enableBtn     = document.getElementById('push-enable-btn');
+            const disableBtn    = document.getElementById('push-disable-btn');
+            const unsupportedEl = document.getElementById('push-unsupported-text');
+
+            if (!('serviceWorker' in navigator) || !('PushManager' in window) || !window.isSecureContext) {
+                statusEl.classList.add('hidden');
+                enableBtn.classList.add('hidden');
+                disableBtn.classList.add('hidden');
+                unsupportedEl.classList.remove('hidden');
+                return;
+            }
+            unsupportedEl.classList.add('hidden');
+
+            if (!userId) {
+                statusEl.textContent = 'Inicia sesión para poder activar notificaciones.';
+                statusEl.classList.remove('hidden');
+                enableBtn.classList.add('hidden');
+                disableBtn.classList.add('hidden');
+                return;
+            }
+
+            if (Notification.permission === 'denied') {
+                statusEl.textContent = '🚫 Bloqueadas en el navegador — actívalas desde los ajustes del sitio en tu navegador.';
+                statusEl.classList.remove('hidden');
+                enableBtn.classList.add('hidden');
+                disableBtn.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) {
+                    statusEl.textContent = '✅ Notificaciones activadas en este dispositivo.';
+                    enableBtn.classList.add('hidden');
+                    disableBtn.classList.remove('hidden');
+                } else {
+                    statusEl.textContent = 'Recibe avisos de nuevos misterios y novedades, aunque tengas la app cerrada.';
+                    enableBtn.classList.remove('hidden');
+                    disableBtn.classList.add('hidden');
+                }
+                statusEl.classList.remove('hidden');
+            } catch {
+                statusEl.classList.add('hidden');
+                enableBtn.classList.add('hidden');
+                disableBtn.classList.add('hidden');
+                unsupportedEl.classList.remove('hidden');
+            }
+        }
+
+        async function _enablePushNotifications() {
+            const btn = document.getElementById('push-enable-btn');
+            if (!userId) { showToast('Inicia sesión primero.', true); return; }
+            if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.startsWith('REEMPLAZA_ESTO')) {
+                showToast('Notificaciones aún no configuradas por el administrador.', true);
+                return;
+            }
+            btn.disabled = true; btn.textContent = '⏳ Activando…';
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    showToast('No se concedió permiso para notificaciones.', true);
+                    btn.disabled = false; btn.textContent = '🔔 Activar notificaciones';
+                    return;
+                }
+
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: _urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+                });
+
+                const subJson = sub.toJSON();
+                const res = await _postTarde({
+                    action: 'savePushSubscription',
+                    pubId: getPublicId(userId) || '',
+                    endpoint: subJson.endpoint,
+                    p256dh: subJson.keys?.p256dh || '',
+                    auth: subJson.keys?.auth || '',
+                    userAgent: navigator.userAgent
+                });
+
+                if (res.error) {
+                    showToast('Error al guardar la suscripción: ' + res.error, true);
+                } else {
+                    showToast('🔔 ¡Notificaciones activadas!');
+                }
+            } catch (e) {
+                showToast('No se pudo activar: ' + e.message, true);
+            }
+            btn.disabled = false; btn.textContent = '🔔 Activar notificaciones';
+            _refreshPushStatusUI();
+        }
+
+        async function _disablePushNotifications() {
+            const btn = document.getElementById('push-disable-btn');
+            btn.disabled = true; btn.textContent = '⏳ Desactivando…';
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) {
+                    const endpoint = sub.endpoint;
+                    await sub.unsubscribe();
+                    await _postTarde({ action: 'deletePushSubscription', endpoint });
+                }
+                showToast('🔕 Notificaciones desactivadas.');
+            } catch (e) {
+                showToast('Error al desactivar: ' + e.message, true);
+            }
+            btn.disabled = false; btn.textContent = '🔕 Desactivar notificaciones';
+            _refreshPushStatusUI();
+        }
+
+        document.getElementById('push-enable-btn')?.addEventListener('click', _enablePushNotifications);
+        document.getElementById('push-disable-btn')?.addEventListener('click', _disablePushNotifications);
 
         // Botones frase semilla
         document.getElementById('seed-generate-btn')?.addEventListener('click', async () => {
