@@ -18,7 +18,7 @@
  * navegadores descarten la caché vieja.
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STATIC_CACHE = `interseccion-static-${CACHE_VERSION}`;
 const DATA_CACHE    = `interseccion-data-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `interseccion-runtime-${CACHE_VERSION}`;
@@ -45,6 +45,15 @@ function isStaticShellRequest(url) {
     if (url.origin !== self.location.origin) return false;
     return /\.(html?|css|js|png|jpg|jpeg|svg|webp|ico|woff2?|json)$/.test(url.pathname)
         || url.pathname === '/' || url.pathname.endsWith('/');
+}
+
+// Quita "?v=timestamp" (y cualquier otro query string) para usar como clave de
+// caché — si no, cada petición con un timestamp distinto sería siempre un
+// "cache miss" y offline nunca encontraría nada guardado.
+function _cacheKeyFor(req) {
+    const url = new URL(req.url);
+    url.search = '';
+    return new Request(url.toString(), { method: 'GET' });
 }
 
 self.addEventListener('install', (event) => {
@@ -96,29 +105,31 @@ self.addEventListener('fetch', (event) => {
 });
 
 async function _networkFirstThenCache(req, cacheName) {
-    const cache = await caches.open(cacheName);
+    const cache    = await caches.open(cacheName);
+    const cacheKey = _cacheKeyFor(req); // sin ?v=timestamp, si no nunca habría "cache hit"
     try {
         const fresh = await fetch(req);
-        if (fresh && fresh.ok) cache.put(req, fresh.clone());
+        if (fresh && fresh.ok) cache.put(cacheKey, fresh.clone());
         return fresh;
     } catch (err) {
-        const cached = await cache.match(req);
+        const cached = await cache.match(cacheKey);
         if (cached) return cached;
         throw err;
     }
 }
 
 async function _cacheFirstThenNetwork(req, cacheName) {
-    const cache  = await caches.open(cacheName);
-    const cached = await cache.match(req);
+    const cache    = await caches.open(cacheName);
+    const cacheKey = _cacheKeyFor(req);
+    const cached   = await cache.match(cacheKey);
     if (cached) {
         // Actualiza en segundo plano para la próxima visita (no bloquea la respuesta)
-        fetch(req).then((fresh) => { if (fresh && fresh.ok) cache.put(req, fresh.clone()); }).catch(() => {});
+        fetch(req).then((fresh) => { if (fresh && fresh.ok) cache.put(cacheKey, fresh.clone()); }).catch(() => {});
         return cached;
     }
     try {
         const fresh = await fetch(req);
-        if (fresh && fresh.ok) cache.put(req, fresh.clone());
+        if (fresh && fresh.ok) cache.put(cacheKey, fresh.clone());
         return fresh;
     } catch (err) {
         // Última red de seguridad: si piden la portada y no hay nada, intenta index.html cacheado
