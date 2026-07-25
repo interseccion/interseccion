@@ -2,23 +2,37 @@
   "name": "La Intersección",
   "short_name": "Intersección",
   "description": "El juego de misterios donde encuentras la conexión oculta entre las pistas.",
-  "start_url": "https://interseccion.github.io",
+  "id": "/",
+  "start_url": ".",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#4f46e5",
   "lang": "es",
   "icons": [
     {
-      "src": "favicon-196x196.png",
-      "sizes": "196x196",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
       "src": "icon-128.png",
       "sizes": "128x128",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "favicon-196x196.png",
+      "sizes": "196x196",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
