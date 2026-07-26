@@ -2050,13 +2050,13 @@
         /** Se llama en cada carga de página: solo entra si hoy es día par del mes */
         function _checkPushBubbleDayTrigger() {
             const day = new Date().getDate();
-            if (day % 2 === 0) _maybeShowPushBubble();
+            if (day % 2 === 0) _maybeShowInstallOrPushBubble();
         }
 
         /** Se llama justo tras iniciar sesión o crear cuenta (sobrevive a un location.reload()) */
         function _flagAndMaybeShowPushBubble() {
             sessionStorage.setItem(PUSH_BUBBLE_LOGIN_FLAG, '1');
-            _maybeShowPushBubble();
+            _maybeShowInstallOrPushBubble();
         }
 
         document.getElementById('push-bubble-enable-btn')?.addEventListener('click', async () => {
@@ -2066,6 +2066,59 @@
         document.getElementById('push-bubble-dismiss-btn')?.addEventListener('click', () => {
             document.getElementById('push-bubble')?.classList.add('hidden');
         });
+
+        // ── PWA: sugerir instalación ───────────────────────────────────────────
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); // evitamos el mini-infobar nativo, usamos nuestra burbuja
+            deferredInstallPrompt = e;
+        });
+
+        function _appIsInstalled() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+        function _isIOSDevice() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        const PWA_BUBBLE_SHOWN_KEY = 'pwa_install_bubble_last_shown';
+
+        /** Prioridad: si no está instalada, sugiere instalarla; si ya lo está, sugiere notificaciones.
+         *  Nunca muestra las 2 burbujas a la vez. */
+        async function _maybeShowInstallOrPushBubble() {
+            if (!_appIsInstalled()) {
+                const todayStr = new Date().toDateString();
+                const isIOS = _isIOSDevice();
+                const canPromptNow = !!deferredInstallPrompt;
+                if ((canPromptNow || isIOS) && localStorage.getItem(PWA_BUBBLE_SHOWN_KEY) !== todayStr) {
+                    document.getElementById('pwa-install-ios-steps')?.classList.toggle('hidden', !isIOS);
+                    document.getElementById('pwa-install-btn')?.classList.toggle('hidden', !canPromptNow);
+                    document.getElementById('pwa-install-bubble')?.classList.remove('hidden');
+                    localStorage.setItem(PWA_BUBBLE_SHOWN_KEY, todayStr);
+                    return;
+                }
+            }
+            _maybeShowPushBubble();
+        }
+
+        document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+            document.getElementById('pwa-install-bubble')?.classList.add('hidden');
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+        });
+        document.getElementById('pwa-install-dismiss-btn')?.addEventListener('click', () => {
+            document.getElementById('pwa-install-bubble')?.classList.add('hidden');
+        });
+
+        /** Nada más abrir la app instalada por primera vez, sugiere activar notificaciones */
+        function _checkFirstPwaLaunch() {
+            if (_appIsInstalled() && !localStorage.getItem('pwa_first_launch_handled')) {
+                localStorage.setItem('pwa_first_launch_handled', '1');
+                _maybeShowPushBubble();
+            }
+        }
 
         // Botones frase semilla
         document.getElementById('seed-generate-btn')?.addEventListener('click', async () => {
@@ -5672,10 +5725,12 @@
             // reciente (sobrevive a un location.reload()), o si hoy toca por paridad de día.
             if (sessionStorage.getItem(PUSH_BUBBLE_LOGIN_FLAG)) {
                 sessionStorage.removeItem(PUSH_BUBBLE_LOGIN_FLAG);
-                _maybeShowPushBubble();
+                _maybeShowInstallOrPushBubble();
             } else {
                 _checkPushBubbleDayTrigger();
             }
+            // Si la app ya está instalada y es la primera vez que se abre así, sugiere notificaciones
+            _checkFirstPwaLaunch();
 
             // Bfcache: si el usuario vuelve con el botón atrás/adelante el navegador
             // sirve la página congelada en memoria. Detectamos esto y refrescamos datos.
@@ -6087,6 +6142,24 @@
                 <div class="flex gap-2">
                     <button id="push-bubble-enable-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-2 rounded-lg transition">🔔 Activar</button>
                     <button id="push-bubble-dismiss-btn" class="text-gray-400 hover:text-gray-200 text-xs font-semibold py-2 px-3 rounded-lg transition">Ahora no</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ BURBUJA: INSTALAR LA APP (PWA) ═══════════════════════════════════ -->
+    <div id="pwa-install-bubble" class="hidden fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-50 bg-gray-800 border border-emerald-500/40 rounded-2xl shadow-2xl p-4 fade-in">
+        <div class="flex items-start gap-3">
+            <span class="text-2xl flex-shrink-0">📲</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-white mb-1">Instala la app</p>
+                <p class="text-xs text-gray-400 mb-3">Juega más rápido, sin conexión y con notificaciones — como una app de verdad.</p>
+                <div id="pwa-install-ios-steps" class="hidden text-xs text-gray-300 bg-gray-900/60 rounded-lg p-2.5 mb-3">
+                    Toca <strong>⬆️ Compartir</strong> en Safari y luego <strong>"Añadir a pantalla de inicio"</strong>.
+                </div>
+                <div class="flex gap-2">
+                    <button id="pwa-install-btn" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2 rounded-lg transition">📲 Instalar</button>
+                    <button id="pwa-install-dismiss-btn" class="text-gray-400 hover:text-gray-200 text-xs font-semibold py-2 px-3 rounded-lg transition">Ahora no</button>
                 </div>
             </div>
         </div>
