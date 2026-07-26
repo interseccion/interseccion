@@ -1736,6 +1736,7 @@
                     // Limpiar URL sin dejar rastro en el historial
                     window.history.replaceState({}, document.title, window.location.pathname);
                     sessionStorage.setItem('home_just_restored', '1');
+                    sessionStorage.setItem('push_bubble_check_login', '1');
                     setTimeout(() => showToast('✅ Sesión restaurada'), 1000);
                     return;
                 }
@@ -1863,6 +1864,7 @@
             } else {
                 showToast('✅ Cuenta creada. Pulsa «Mi ID» en la barra para ver tu llave.', false);
                 loadNotifications();
+                _flagAndMaybeShowPushBubble();
             }
         }
 
@@ -2021,6 +2023,50 @@
         document.getElementById('push-enable-btn')?.addEventListener('click', _enablePushNotifications);
         document.getElementById('push-disable-btn')?.addEventListener('click', _disablePushNotifications);
 
+        // ── Burbuja para invitar a activar notificaciones ─────────────────────
+        const PUSH_BUBBLE_SHOWN_KEY = 'push_bubble_last_shown'; // fecha (toDateString) de la última vez que se mostró
+        const PUSH_BUBBLE_LOGIN_FLAG = 'push_bubble_check_login'; // sessionStorage: "acabo de iniciar sesión/crear cuenta"
+
+        /** Comprueba requisitos y muestra la burbuja si corresponde (no más de una vez al día) */
+        async function _maybeShowPushBubble() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window) || !window.isSecureContext) return;
+            if (!userId) return;
+            if (!VAPID_PUBLIC_KEY || VAPID_PUBLIC_KEY.startsWith('REEMPLAZA_ESTO')) return;
+            if (Notification.permission === 'denied') return;
+
+            const todayStr = new Date().toDateString();
+            if (localStorage.getItem(PUSH_BUBBLE_SHOWN_KEY) === todayStr) return; // ya se mostró (o se descartó) hoy
+
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) return; // ya activadas en este dispositivo
+            } catch { return; }
+
+            document.getElementById('push-bubble')?.classList.remove('hidden');
+            localStorage.setItem(PUSH_BUBBLE_SHOWN_KEY, todayStr);
+        }
+
+        /** Se llama en cada carga de página: solo entra si hoy es día par del mes */
+        function _checkPushBubbleDayTrigger() {
+            const day = new Date().getDate();
+            if (day % 2 === 0) _maybeShowPushBubble();
+        }
+
+        /** Se llama justo tras iniciar sesión o crear cuenta (sobrevive a un location.reload()) */
+        function _flagAndMaybeShowPushBubble() {
+            sessionStorage.setItem(PUSH_BUBBLE_LOGIN_FLAG, '1');
+            _maybeShowPushBubble();
+        }
+
+        document.getElementById('push-bubble-enable-btn')?.addEventListener('click', async () => {
+            document.getElementById('push-bubble')?.classList.add('hidden');
+            await _enablePushNotifications();
+        });
+        document.getElementById('push-bubble-dismiss-btn')?.addEventListener('click', () => {
+            document.getElementById('push-bubble')?.classList.add('hidden');
+        });
+
         // Botones frase semilla
         document.getElementById('seed-generate-btn')?.addEventListener('click', async () => {
             const btn = document.getElementById('seed-generate-btn');
@@ -2097,6 +2143,7 @@
                     localStorage.setItem('mystery_seed_'+userId, phrase);
                     dom.welcomeModal.classList.remove('active');
                     showToast(`✅ ¡Cuenta recuperada! Bienvenid@ de nuevo, ${data.name||'jugador@'}`, false);
+                    sessionStorage.setItem(PUSH_BUBBLE_LOGIN_FLAG, '1');
                     setTimeout(()=>location.reload(), 1500);
                 }
             } catch(e) { errEl.textContent='❌ Error de conexión.'; errEl.classList.remove('hidden'); }
@@ -2170,6 +2217,7 @@
                     dom.welcomeModal.classList.remove('active'); // También cerrar bienvenida si estaba
                     dom.uploadIdInput.value = '';
                     loadLeaderboard();
+                    _flagAndMaybeShowPushBubble();
                 } else {
                     showToast('Archivo de ID no válido', true);
                 }
@@ -5620,6 +5668,15 @@
             loadNotifications();
             initNotesListeners();
 
+            // Burbuja de activar notificaciones: si venimos de un login/creación de cuenta
+            // reciente (sobrevive a un location.reload()), o si hoy toca por paridad de día.
+            if (sessionStorage.getItem(PUSH_BUBBLE_LOGIN_FLAG)) {
+                sessionStorage.removeItem(PUSH_BUBBLE_LOGIN_FLAG);
+                _maybeShowPushBubble();
+            } else {
+                _checkPushBubbleDayTrigger();
+            }
+
             // Bfcache: si el usuario vuelve con el botón atrás/adelante el navegador
             // sirve la página congelada en memoria. Detectamos esto y refrescamos datos.
             window.addEventListener('pageshow', (ev) => {
@@ -6019,6 +6076,21 @@
     </div>
 
     <!-- ═══ TARDE — CONFIRMAR ABANDONO ═══════════════════════════════════════ -->
+
+    <!-- ═══ BURBUJA: ACTIVAR NOTIFICACIONES ═══════════════════════════════════ -->
+    <div id="push-bubble" class="hidden fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-50 bg-gray-800 border border-indigo-500/40 rounded-2xl shadow-2xl p-4 fade-in">
+        <div class="flex items-start gap-3">
+            <span class="text-2xl flex-shrink-0">🔔</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-white mb-1">Activa las notificaciones</p>
+                <p class="text-xs text-gray-400 mb-3">Entérate de nuevos misterios y novedades, aunque tengas la app cerrada.</p>
+                <div class="flex gap-2">
+                    <button id="push-bubble-enable-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-2 rounded-lg transition">🔔 Activar</button>
+                    <button id="push-bubble-dismiss-btn" class="text-gray-400 hover:text-gray-200 text-xs font-semibold py-2 px-3 rounded-lg transition">Ahora no</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="tarde-abandon-modal" class="tarde-modal-overlay hidden" style="z-index:250">
         <div class="tarde-modal-box" style="max-width:420px">
