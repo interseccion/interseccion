@@ -2191,6 +2191,14 @@
             return processed;
         }
 
+        /** Si se llega con #anuncio (p.ej. al pulsar una notificación push sobre un anuncio),
+         *  fuerza que se muestre el anuncio actual aunque ya se hubiera visto antes. */
+        function _checkAdShareLink() {
+            if (location.hash !== '#anuncio') return;
+            checkAds(true);
+            history.replaceState({}, '', `${location.origin}${location.pathname}`);
+        }
+
         async function checkAds(force = false) {
             try {
                 const res = await fetch(`${ADS_PATH}?v=${Date.now()}`);
@@ -8110,6 +8118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tli-join-btn')?.addEventListener('click', _joinTeamFromLink);
     _checkLinkInvite();
     _checkTardeShareLink();
+    _checkAdShareLink();
     // Si al cargar la página el usuario aún no había iniciado sesión, reintentamos
     // la invitación pendiente en cuanto complete el login (máx. 60s de espera).
     let _joinCheckTries = 0;
