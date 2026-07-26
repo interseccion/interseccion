@@ -2663,17 +2663,8 @@
                 {
                     selector: '.home-bento',
                     title: 'La pantalla de inicio',
-                    text: 'Esta es la pantalla principal: cada tarjeta te lleva directamente a una sección — Misterios en Curso, Podio, Archivo, Equipos, Tarde, Escape Rooms y Sobre el Proyecto. Vamos a entrar y ver cada parte con más calma.',
+                    text: 'Esta es la pantalla principal: cada tarjeta te lleva directamente a una sección — Misterios en Curso, Podio, Archivo, Equipos, Tarde, Escape Rooms y Sobre el Proyecto. Una vez dentro, arriba del todo tienes esas mismas secciones como pestañas para moverte entre ellas sin volver aquí. Vamos a entrar y ver cada parte con más calma.',
                     before: async () => { tourCloseAllModals(); showHomeScreen(); }
-                },
-                {
-                    selector: '#main-tabs-nav',
-                    title: 'Las pestañas principales',
-                    text: 'Aquí navegas entre Misterios en Curso, Archivo, Podio, Sobre el Proyecto, y las nuevas: Equipos, Tarde y Escape Rooms — estas 3 últimas son modalidades para jugar en equipo, te las enseño en un momento.',
-                    before: async () => {
-                        tourCloseAllModals();
-                        showMainApp('en-curso');
-                    }
                 },
                 {
                     selector: '#en-curso > div:first-child',
@@ -2745,22 +2736,49 @@
                     before: async () => { tourEnsureResolverOpen(); }
                 },
                 {
+                    selector: '#archivo-grid',
+                    title: '📚 Archivo',
+                    text: 'Aquí están todos los misterios ya resueltos — puedes verlos, releer sus pistas o ver la solución con calma. Arriba tienes filtros por tipo y por dificultad para encontrar algo concreto.',
+                    before: async () => { tourCloseAllModals(); showMainApp('archivo'); }
+                },
+                {
                     selector: '[data-tab="equipos"]',
                     title: '👥 Equipos',
-                    text: 'Para jugar Misterios de Tarde o Escape Rooms necesitas un equipo. Aquí lo creas, invitas a gente con un código, o te unes a uno que ya exista.',
+                    text: 'Para jugar Misterios de Tarde o Escape Rooms necesitas un equipo. Vamos a echar un vistazo a esta pestaña.',
+                    advanceOnClick: true,
                     before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
+                },
+                {
+                    selector: '#my-teams-container',
+                    title: 'Crear o unirte a un equipo',
+                    text: 'Aquí creas un equipo nuevo, o te unes a uno ya existente con un código de invitación que te pase alguien. El equipo tiene un capitán y, si quiere, puede nombrar otros admins.',
+                    before: async () => { tourCloseAllModals(); showMainApp('equipos'); }
                 },
                 {
                     selector: '[data-tab="tarde"]',
                     title: '🌆 Misterios de Tarde',
-                    text: 'Una modalidad para jugar en equipo, en directo: elegís el misterio, seleccionáis quién está presente, y jugáis todos juntos desde una sola pantalla con cronómetro. Los puntos dependen del tiempo, las pistas usadas y los fallos.',
+                    text: 'Una modalidad para jugar en equipo, en directo. Entremos a ver cómo se ve.',
+                    advanceOnClick: true,
                     before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
+                },
+                {
+                    selector: '#tarde-games-container',
+                    title: 'Elegid el misterio y jugad',
+                    text: 'El capitán (o un admin) elige un misterio de aquí, marca quién del equipo está jugando ahora mismo, y empezáis todos juntos desde una sola pantalla con cronómetro. Los puntos dependen del tiempo, las pistas usadas y los fallos — y arriba puedes filtrar por duración.',
+                    before: async () => { tourCloseAllModals(); showMainApp('tarde'); }
                 },
                 {
                     selector: '[data-tab="escape"]',
                     title: '🔐 Escape Rooms',
-                    text: 'Similar a Tarde, pero por salas: cada una tiene su propia ambientación y un código para pasar a la siguiente. Al final introducís el código de solución antes de que se acabe la cuenta atrás. ¡Ojo! Si abandonáis a mitad de partida, no podréis reintentar ese escape room.',
+                    text: 'Similar a Tarde, pero por salas. Vamos a ver el listado.',
+                    advanceOnClick: true,
                     before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
+                },
+                {
+                    selector: '#escape-games-container',
+                    title: 'Salas, códigos y cuenta atrás',
+                    text: 'Cada escape room tiene varias salas con su propia ambientación y un código para pasar a la siguiente. Al superar la última, introducís el código final antes de que se acabe el tiempo. ¡Ojo! Si abandonáis a mitad, no podréis reintentar ese escape room.',
+                    before: async () => { tourCloseAllModals(); showMainApp('escape'); }
                 },
                 {
                     selector: '#podium-season-select',
