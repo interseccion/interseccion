@@ -641,6 +641,7 @@
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">3</div><div class="pt-1">Cuando creas tener la solución (en un juego en curso), envía tu respuesta y una breve explicación de tu razonamiento.</div></li>
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">4</div><div class="pt-1">Espera la revisión — te llegará una notificación 🔔 en cuanto se confirme si has acertado.</div></li>
                                 <li class="flex"><div class="flex-shrink-0 bg-indigo-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">5</div><div class="pt-1">¡Compite en el Podio acumulando puntos por tus aciertos y manteniendo tu racha!</div></li>
+                                <li class="flex"><div class="flex-shrink-0 bg-amber-600 rounded-full text-white font-bold w-8 h-8 flex items-center justify-center mr-4">+</div><div class="pt-1">¿Prefieres jugar en equipo? Prueba <strong>Equipos</strong>, <strong>Tarde</strong> y <strong>Escape Rooms</strong> en el menú de arriba — se juega en directo, todos juntos.</div></li>
                             </ol>
                              <div class="mt-8 text-center">
                                 <button id="instructions-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105">Instrucciones detalladas</button>
@@ -2059,12 +2060,24 @@
             _maybeShowInstallOrPushBubble();
         }
 
-        document.getElementById('push-bubble-enable-btn')?.addEventListener('click', async () => {
-            document.getElementById('push-bubble')?.classList.add('hidden');
-            await _enablePushNotifications();
-        });
-        document.getElementById('push-bubble-dismiss-btn')?.addEventListener('click', () => {
-            document.getElementById('push-bubble')?.classList.add('hidden');
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('push-bubble-enable-btn')?.addEventListener('click', async () => {
+                document.getElementById('push-bubble')?.classList.add('hidden');
+                await _enablePushNotifications();
+            });
+            document.getElementById('push-bubble-dismiss-btn')?.addEventListener('click', () => {
+                document.getElementById('push-bubble')?.classList.add('hidden');
+            });
+            document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
+                document.getElementById('pwa-install-bubble')?.classList.add('hidden');
+                if (!deferredInstallPrompt) return;
+                deferredInstallPrompt.prompt();
+                await deferredInstallPrompt.userChoice;
+                deferredInstallPrompt = null;
+            });
+            document.getElementById('pwa-install-dismiss-btn')?.addEventListener('click', () => {
+                document.getElementById('pwa-install-bubble')?.classList.add('hidden');
+            });
         });
 
         // ── PWA: sugerir instalación ───────────────────────────────────────────
@@ -2100,17 +2113,6 @@
             }
             _maybeShowPushBubble();
         }
-
-        document.getElementById('pwa-install-btn')?.addEventListener('click', async () => {
-            document.getElementById('pwa-install-bubble')?.classList.add('hidden');
-            if (!deferredInstallPrompt) return;
-            deferredInstallPrompt.prompt();
-            await deferredInstallPrompt.userChoice;
-            deferredInstallPrompt = null;
-        });
-        document.getElementById('pwa-install-dismiss-btn')?.addEventListener('click', () => {
-            document.getElementById('pwa-install-bubble')?.classList.add('hidden');
-        });
 
         /** Nada más abrir la app instalada por primera vez, sugiere activar notificaciones */
         function _checkFirstPwaLaunch() {
@@ -2404,7 +2406,7 @@
                     <p>La Intersección es un juego de misterios semanales. Tu objetivo es adivinar <strong>«la intersección»</strong> (la persona, lugar, cosa o concepto) que conecta todas las pistas antes que el resto.</p>
                     <p class="mt-3">Normalmente cada semana se publican nuevas pistas en los juegos activos, aunque dependiendo del tipo de juego puede variar. Tú decides cuándo intentarlo: en cuanto sale la primera pista, a mitad de semana, esperando a tener más información... Cada estrategia tiene sus ventajas (ahora te digo cuando llegues a la parte de «Podios y puntos»).</p>
                     <div class="bg-gray-700/50 p-4 rounded-lg mt-5 border border-indigo-500/30">
-                        <p class="text-sm text-center">💡 <strong>Consejo:</strong> Estate pendiente de las notificaciones en la campana de anuncios para saber cuándo hay nuevas pistas.</p>
+                        <p class="text-sm text-center">💡 <strong>Consejo:</strong> Estate pendiente de las notificaciones en la campana de anuncios para saber cuándo hay nuevas pistas — y si activas las notificaciones push (en «Mi ID» → «Ajustes de cuenta»), te enteras aunque tengas la app cerrada.</p>
                     </div>`
             },
             {
@@ -2454,6 +2456,40 @@
                     <p class="mt-3">Los puntos dependen de tu posición al acertar, la dificultad del misterio, cuántas pistas te ahorraste y si respondiste con demora (es decir, una vez publicadas todas las pistas). Pulsa la <strong>ℹ️</strong> junto al podio para ver la fórmula completa.</p>`
             },
             {
+                icon: '👥',
+                title: 'Equipos y Misterios de Tarde',
+                body: `
+                    <p>Además de los misterios normales (en solitario, a tu ritmo), hay una modalidad para jugar <strong>en equipo, en directo</strong>.</p>
+                    <h4 class="text-base font-bold text-white mb-2 mt-4">Equipos</h4>
+                    <p>Desde la pestaña <strong>Equipos</strong> puedes crear uno, invitar gente con un código de invitación, o unirte a uno ya existente. Un equipo tiene un capitán y, opcionalmente, otros admins.</p>
+                    <h4 class="text-base font-bold text-white mb-2 mt-4">Misterios de Tarde</h4>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>El capitán (o un admin) elige el misterio y marca quién del equipo está jugando ahora mismo.</li>
+                        <li>Se juega en directo, todos juntos desde una sola pantalla, con un cronómetro contando el tiempo.</li>
+                        <li>Los puntos dependen del tiempo que tardéis, las pistas que uséis y los fallos al responder.</li>
+                        <li>Cada misterio de tarde tiene su propio mini-podio, además del podio general de tarde.</li>
+                    </ul>
+                    <div class="bg-gray-700/50 p-4 rounded-lg mt-5 border border-amber-500/30">
+                        <p class="text-sm text-center">💡 <strong>Ojo:</strong> una vez alguien del equipo ha jugado (o abandonado) un misterio de tarde concreto, ni él ni el resto de presentes en esa partida pueden volver a intentarlo.</p>
+                    </div>`
+            },
+            {
+                icon: '🔐',
+                title: 'Escape Rooms',
+                body: `
+                    <p>Otra modalidad de equipo, pensada como un escape room de verdad, con salas y una cuenta atrás.</p>
+                    <ul class="list-disc pl-5 space-y-2 mt-3">
+                        <li>Cada escape room tiene varias <strong>salas</strong>, cada una con su propia ambientación (texto, imágenes...) y un <strong>código</strong> que hay que encontrar para pasar a la siguiente.</li>
+                        <li>Al superar la última sala, se pide el <strong>código final</strong> — la solución completa del escape room.</li>
+                        <li>Hay una <strong>cuenta atrás</strong>: si se acaba el tiempo podéis seguir jugando, pero ya sin puntuación normal (solo una puntuación simbólica si aun así lo termináis).</li>
+                        <li>Puedes ir consultando los <strong>códigos ya superados</strong> durante la partida, por si se te olvida alguno.</li>
+                        <li>El nº de jugadores recomendado que indica cada escape room es solo orientativo, no bloquea nada.</li>
+                    </ul>
+                    <div class="bg-yellow-900/30 p-4 rounded-lg mt-5 border border-yellow-700/50">
+                        <p class="text-sm text-center">⚠️ <strong>Importante:</strong> si abandonáis un escape room a mitad, todos los presentes en ese momento quedan bloqueados para siempre en ese escape room concreto — no hay segundas oportunidades.</p>
+                    </div>`
+            },
+            {
                 icon: '🔑',
                 title: 'Tu identidad',
                 body: `
@@ -2466,6 +2502,16 @@
                     </ul>
                     <div class="bg-yellow-900/30 p-4 rounded-lg mt-5 border border-yellow-700/50">
                         <p class="text-sm text-center">⚠️ <strong>Importante:</strong> si pierdes tu ID y no tienes la frase semilla guardada, no hay forma de recuperar tu cuenta.</p>
+                    </div>`
+            },
+            {
+                icon: '🔔',
+                title: 'Notificaciones e instalar la app',
+                body: `
+                    <p>Desde <strong>Mi ID</strong> → <strong>Ajustes de cuenta</strong> puedes activar las <strong>notificaciones push</strong>: avisos que te llegan aunque tengas la app cerrada del todo (nuevas pistas, si se ha revisado tu respuesta, anuncios importantes...).</p>
+                    <p class="mt-3">Esta web también funciona como una <strong>app instalable</strong> (PWA): puedes ponerla en tu pantalla de inicio como cualquier otra app, y una vez instalada, funciona parcialmente <strong>sin conexión</strong> con los datos que ya hubieras cargado antes.</p>
+                    <div class="bg-gray-700/50 p-4 rounded-lg mt-5 border border-indigo-500/30">
+                        <p class="text-sm text-center">💡 De vez en cuando puede aparecerte una burbuja sugiriendo instalar la app o activar notificaciones — puedes ignorarla con «Ahora no» y hacerlo tú mismo cuando quieras desde «Ajustes de cuenta».</p>
                     </div>`
             }
         ];
@@ -2615,12 +2661,18 @@
                     before: async () => { tourCloseAllModals(); }
                 },
                 {
+                    selector: '.home-bento',
+                    title: 'La pantalla de inicio',
+                    text: 'Esta es la pantalla principal: cada tarjeta te lleva directamente a una sección — Misterios en Curso, Podio, Archivo, Equipos, Tarde, Escape Rooms y Sobre el Proyecto. Vamos a entrar y ver cada parte con más calma.',
+                    before: async () => { tourCloseAllModals(); showHomeScreen(); }
+                },
+                {
                     selector: '#main-tabs-nav',
                     title: 'Las pestañas principales',
-                    text: 'Aquí navegas entre Misterios en Curso, Archivo, Podio y Sobre el Proyecto.',
+                    text: 'Aquí navegas entre Misterios en Curso, Archivo, Podio, Sobre el Proyecto, y las nuevas: Equipos, Tarde y Escape Rooms — estas 3 últimas son modalidades para jugar en equipo, te las enseño en un momento.',
                     before: async () => {
                         tourCloseAllModals();
-                        document.querySelector('.tab-button[data-tab="en-curso"]')?.click();
+                        showMainApp('en-curso');
                     }
                 },
                 {
@@ -2630,7 +2682,7 @@
                     advanceOnClick: true,
                     before: async () => {
                         tourCloseAllModals();
-                        document.querySelector('.tab-button[data-tab="en-curso"]')?.click();
+                        showMainApp('en-curso');
                     }
                 },
                 {
@@ -2693,12 +2745,30 @@
                     before: async () => { tourEnsureResolverOpen(); }
                 },
                 {
+                    selector: '[data-tab="equipos"]',
+                    title: '👥 Equipos',
+                    text: 'Para jugar Misterios de Tarde o Escape Rooms necesitas un equipo. Aquí lo creas, invitas a gente con un código, o te unes a uno que ya exista.',
+                    before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
+                },
+                {
+                    selector: '[data-tab="tarde"]',
+                    title: '🌆 Misterios de Tarde',
+                    text: 'Una modalidad para jugar en equipo, en directo: elegís el misterio, seleccionáis quién está presente, y jugáis todos juntos desde una sola pantalla con cronómetro. Los puntos dependen del tiempo, las pistas usadas y los fallos.',
+                    before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
+                },
+                {
+                    selector: '[data-tab="escape"]',
+                    title: '🔐 Escape Rooms',
+                    text: 'Similar a Tarde, pero por salas: cada una tiene su propia ambientación y un código para pasar a la siguiente. Al final introducís el código de solución antes de que se acabe la cuenta atrás. ¡Ojo! Si abandonáis a mitad de partida, no podréis reintentar ese escape room.',
+                    before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
+                },
+                {
                     selector: '#podium-season-select',
                     title: 'Elige el filtro del podio',
                     text: 'Aquí cambias entre la Clasificación General, rachas de aciertos o de participaciones, y quién ha participado en más misterios, por si queires ver una cosa u otra.',
                     before: async () => {
                         tourCloseAllModals();
-                        document.querySelector('.tab-button[data-tab="podio"]')?.click();
+                        showMainApp('podio');
                         // El clic dispara loadLeaderboard() sin esperarlo (fire-and-forget) — si no
                         // lo esperamos aquí también, medimos la posición ANTES de que lleguen los
                         // datos reales, y el cambio de altura al pintarlos descuadra el spotlight.
@@ -2785,10 +2855,19 @@
                     }
                 ]),
                 {
+                    selector: '#push-status-text',
+                    title: '🔔 Notificaciones y 📲 instalar la app',
+                    text: 'Aquí mismo, en «Mi ID» → «Ajustes de cuenta», puedes activar notificaciones push (avisos aunque tengas la app cerrada) y también instalar esta web como una app de verdad en tu móvil u ordenador, con soporte sin conexión.',
+                    before: async () => {
+                        tourCloseAllModals();
+                        tourEnsureIdModalOpen();
+                    }
+                },
+                {
                     selector: '#notes-fab',
                     title: '📝 Bloc de notas',
                     text: 'Este botón abre un bloc de notas privado donde puedes apuntar deducciones, pistas sospechosas o teorías mientras juegas. Solo lo ves tú y se guarda automáticamente en este dispositivo.',
-                    before: async () => { tourCloseAllModals(); document.querySelector('.tab-button[data-tab="en-curso"]')?.click(); }
+                    before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
                 },
                 {
                     selector: '#guided-tour-btn',
@@ -2796,7 +2875,7 @@
                     text: 'Ya conoces todas las partes del juego. Si quieres repetir este tour en cualquier momento, encuéntralo aquí, en la pestaña «Sobre el Proyecto». ¡A jugar de verdad!',
                     before: async () => {
                         tourCloseAllModals();
-                        document.querySelector('.tab-button[data-tab="sobre"]')?.click();
+                        showMainApp('sobre');
                         await new Promise(r => setTimeout(r, 300));
                     }
                 }
@@ -4419,11 +4498,12 @@
                     }
                 }
             }
-            // showMainApp se define aquí dentro (closure de initEventListeners), pero
-            // el bloque de "Misterios de Tarde" (compartir enlaces, etc.) vive en otro
-            // <script> como funciones de nivel superior y necesita poder llamarla —
-            // por eso se expone también en window.
+            // showMainApp y showHomeScreen se definen aquí dentro (closure de initEventListeners),
+            // pero el tour guiado y el bloque de "Misterios de Tarde" (definidos como funciones de
+            // nivel superior en otro punto del script) necesitan poder llamarlas — por eso se
+            // exponen también en window.
             window.showMainApp = showMainApp;
+            window.showHomeScreen = showHomeScreen;
 
             function handleHomeNav(navTarget) {
                 // "tarde" redirige a la pestaña tarde
