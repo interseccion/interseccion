@@ -18,7 +18,7 @@
  * navegadores descarten la caché vieja.
  */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE = `interseccion-static-${CACHE_VERSION}`;
 const DATA_CACHE    = `interseccion-data-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `interseccion-runtime-${CACHE_VERSION}`;
