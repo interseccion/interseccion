@@ -1,6 +1,6 @@
 # 🛡️ Política de Privacidad
 
-**Última actualización:** [27/6/2026]
+**Última actualización:** [27/7/2026]
 
 **Correo de contacto:** 💌 interseccion@proton.me
 
@@ -62,6 +62,31 @@ Si me escribes directamente a **Proton**, veré tu dirección de correo de orige
 
 *Base legal: interés legítimo para gestionar tus solicitudes, atender las comunicaciones y mejorar la estabilidad y el servicio del juego (Art. 6.1.f RGPD).*
 
+### D) Al jugar en equipo (Equipos, Misterios de Tarde y Escape Rooms)
+
+Si creas o te unes a un **equipo** para jugar en estas modalidades, guardo:
+
+- **El nombre del equipo** y quién es su capitán y sus admins (por sus IDs públicos).
+- **Los IDs públicos de los miembros** del equipo, visibles para el resto de gente del propio equipo (nunca para desconocidos, salvo que ya fuera público de por sí, como en el podio).
+- **Quién estuvo presente en cada partida:** al empezar una sesión de Misterio de Tarde o Escape Room, se marca qué miembros están jugando en ese momento.
+- **El resultado de cada partida:** tiempo empleado, pistas usadas o códigos fallados, puntos obtenidos, y tu opinión/valoración si decides dejarla (opcional).
+- **El registro de abandonos:** si tu equipo abandona una partida a mitad, guardo qué IDs estaban presentes en ese momento, para aplicar el bloqueo permanente descrito en los Términos y Condiciones (Sección 6).
+
+*Base legal: ejecución del servicio que solicitas al unirte voluntariamente a un equipo (Art. 6.1.b RGPD).*
+
+### E) Notificaciones push (si las activas voluntariamente)
+
+Si decides activar las notificaciones desde «Mi ID» → «Ajustes de cuenta», tu navegador genera una **suscripción push** que guardo para poder enviarte avisos. Concretamente, esto incluye:
+
+- **El "endpoint":** una URL única y propia de tu navegador/dispositivo, gestionada por el servicio push de Google (Chrome/Edge/Android), Mozilla (Firefox) o Apple (Safari/iOS), según cuál uses. Yo no elijo ni controlo este servicio: es parte del funcionamiento estándar de las notificaciones web en cualquier página que las use, no solo la mía.
+- **Claves de cifrado** (`p256dh` y `auth`) que tu propio navegador genera, para que el contenido de la notificación viaje cifrado y solo tu dispositivo pueda leerlo.
+- **Tu ID público**, para saber a qué cuenta pertenece esa suscripción.
+- **El user-agent** (qué navegador y sistema operativo usas), únicamente para depurar problemas de envío si algo falla.
+
+Esta suscripción **no identifica tu ubicación ni contiene datos personales legibles por mí más allá de lo anterior** — es, esencialmente, una dirección técnica de buzón cifrado. Puedes desactivar las notificaciones cuando quieras desde el mismo sitio donde las activaste; al hacerlo, borro tu suscripción de inmediato.
+
+*Base legal: consentimiento expreso, que puedes retirar en cualquier momento (Art. 6.1.a RGPD).*
+
 ---
 
 ## 3. ¿Dónde viven tus datos?
@@ -71,6 +96,10 @@ Como soy estudiante con recursos limitados, me apoyo en plataformas externas con
 - **Google Sheets y Google Apps Script:** Mi "bóveda secreta". Todas tus respuestas, IDs, frases semilla y mensajes de formulario se procesan mediante código en la nube de Google y se guardan en hojas privadas a las que solo yo tengo acceso bajo autenticación segura. Google actúa como encargada del tratamiento y aplica medidas de seguridad de nivel mundial. Política de privacidad: [policies.google.com/privacy](https://policies.google.com/privacy).
 
 - **GitHub Pages:** El escenario público donde se ejecuta el juego. GitHub aloja el código visual (el *index.html*, los misterios, las imágenes...). Como cualquier servidor del planeta, registra logs técnicos de conexión de forma temporal para garantizar la seguridad. Yo no tengo acceso a esos logs ni hago nada con ellos. Política de privacidad de GitHub: [docs.github.com/es/site-policy/privacy-policies](https://docs.github.com/es/site-policy/privacy-policies/github-general-privacy-statement).
+
+- **GitHub Actions:** Si tienes las notificaciones push activadas, este servicio (de la misma empresa que GitHub Pages) es quien ejecuta el pequeño programa que realmente envía el aviso cifrado a tu suscripción. Solo procesa el texto de la notificación y la lista de suscripciones a las que se envía en el momento del envío; no almacena nada de forma permanente por su cuenta. Misma política de privacidad que GitHub Pages.
+
+- **Los servicios push de Google, Mozilla o Apple:** Como te explico en la Sección 2.E, el estándar técnico de las notificaciones web funciona a través del servicio push del fabricante de tu navegador. Esto no es una elección mía: es así para cualquier web con notificaciones, en cualquier parte de internet. Ellos actúan como intermediarios técnicos para entregar el aviso cifrado a tu dispositivo; no pueden leer el contenido (va cifrado) y yo no tengo control sobre sus políticas. Puedes consultarlas aquí: [Google](https://policies.google.com/privacy), [Mozilla](https://www.mozilla.org/es-ES/privacy/), [Apple](https://www.apple.com/legal/privacy/es-ww/).
 
 ---
 
@@ -89,6 +118,10 @@ Lo que sí usamos es el **almacenamiento local (localStorage)** de tu propio nav
 - Tus **notas personales** — estas no se envían al servidor en ningún momento. Son solo tuyas.
 
 ⚠️ **ADVERTENCIA:** Si decides vaciar la caché de tu navegador o borrar los datos de navegación, ese «bolsillo» se vaciará. Si no tienes tu archivo de ID ni tu frase semilla guardados en algún sitio seguro fuera del navegador, tu cuenta se perderá en el vacío cósmico. **¡Guarda tu ID fuera del navegador!**
+
+### La caché de la app instalable (PWA)
+
+Si instalas *La Intersección* como app (o simplemente la usas desde el navegador), un **Service Worker** guarda una copia técnica del diseño de la web y de los datos de los misterios que ya hayas cargado, para que puedas seguir jugando sin conexión. Esto vive en tu propio dispositivo, en un almacén distinto al *localStorage* (se llama *Cache Storage*), pero funciona con la misma filosofía: es tuyo, no viaja a ningún sitio, y no es un dato personal que yo reciba — es simplemente una copia de archivos públicos del juego guardada localmente para que cargue más rápido y funcione offline.
 
 ---
 
@@ -159,6 +192,8 @@ El juego está pensado para exprimir el cerebro de mentes curiosas de todas las 
 - **Datos de cuenta** (ID, nombre, frase semilla): mientras tu cuenta esté activa.
 - **Respuestas a misterios:** mientras tu cuenta esté activa, se guardan vinculadas a tu perfil. Si decides borrar tu cuenta, **estas respuestas y explicaciones se conservarán de forma indefinida pero 100% anonimizada (bajo el pseudónimo de `[USUARIO_ELIMINADO]`)** para garantizar la integridad histórica de los acertijos.
 - **Mensajes del formulario:** mientras tu cuenta esté activa, para poder tener el histórico de tus consultas y ayudarte mejor si algo falla. Además, me son útiles para ver si más gente tiene los mismos problemas. Si decides borrar tu cuenta, estos mensajes se anonimizarán por completo (desvinculándolos de tu identidad) para que pueda seguir usando el reporte de errores sin guardar ningún dato tuyo. Recuerda que los mensajes del formulario son completamente opcionales, nadie te obliga a usarlo.
+- **Datos de equipos, Misterios de Tarde y Escape Rooms** (nombre del equipo, miembros, resultados de partidas, registro de abandonos): mientras el equipo o tu cuenta estén activos, con la misma lógica de anonimización que las respuestas a misterios normales si borras tu cuenta.
+- **Suscripciones push:** mientras las tengas activadas. Se borran de inmediato en cuanto las desactivas tú mismo, o al eliminar tu cuenta.
 - **Logs de GitHub Pages:** gestionados por GitHub según sus propias políticas (no tenemos acceso ni control sobre ellos).
 
 ---
