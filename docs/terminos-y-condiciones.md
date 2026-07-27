@@ -2,7 +2,7 @@
 
 ### *Las reglas del juego*
 
-**Última actualización:** [27/6/2026]
+**Última actualización:** [27/7/2026]
 
 **Correo de contacto:** 💌 interseccion@proton.me
 
@@ -79,11 +79,34 @@ No toleraré alias que yo considere que puedan ser ofensivos, discriminatorios, 
 
 El nombre de display **no puede cambiarse desde la plataforma de forma autónoma**. Existe una buena razón: los cambios libres de nombre podrían usarse para suplantar identidades o volver loco el historial del podio.
 
-Si quieres cambiarlo, puedes solicitarlo por el procedimiento oficial de la Sección 9. Valoraré cada solicitud y podré denegarla si no está justificada o si veo que alguien quiere cambiarse el nombre cada dos semanas. ¡No me hagáis trabajar de más!
+Si quieres cambiarlo, puedes solicitarlo por el procedimiento oficial de la Sección 11. Valoraré cada solicitud y podré denegarla si no está justificada o si veo que alguien quiere cambiarse el nombre cada dos semanas. ¡No me hagáis trabajar de más!
 
 ---
 
-## 6. Código de conducta
+## 6. Modalidades de equipo (Equipos, Misterios de Tarde y Escape Rooms)
+
+Además de resolver misterios en solitario, puedes formar o unirte a un **equipo** para jugar **Misterios de Tarde** y **Escape Rooms** en directo, todos juntos desde una sola pantalla.
+
+- **Equipos:** Un equipo tiene un capitán (quien lo crea) y, opcionalmente, otros admins que el capitán designe. Solo el capitán o un admin puede iniciar una partida de equipo. Tu ID público será visible para el resto de miembros de tu equipo (igual que ya lo es en el podio general).
+- **Misterios de Tarde:** Se juega con cronómetro corriendo. Los puntos dependen del tiempo empleado, las pistas usadas y los fallos al responder.
+- **Escape Rooms:** Se juega con cuenta atrás. Cada sala tiene su propio código para avanzar, y al final se introduce un código de solución completo.
+- **🚨 La regla del abandono:** Si un equipo abandona una partida de Misterio de Tarde o Escape Rooms a mitad, **todas las personas marcadas como presentes en ese momento quedan bloqueadas permanentemente** para volver a intentar ese misterio o escape room concreto, aunque sea con otro equipo. Esto es así para que nadie pueda "espiar" parte de un misterio, abandonar, y reintentarlo luego sabiendo ya algunas pistas. No hay excepciones ni recurso de apelación para esto, lo siento.
+- Las normas del **Código de conducta** (Sección 8) aplican igual de estrictamente al juego en equipo: nada de bots, cuentas duplicadas para hacer trampa, o coordinaros para inflar puntuaciones entre "equipos títere".
+
+---
+
+## 7. Notificaciones push e instalación como app (PWA)
+
+*La Intersección* funciona como una **Aplicación Web Progresiva (PWA)**: puedes instalarla en tu móvil u ordenador como si fuera una app normal, y activar **notificaciones push** para enterarte de novedades aunque la tengas cerrada del todo.
+
+- **Es 100% opcional:** Nada de esto es necesario para jugar. Puedes activarlo y desactivarlo cuando quieras desde «Mi ID» → «Ajustes de cuenta».
+- **Cómo funciona técnicamente:** Al activarlas, tu navegador te asigna una suscripción única (gestionada por el servicio push de Google, Mozilla o Apple, según qué navegador uses) que yo guardo para poder enviarte avisos. Más detalles de qué guardo exactamente en la Política de Privacidad (Sección 2.D).
+- **Uso legítimo únicamente:** Las notificaciones se usan para avisos del juego (nuevas pistas, revisión de tu respuesta, anuncios importantes, o campañas puntuales que decida programar). No las venderé ni las usaré para spam ni para nada ajeno al juego.
+- **Modo sin conexión:** Si instalas la app, parte del contenido (el diseño de la web y los datos de misterios que ya hayas cargado antes) se guarda en tu dispositivo para que puedas seguir jugando sin internet. Esto es una función técnica de tu propio navegador, no implica que yo reciba ningún dato adicional por ello.
+
+---
+
+## 8. Código de conducta
 
 Para que el juego sea divertido y justo para todo el mundo, te comprometes a no pasarte al lado oscuro y a no hacer nada de esto:
 
@@ -96,13 +119,13 @@ Saltarse estas normas resultará en la **eliminación permanente de tu cuenta**,
 
 ---
 
-## 7. Las respuestas que envías
+## 9. Las respuestas que envías
 
 Tus razonamientos y respuestas siguen siendo tuyos intelectualmente. Sin embargo, al enviármelos me otorgas una **licencia gratuita y no exclusiva** para mostrar ese contenido dentro y fuera de la plataforma en el contexto del juego (por ejemplo, publicando tu razonamiento dentro del misterio que sea para que todos admiren tu brillante cerebro, o compartiendo la solución ganadora en redes sociales del juego).
 
 ---
 
-## 8. ¿Qué puedo hacer yo?
+## 10. ¿Qué puedo hacer yo?
 
 Para garantizar que el juego funcione y que el podio sea justo, como admin dispongo de las siguientes facultades. Son definitivas y se aplicarán de forma justa, pero no tienen recurso de apelación formal:
 
@@ -118,7 +141,7 @@ Para garantizar que el juego funcione y que el podio sea justo, como admin dispo
 
 ---
 
-## 9. El procedimiento oficial para gestiones formales
+## 11. El procedimiento oficial para gestiones formales
 
 Cualquier cosa seria que me pidas (borrar tu cuenta, darte tus datos, cambiar tu alias, ejercer derechos ARCO...) debe pasar obligatoriamente por el **Flujo de Doble Autenticación** detallado en la Sección 7 de la Política de Privacidad.
 
@@ -128,7 +151,7 @@ Es la única forma segura que tengo de verificar que eres tú en este sistema an
 
 ---
 
-## 10. Propiedad intelectual
+## 12. Propiedad intelectual
 
 ### 10.1. Lo que es mío
 
@@ -144,7 +167,7 @@ La idea de plantear un misterio con pistas escalonadas para que alguien lo resue
 
 ---
 
-## 11. Compromiso realista de soporte ("La vida real")
+## 13. Compromiso realista de soporte ("La vida real")
 
 Detrás de *La Intersección* no hay un departamento de atención al cliente 24/7. Hay una sola persona que da la casualidad que soy yo, y como estudiante que soy tengo exámenes de Mecánica Cuántica, prácticas de laboratorio, mudanzas y, bueno, vida social (o lo que queda de ella).
 
@@ -157,29 +180,30 @@ Por eso, pactemos estas condiciones de soporte realistas:
 
 ---
 
-## 12. Disponibilidad del servicio y limitación de responsabilidad
+## 14. Disponibilidad del servicio y limitación de responsabilidad
 
-- **No hay «uptime» garantizado:** El juego se ofrece «tal cual». GitHub Pages o Google Sheets pueden caerse, o puedo romper algo del código sin querer. Intentaré arreglarlo lo antes posible, pero no me pidas responsabilidades legales por una interrupción temporal de un juego gratuito.
-- **La muerte del navegador:** Si tu navegador decide borrar el *localStorage* o cambias de dispositivo sin guardar tu ID o frase semilla, tus datos se habrán perdido para siempre en la inmensidad del universo. No tengo una máquina del tiempo para viajar a tu disco duro a recuperarlo, y la verdad, no te voy a recuperar la cuenta si no tengo una forma fiable de saber que es tuya (el único método oficial es el descrito en la Sección 9).
+- **No hay «uptime» garantizado:** El juego se ofrece «tal cual». GitHub Pages, Google Sheets o GitHub Actions (este último usado para el envío de notificaciones push) pueden caerse, o puedo romper algo del código sin querer. Intentaré arreglarlo lo antes posible, pero no me pidas responsabilidades legales por una interrupción temporal de un juego gratuito.
+- **Las notificaciones no son instantáneas ni infalibles:** Si activas las notificaciones push, dependen de que tu navegador y el servicio push de tu sistema operativo (Google, Mozilla o Apple) estén funcionando correctamente. No garantizo que siempre lleguen, ni cuándo.
+- **La muerte del navegador:** Si tu navegador decide borrar el *localStorage* o cambias de dispositivo sin guardar tu ID o frase semilla, tus datos se habrán perdido para siempre en la inmensidad del universo. No tengo una máquina del tiempo para viajar a tu disco duro a recuperarlo, y la verdad, no te voy a recuperar la cuenta si no tengo una forma fiable de saber que es tuya (el único método oficial es el descrito en la Sección 11).
 - **Daños indirectos:** No me hago responsable de daños directos o indirectos derivados del uso o caída temporal del servicio.
 
 ---
 
-## 13. Cambios en estos Términos
+## 15. Cambios en estos Términos
 
-Estos Términos pueden actualizarse en cualquier momento (por ejemplo, si añado una nueva funcionalidad o encuentro un agujero legal). Los cambios significativos te los comunicaré mediante una notificación dentro del juego. Si después de un cambio decides seguir jugando, se entiende que aceptas las nuevas normas. Si no estás de acuerdo, el procedimiento de borrado de cuenta (Sección 9) está a tu disposición.
+Estos Términos pueden actualizarse en cualquier momento (por ejemplo, si añado una nueva funcionalidad o encuentro un agujero legal). Los cambios significativos te los comunicaré mediante una notificación dentro del juego. Si después de un cambio decides seguir jugando, se entiende que aceptas las nuevas normas. Si no estás de acuerdo, el procedimiento de borrado de cuenta (Sección 11) está a tu disposición.
 
 En caso de cese de actividad del proyecto, se notificará en la web con 15 días de antelación y se procederá al borrado irreversible de todas las bases de datos y registros en localStorage.
 
 ---
 
-## 14. Nulidad parcial
+## 16. Nulidad parcial
 
 Si alguna cláusula de estos Términos resultara ser declarada nula o inaplicable por un tribunal (esperemos que no lleguemos a esos extremos), el resto del documento seguirá teniendo plena validez. Una manzana podrida no tira abajo el manzano entero.
 
 ---
 
-## 15. Legislación y jurisdicción
+## 17. Legislación y jurisdicción
 
 Estos Términos se rigen por la **legislación española**. En caso de que tengamos alguna controversia (cosa que dudo muchísimo, siendo esto un juego de misterios gratuito), las partes se someten a la jurisdicción de los juzgados del domicilio del usuario, garantizando todas las protecciones legales de la Unión Europea.
 
@@ -187,7 +211,7 @@ Pero de verdad: es mucho más sano resolver las cosas hablando, mi correo electr
 
 ---
 
-## 16. Contacto
+## 18. Contacto
 
 Para cualquier queja, duda existencial, sugerencia, petición de borrado o simplemente para invitarme a un helado:
 
