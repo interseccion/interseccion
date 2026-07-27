@@ -666,10 +666,6 @@
                                     <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-purple-600"><span class="text-2xl">🧭</span></div>
                                     <div><div class="font-bold text-white">Tour Guiado Interactivo</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Recorrido paso a paso con un ejemplo real</div></div>
                                 </button>
-                                 <button id="sobre-legal-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
-                                    <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-emerald-700"><span class="text-2xl">⚖️</span></div>
-                                    <div><div class="font-bold text-white">Privacidad y Términos</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Qué datos guardamos y las reglas del juego</div></div>
-                                 </button>
                                  <button id="feedback-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
                                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-blue-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-white" viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 0 1.5H4.5A1 1 0 0 0 3.5 3h10a1 1 0 0 0 1-1 .75.75 0 0 1 1.5 0v1A1.5 1.5 0 0 1 14.5 4h-13A1.5 1.5 0 0 1 0 2.5v-1A1.5 1.5 0 0 1 1.5 0H2z"/><path d="M16 5.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 5.5v-1A1.5 1.5 0 0 1 1.5 3H2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1h.5a1.5 1.5 0 0 1 1.5 1.5v1zM1.5 9h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1zm0 2.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1z"/></svg></div>
                                      <div><div class="font-bold text-white">Dame tu opinión</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Feedback y sugerencias</div></div>
@@ -2304,6 +2300,52 @@
         function _checkAdShareLink() {
             if (location.hash !== '#anuncio') return;
             checkAds(true);
+            history.replaceState({}, '', `${location.origin}${location.pathname}`);
+        }
+
+        /** Si se llega con #escape=ID (p.ej. al pulsar una notificación push), abre ese escape room */
+        async function _checkEscapeShareLink() {
+            const hash = location.hash;
+            if (!hash.startsWith('#escape=')) return;
+            const params = new URLSearchParams(hash.substring(1));
+            const gameId = params.get('escape');
+            if (!gameId) return;
+
+            showMainApp('escape');
+            await loadEscapeData();
+            if (escapeGames.length === 0) await _loadEscapeGames();
+
+            if (escapeGames.find(g => g.id === gameId)) {
+                openEscapeModal(gameId);
+            } else {
+                showToast('No se encontró ese escape room.', true);
+            }
+            history.replaceState({}, '', `${location.origin}${location.pathname}`);
+        }
+
+        /** Si se llega con #podio o #podio=X (temporada, __streaks__, __streaks_part__, __most_played__),
+         *  abre el Podio ya filtrado. Reintenta un poco porque las temporadas cargan de forma asíncrona. */
+        function _checkPodioShareLink() {
+            const hash = location.hash;
+            if (!hash.startsWith('#podio')) return;
+            const parts = hash.substring(1).split('=');
+            const which = parts[1] || 'general';
+
+            showMainApp('podio');
+
+            let tries = 0;
+            const trySelect = () => {
+                const select = dom.podiumSeasonSelect;
+                const hasOption = select && [...select.options].some(o => o.value === which);
+                if (hasOption) {
+                    select.value = which;
+                    select.dispatchEvent(new Event('change'));
+                } else if (tries < 15) {
+                    tries++;
+                    setTimeout(trySelect, 300);
+                }
+            };
+            trySelect();
             history.replaceState({}, '', `${location.origin}${location.pathname}`);
         }
 
@@ -4751,6 +4793,7 @@
                 document.getElementById('privacy-accept-btn').classList.add('hidden');
                 document.getElementById('privacy-modal-body').scrollTop = 0;
             }
+            window.openPrivacyModal = openPrivacyModal;
             function closePrivacyModal() { dom.privacyModal.classList.remove('active'); }
 
             function updateConsentSubmitBtn() {
@@ -4787,14 +4830,6 @@
                 e.stopPropagation();
                 dom.privacyModal.classList.add('active');
                 document.getElementById('privacy-accept-btn').classList.remove('hidden');
-                document.getElementById('privacy-modal-body').scrollTop = 0;
-            });
-
-            // Botón "Privacidad y Términos" en Sobre el Proyecto: mismo resumen, sin el
-            // botón de aceptar (aquí solo es informativo, no un flujo de consentimiento)
-            document.getElementById('sobre-legal-btn')?.addEventListener('click', () => {
-                dom.privacyModal.classList.add('active');
-                document.getElementById('privacy-accept-btn').classList.add('hidden');
                 document.getElementById('privacy-modal-body').scrollTop = 0;
             });
 
@@ -6122,6 +6157,9 @@
 
                     <button id="egm-formula-btn" class="text-xs font-semibold text-violet-400 hover:text-violet-300 border border-violet-500/30 rounded-full px-3 py-1.5 transition">
                         ℹ️ Cómo se puntúa
+                    </button>
+                    <button id="egm-share-btn" class="text-xs font-semibold text-gray-400 hover:text-gray-200 border border-gray-600/40 rounded-full px-3 py-1.5 transition ml-2">
+                        🔗 Compartir
                     </button>
 
                     <!-- Podio del escape room (se abre solo, sin botón) -->
@@ -8415,10 +8453,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = new URL(location.href); url.searchParams.delete('joinTeam'); history.replaceState({}, '', url);
     });
     document.getElementById('tli-join-btn')?.addEventListener('click', _joinTeamFromLink);
+    function _checkAllHashLinks() {
+        handleUrlSharing();
+        _checkTardeShareLink();
+        _checkEscapeShareLink();
+        _checkPodioShareLink();
+        _checkAdShareLink();
+        _checkLegalShareLink();
+    }
+
     _checkLinkInvite();
-    _checkTardeShareLink();
-    _checkAdShareLink();
-    _checkLegalShareLink();
+    _checkAllHashLinks();
+    // Si editas el hash a mano en la barra de direcciones (o navegas con la
+    // pestaña ya abierta), el navegador NO recarga la página — solo cambia el
+    // hash "en caliente" — así que sin esto, las comprobaciones de arriba
+    // (que solo corren una vez al cargar) nunca se volverían a ejecutar.
+    window.addEventListener('hashchange', _checkAllHashLinks);
     // Si al cargar la página el usuario aún no había iniciado sesión, reintentamos
     // la invitación pendiente en cuanto complete el login (máx. 60s de espera).
     let _joinCheckTries = 0;
@@ -8440,6 +8490,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('egm-back-btn')?.addEventListener('click', () => _egmShowStep('game'));
     document.getElementById('egm-goto-presentes-btn')?.addEventListener('click', _openEscapePresentesStep);
     document.getElementById('egm-formula-btn')?.addEventListener('click', _showEscapeFormulaInfo);
+    document.getElementById('egm-share-btn')?.addEventListener('click', () => {
+        if (!currentEscapeGame) return;
+        const url = `${location.origin}${location.pathname}#escape=${encodeURIComponent(currentEscapeGame.id)}`;
+        copyToClipboard(url);
+    });
     document.getElementById('egm-goto-login-btn')?.addEventListener('click', () => {
         closeEscapeModal();
         dom.welcomeModal.classList.add('active');
