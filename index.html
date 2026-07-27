@@ -2754,16 +2754,9 @@
                     before: async () => { tourCloseAllModals(); showHomeScreen(); }
                 },
                 {
-                    selector: '[data-tab="equipos"]',
-                    title: '👥 Equipos',
-                    text: 'Para jugar Misterios de Tarde o Escape Rooms necesitas un equipo. Vamos a echar un vistazo a esta pestaña.',
-                    advanceOnClick: true,
-                    before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
-                },
-                {
                     selector: '#my-teams-container',
-                    title: 'Crear o unirte a un equipo',
-                    text: 'Aquí creas un equipo nuevo, o te unes a uno ya existente con un código de invitación que te pase alguien. El equipo tiene un capitán y, si quiere, puede nombrar otros admins.',
+                    title: '👥 Crear o unirte a un equipo',
+                    text: 'Para jugar Misterios de Tarde o Escape Rooms necesitas un equipo. Aquí creas uno nuevo, o te unes a uno ya existente con un código de invitación que te pase alguien. El equipo tiene un capitán y, si quiere, puede nombrar otros admins.',
                     before: async () => { tourCloseAllModals(); showMainApp('equipos'); }
                 },
                 {
@@ -2773,16 +2766,9 @@
                     before: async () => { tourCloseAllModals(); showHomeScreen(); }
                 },
                 {
-                    selector: '[data-tab="tarde"]',
-                    title: '🌆 Misterios de Tarde',
-                    text: 'Una modalidad para jugar en equipo, en directo. Entremos a ver cómo se ve.',
-                    advanceOnClick: true,
-                    before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
-                },
-                {
                     selector: '#tarde-games-container',
-                    title: 'Elegid el misterio y jugad',
-                    text: 'El capitán (o un admin) elige un misterio de aquí, marca quién del equipo está jugando ahora mismo, y empezáis todos juntos desde una sola pantalla con cronómetro. Los puntos dependen del tiempo, las pistas usadas y los fallos — y arriba puedes filtrar por duración.',
+                    title: '🌆 Misterios de Tarde',
+                    text: 'Una modalidad para jugar en equipo, en directo: el capitán (o un admin) elige un misterio de aquí, marca quién del equipo está jugando ahora mismo, y empezáis todos juntos desde una sola pantalla con cronómetro. Los puntos dependen del tiempo, las pistas usadas y los fallos — y arriba puedes filtrar por duración.',
                     before: async () => { tourCloseAllModals(); showMainApp('tarde'); }
                 },
                 {
@@ -2792,16 +2778,9 @@
                     before: async () => { tourCloseAllModals(); showHomeScreen(); }
                 },
                 {
-                    selector: '[data-tab="escape"]',
-                    title: '🔐 Escape Rooms',
-                    text: 'Similar a Tarde, pero por salas. Vamos a ver el listado.',
-                    advanceOnClick: true,
-                    before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
-                },
-                {
                     selector: '#escape-games-container',
-                    title: 'Salas, códigos y cuenta atrás',
-                    text: 'Cada escape room tiene varias salas con su propia ambientación y un código para pasar a la siguiente. Al superar la última, introducís el código final antes de que se acabe el tiempo. ¡Ojo! Si abandonáis a mitad, no podréis reintentar ese escape room.',
+                    title: '🔐 Escape Rooms',
+                    text: 'Similar a Tarde, pero por salas: cada escape room tiene varias con su propia ambientación y un código para pasar a la siguiente. Al superar la última, introducís el código final antes de que se acabe el tiempo. ¡Ojo! Si abandonáis a mitad, no podréis reintentar ese escape room.',
                     before: async () => { tourCloseAllModals(); showMainApp('escape'); }
                 },
                 {
