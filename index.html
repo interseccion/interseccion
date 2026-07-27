@@ -666,6 +666,10 @@
                                     <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-purple-600"><span class="text-2xl">🧭</span></div>
                                     <div><div class="font-bold text-white">Tour Guiado Interactivo</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Recorrido paso a paso con un ejemplo real</div></div>
                                 </button>
+                                 <button id="sobre-legal-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
+                                    <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-emerald-700"><span class="text-2xl">⚖️</span></div>
+                                    <div><div class="font-bold text-white">Privacidad y Términos</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Qué datos guardamos y las reglas del juego</div></div>
+                                 </button>
                                  <button id="feedback-btn" class="group flex items-center gap-4 bg-gray-700/50 hover:bg-gray-700 p-4 rounded-lg transition-all w-full text-left">
                                      <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-blue-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-white" viewBox="0 0 16 16"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 0 1.5H4.5A1 1 0 0 0 3.5 3h10a1 1 0 0 0 1-1 .75.75 0 0 1 1.5 0v1A1.5 1.5 0 0 1 14.5 4h-13A1.5 1.5 0 0 1 0 2.5v-1A1.5 1.5 0 0 1 1.5 0H2z"/><path d="M16 5.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 5.5v-1A1.5 1.5 0 0 1 1.5 3H2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1h.5a1.5 1.5 0 0 1 1.5 1.5v1zM1.5 9h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1zm0 2.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1z"/></svg></div>
                                      <div><div class="font-bold text-white">Dame tu opinión</div><div class="text-sm text-gray-400 group-hover:text-gray-200 transition">Feedback y sugerencias</div></div>
@@ -904,9 +908,9 @@
                         <div><h3>Política de Privacidad</h3><div class="ls-sub">¿Qué pasa con tus datos?</div></div>
                     </div>
                     <div class="ls-item"><div class="ls-icon-col">🔍</div><div class="ls-text"><strong>Observamos lo mínimo.</strong> Sin nombre real, sin email, sin teléfono. Solo lo estrictamente necesario para que el juego funcione.</div></div>
-                    <div class="ls-item"><div class="ls-icon-col">📋</div><div class="ls-text"><strong>Qué guardamos:</strong> tu ID público y privado, tu alias del podio, tu frase semilla (si la generas), tus respuestas y el timestamp exacto de cada envío, así como lo que nos mandes directamente. Nada más.</div></div>
-                    <div class="ls-item"><div class="ls-icon-col">🗄️</div><div class="ls-text"><strong>Dónde vive todo:</strong> en Google Sheets, solo accesible para mí. La página la alojo en GitHub Pages. Nadie más tiene acceso a tus datos.</div></div>
-                    <div class="ls-item"><div class="ls-icon-col">🍪</div><div class="ls-text"><strong>Cookies: cero.</strong><span class="ls-badge ls-badge-ok">✓</span> Me las he comido todas, me gusta mucho el chocolate. No hay rastreo, no hay píxeles, no hay banner molesto. Lo que sí usamos es el localStorage en tu propio navegador, pero esa información no abandona tu dispositivo.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">📋</div><div class="ls-text"><strong>Qué guardamos:</strong> tu ID público y privado, tu alias del podio, tu frase semilla (si la generas), tus respuestas y el timestamp exacto de cada envío, así como lo que nos mandes directamente. Si juegas en <strong>Equipos, Tarde o Escape Rooms</strong>, también quién forma tu equipo y el resultado de esas partidas. Si activas <strong>notificaciones push</strong>, una suscripción técnica de tu navegador (nada identificable más allá de eso). Nada más.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🗄️</div><div class="ls-text"><strong>Dónde vive todo:</strong> en Google Sheets, solo accesible para mí. La página la alojo en GitHub Pages, y GitHub Actions se encarga del envío de las notificaciones push. Nadie más tiene acceso a tus datos.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">🍪</div><div class="ls-text"><strong>Cookies: cero.</strong><span class="ls-badge ls-badge-ok">✓</span> Me las he comido todas, me gusta mucho el chocolate. No hay rastreo, no hay píxeles, no hay banner molesto. Lo que sí usamos es el localStorage en tu propio navegador (y, si instalas la app, una caché offline del Service Worker), pero esa información no abandona tu dispositivo.</div></div>
                     <div class="ls-item"><div class="ls-icon-col">🚫</div><div class="ls-text"><strong>Jamás</strong> vendo, comparto ni cedo tus datos a terceros. Nunca.</div></div>
                     <div class="ls-item"><div class="ls-icon-col">⚖️</div><div class="ls-text"><strong>Tus derechos ARCO:</strong> según la normativa europea puedes pedir acceso, rectificación, borrado o portabilidad de tus datos. Todo pasa por un <em>Flujo de Doble Autenticación</em> (te mando un código al juego, tú me lo confirmas por correo).<span class="ls-badge ls-badge-warn">Necesita verificación</span></div></div>
                     <div class="ls-item"><div class="ls-icon-col">🗑️</div><div class="ls-text"><strong>Borrar cuenta:</strong> 7 días laborables desde la verificación. Guardo una copia de seguridad 14 días por si te arrepientes y después desaparece para siempre.<span class="ls-badge ls-badge-warn">Necesita verificación</span></div></div>
@@ -924,6 +928,7 @@
                     <div class="ls-item"><div class="ls-icon-col">🕵️</div><div class="ls-text"><strong>Tu alias en el podio es público.</strong> Todo el mundo lo puede ver. Si te pones tu nombre real, esa decisión es tuya y solo tuya (esto cuenta como aviso explícito). ¡Ponte un alias de detective chulo!</div></div>
                     <div class="ls-item"><div class="ls-icon-col">📨</div><div class="ls-text"><strong>Tus respuestas también son públicas.</strong> Al enviarlas me das permiso para mostrarlas dentro del juego y también fuera de él, por ejemplo en redes sociales. ¡Es el precio de la brillantez!</div></div>
                     <div class="ls-item"><div class="ls-icon-col">🚫</div><div class="ls-text"><strong>Prohibido:</strong> tener múltiples cuentas para inflar los puntos, bots, hackeos, contenido ofensivo o arruinarle los misterios activos al resto con spoilers. Romper estas normas => cuenta eliminada sin posibilidad de recurso.</div></div>
+                    <div class="ls-item"><div class="ls-icon-col">👥</div><div class="ls-text"><strong>Jugar en equipo (Tarde/Escape Rooms):</strong> si tu equipo abandona una partida a mitad, todos los presentes en ese momento quedan bloqueados para siempre en ese misterio o escape room concreto.</div></div>
                     <div class="ls-item"><div class="ls-icon-col">🏆</div><div class="ls-text"><strong>Las reglas del podio las pongo yo.</strong> Puedo ajustar puntos, cambiar nombres que incumplan las normas, suspender cuentas o modificar las fórmulas de puntuación si lo considero necesario.</div></div>
                     <div class="ls-item"><div class="ls-icon-col">✏️</div><div class="ls-text"><strong>Cambiar el alias:</strong> no puedes hacerlo tú desde la plataforma (por integridad del podio). Solicítamelo por el procedimiento oficial y lo valoro; si está justificado, lo hago.<span class="ls-badge ls-badge-warn">Necesita verificación</span></div></div>
                     <div class="ls-item"><div class="ls-icon-col">🌀</div><div class="ls-text"><strong>Disponibilidad:</strong> el servicio se ofrece «tal cual». GitHub o Google pueden caerse, o puedo romper algo sin querer. Lo arreglo en cuanto puedo, pero no hay uptime garantizado.</div></div>
@@ -934,7 +939,7 @@
                 <p class="ls-footer">
                     ¿Dudas? ¿Quieres ejercer tus derechos? ¿O simplemente saludar?<br>
                     <a href="mailto:interseccion@proton.me">interseccion@proton.me</a> · Formulario de contacto del juego<br><br>
-                    Última actualización: 27/6/2026 · <em>Que la lógica te acompañe.</em>
+                    Última actualización: 27/7/2026 · <em>Que la lógica te acompañe.</em>
                 </p>
 
                 <!-- Solo visible al abrir desde la casilla de consentimiento -->
@@ -2299,6 +2304,25 @@
         function _checkAdShareLink() {
             if (location.hash !== '#anuncio') return;
             checkAds(true);
+            history.replaceState({}, '', `${location.origin}${location.pathname}`);
+        }
+
+        /** Si se llega con #legal (resumen), #legal=privacy o #legal=terms (documento completo),
+         *  abre eso directamente — mismo patrón que #anuncio, #mystery= y #tarde=. */
+        function _checkLegalShareLink() {
+            if (!location.hash.startsWith('#legal')) return;
+            const parts = location.hash.substring(1).split('=');
+            const which = parts[1] || '';
+
+            dom.privacyModal.classList.add('active');
+            document.getElementById('privacy-accept-btn').classList.add('hidden');
+            document.getElementById('privacy-modal-body').scrollTop = 0;
+
+            if (which === 'privacy') {
+                openLegalDoc(PRIVACY_MD_PATH, '🛡️ Política de Privacidad');
+            } else if (which === 'terms') {
+                openLegalDoc(TERMS_MD_PATH, '⚖️ Términos y Condiciones');
+            }
             history.replaceState({}, '', `${location.origin}${location.pathname}`);
         }
 
@@ -4766,6 +4790,14 @@
                 document.getElementById('privacy-modal-body').scrollTop = 0;
             });
 
+            // Botón "Privacidad y Términos" en Sobre el Proyecto: mismo resumen, sin el
+            // botón de aceptar (aquí solo es informativo, no un flujo de consentimiento)
+            document.getElementById('sobre-legal-btn')?.addEventListener('click', () => {
+                dom.privacyModal.classList.add('active');
+                document.getElementById('privacy-accept-btn').classList.add('hidden');
+                document.getElementById('privacy-modal-body').scrollTop = 0;
+            });
+
             // Botón "He leído, lo acepto" del modal: marca la casilla y cierra
             document.getElementById('privacy-accept-btn').addEventListener('click', () => {
                 consentPrivacyCheckbox.checked = true;
@@ -4810,6 +4842,9 @@
                     contentEl.innerHTML = `<p class="text-red-400 text-center py-8">No se pudo cargar el documento.<br>Puedes leerlo directamente en el repositorio.</p>`;
                 }
             }
+            // El enlace directo #legal (definido como función de nivel superior en otro
+            // punto del script) necesita poder llamar a esta función.
+            window.openLegalDoc = openLegalDoc;
 
             document.querySelectorAll('.ls-read-more').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -8383,6 +8418,7 @@ document.addEventListener('DOMContentLoaded', () => {
     _checkLinkInvite();
     _checkTardeShareLink();
     _checkAdShareLink();
+    _checkLegalShareLink();
     // Si al cargar la página el usuario aún no había iniciado sesión, reintentamos
     // la invitación pendiente en cuanto complete el login (máx. 60s de espera).
     let _joinCheckTries = 0;
