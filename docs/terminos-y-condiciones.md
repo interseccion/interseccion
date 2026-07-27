@@ -121,7 +121,9 @@ Saltarse estas normas resultará en la **eliminación permanente de tu cuenta**,
 
 ## 9. Las respuestas que envías
 
-Tus razonamientos y respuestas siguen siendo tuyos intelectualmente. Sin embargo, al enviármelos me otorgas una **licencia gratuita y no exclusiva** para mostrar ese contenido dentro y fuera de la plataforma en el contexto del juego (por ejemplo, publicando tu razonamiento dentro del misterio que sea para que todos admiren tu brillante cerebro, o compartiendo la solución ganadora en redes sociales del juego).
+Tus razonamientos y respuestas siguen siendo tuyos intelectualmente. Sin embargo, al enviármelos me otorgas una **licencia gratuita y no exclusiva** para **mostrar, y en su caso editar o adaptar,** ese contenido dentro y fuera de la plataforma en el contexto del juego (por ejemplo, publicando tu razonamiento dentro del misterio que sea para que todos admiren tu brillante cerebro, o compartiendo la solución ganadora en redes sociales del juego).
+
+Esa capacidad de edición la reservo para casos como: corregir erratas evidentes, acortar un razonamiento demasiado largo, omitir alguna parte, o retirar/editar cualquier fragmento que pueda ser inapropiado, ofensivo o que contenga datos personales tuyos o de terceros. En ningún caso cambiaré el sentido de tu razonamiento ni te haré decir algo que no dijiste — la edición es siempre de forma, nunca de fondo.
 
 ---
 
