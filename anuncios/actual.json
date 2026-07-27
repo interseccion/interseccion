@@ -1,8 +1,11 @@
 {
-  "id": "nueva_url_juego_2026",
-  "date": "2026-07-01T20:00:00.000Z",
-  "version": "2026-07-01",
-  "title": "¡Nueva URL del Juego!",
-  "content": "<div style=\"font-family: 'Arial', sans-serif; max-width: 600px; margin: 0 auto; text-align: center;\"><h2 style=\"color: #e74c3c; font-size: 32px; margin-bottom: 15px; font-weight: bold;\">¡Hola, <span style=\"color: #e74c3c;\">Intersectores</span>! 🎉</h2><p style=\"margin-bottom: 15px; font-size: 16px; line-height: 1.5;\">¡Nos mudamos! Hemos cambiado la dirección oficial de nuestro juego por una mucho más rápida y estable 🚀</p><p style=\"margin-bottom: 15px; font-size: 16px; line-height: 1.5;\">La url vieja ya redirige de forma automática, pero os recomendamos guardar la <span style=\"color: #27BEF5; font-weight: bold;\">nueva dirección</span> en vuestros marcadores o favoritos para entrar directamente.</p><p style=\"margin-bottom: 20px; font-size: 18px; line-height: 1.5;\">A partir de ahora, la url oficial es esta (en la que estáis ahora mismo): <br><span style=\"color: #27ae60; font-weight: bold; font-size: 20px;\">https://interseccion.github.io</span></p><p style=\"font-style: italic; color: #7f8c8d; font-size: 16px;\">¡Gracias por seguir jugando y ser parte de esta aventura! ❤️</p></div>",
-  "btnText": "¡Entendido!"
+  "id": "legaljulio2026",
+  "date": "2026-07-27T21:00:07.421Z",
+  "version": "2026-07-27",
+  "title": "Cambios en los términos y la política de privacidad",
+  "content": "¡Hola! Con todo lo que hemos ido añadiendo últimamente (Equipos, Misterios de Tarde, Escape Rooms, notificaciones push y la app instalable), tocaba poner al día la Política de Privacidad y los Términos de Uso para que sigan reflejando la realidad del juego.\n\nLo más importante que cambia:\n\n🔔 Notificaciones push: si las activas, guardo una suscripción técnica de tu navegador (nada de datos personales nuevos) para poder avisarte aunque tengas la app cerrada. Sigue siendo 100% opcional.\n\n👥 Equipos, Tarde y Escape Rooms: se detalla qué se guarda al jugar en equipo, y la regla de que abandonar una partida a mitad bloquea a los presentes para reintentarla.\n\n📲 App instalable (PWA): ahora puedes instalar el juego como una app de verdad, con parte de funcionamiento sin conexión.\n\n✏️ Respuestas publicadas: aclaro que, si destaco tu razonamiento en algún misterio, puedo editarlo por temas de forma (erratas, longitud, algún fragmento inapropiado), pero nunca cambiando lo que quisiste decir.\n\nNada de esto afecta a cómo juegas ni a tus puntos, es sólo para que sepas exactamente qué hay detrás. Si sigues jugando, se entiende que aceptas estos cambios; si tienes dudas, ya sabes dónde encontrarme. 💌\n\n¡Feliz verano! 💖",
+  "btnText": "Aceptar",
+  "actionType": "link",
+  "actionLabel": "Ver cambios",
+  "actionValue": "https://interseccion.github.io/#legal"
 }
