@@ -2736,10 +2736,22 @@
                     before: async () => { tourEnsureResolverOpen(); }
                 },
                 {
+                    selector: '[data-home-nav="archivo"]',
+                    title: 'Volvemos a inicio',
+                    text: 'Desde aquí, en la pantalla principal, entrarías directamente a Archivo pulsando esta tarjeta.',
+                    before: async () => { tourCloseAllModals(); showHomeScreen(); }
+                },
+                {
                     selector: '#archivo-grid',
                     title: '📚 Archivo',
                     text: 'Aquí están todos los misterios ya resueltos — puedes verlos, releer sus pistas o ver la solución con calma. Arriba tienes filtros por tipo y por dificultad para encontrar algo concreto.',
                     before: async () => { tourCloseAllModals(); showMainApp('archivo'); }
+                },
+                {
+                    selector: '[data-home-nav="equipos"]',
+                    title: 'Volvemos a inicio',
+                    text: 'Y desde aquí entrarías a Equipos.',
+                    before: async () => { tourCloseAllModals(); showHomeScreen(); }
                 },
                 {
                     selector: '[data-tab="equipos"]',
@@ -2755,6 +2767,12 @@
                     before: async () => { tourCloseAllModals(); showMainApp('equipos'); }
                 },
                 {
+                    selector: '[data-home-nav="tarde"]',
+                    title: 'Volvemos a inicio',
+                    text: 'Y desde aquí, a Misterios de Tarde.',
+                    before: async () => { tourCloseAllModals(); showHomeScreen(); }
+                },
+                {
                     selector: '[data-tab="tarde"]',
                     title: '🌆 Misterios de Tarde',
                     text: 'Una modalidad para jugar en equipo, en directo. Entremos a ver cómo se ve.',
@@ -2768,6 +2786,12 @@
                     before: async () => { tourCloseAllModals(); showMainApp('tarde'); }
                 },
                 {
+                    selector: '[data-home-nav="escape"]',
+                    title: 'Volvemos a inicio',
+                    text: 'Y desde aquí, a Escape Rooms.',
+                    before: async () => { tourCloseAllModals(); showHomeScreen(); }
+                },
+                {
                     selector: '[data-tab="escape"]',
                     title: '🔐 Escape Rooms',
                     text: 'Similar a Tarde, pero por salas. Vamos a ver el listado.',
@@ -2779,6 +2803,12 @@
                     title: 'Salas, códigos y cuenta atrás',
                     text: 'Cada escape room tiene varias salas con su propia ambientación y un código para pasar a la siguiente. Al superar la última, introducís el código final antes de que se acabe el tiempo. ¡Ojo! Si abandonáis a mitad, no podréis reintentar ese escape room.',
                     before: async () => { tourCloseAllModals(); showMainApp('escape'); }
+                },
+                {
+                    selector: '[data-home-nav="podio"]',
+                    title: 'Volvemos a inicio',
+                    text: 'Y desde aquí entrarías al Podio.',
+                    before: async () => { tourCloseAllModals(); showHomeScreen(); }
                 },
                 {
                     selector: '#podium-season-select',
@@ -2886,6 +2916,12 @@
                     title: '📝 Bloc de notas',
                     text: 'Este botón abre un bloc de notas privado donde puedes apuntar deducciones, pistas sospechosas o teorías mientras juegas. Solo lo ves tú y se guarda automáticamente en este dispositivo.',
                     before: async () => { tourCloseAllModals(); showMainApp('en-curso'); }
+                },
+                {
+                    selector: '[data-home-nav="sobre"]',
+                    title: 'Volvemos a inicio',
+                    text: 'Y por último, desde aquí entrarías a Sobre el Proyecto — justo donde termina el tour.',
+                    before: async () => { tourCloseAllModals(); showHomeScreen(); }
                 },
                 {
                     selector: '#guided-tour-btn',
