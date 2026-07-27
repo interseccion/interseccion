@@ -5,7 +5,7 @@
   "title": "Cambios en los términos y la política de privacidad",
   "content": "¡Hola! Con todo lo que hemos ido añadiendo últimamente (Equipos, Misterios de Tarde, Escape Rooms, notificaciones push y la app instalable), tocaba poner al día la Política de Privacidad y los Términos de Uso para que sigan reflejando la realidad del juego.<br><br>Lo más importante que cambia:<br><br>🔔 Notificaciones push: si las activas, guardo una suscripción técnica de tu navegador (nada de datos personales nuevos) para poder avisarte aunque tengas la app cerrada. Sigue siendo 100% opcional.<br><br>👥 Equipos, Tarde y Escape Rooms: se detalla qué se guarda al jugar en equipo, y la regla de que abandonar una partida a mitad bloquea a los presentes para reintentarla.<br><br>📲 App instalable (PWA): ahora puedes instalar el juego como una app de verdad, con parte de funcionamiento sin conexión.<br><br>✏️ Respuestas publicadas: aclaro que, si destaco tu razonamiento en algún misterio, puedo editarlo por temas de forma (erratas, longitud, algún fragmento inapropiado), pero nunca cambiando lo que quisiste decir.<br><br>Nada de esto afecta a cómo juegas ni a tus puntos, es sólo para que sepas exactamente qué hay detrás. Si sigues jugando, se entiende que aceptas estos cambios; si tienes dudas, ya sabes dónde encontrarme. 💌<br><br>¡Feliz verano! 💖",
   "btnText": "Aceptar",
-  "actionType": "link",
+  "actionType": "hash",
   "actionLabel": "Ver cambios",
-  "actionValue": "./#legal"
+  "actionValue": "legal"
 }
