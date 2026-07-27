@@ -2398,6 +2398,7 @@
                         if (ad.actionType === 'game') colorClass = 'bg-yellow-600 hover:bg-yellow-700 text-white';
                         else if (ad.actionType === 'profile') colorClass = 'bg-purple-600 hover:bg-purple-700 text-white';
                         else if (ad.actionType === 'link') colorClass = 'bg-green-600 hover:bg-green-700 text-white';
+                        else if (ad.actionType === 'hash') colorClass = 'bg-indigo-600 hover:bg-indigo-700 text-white';
 
                         extraBtn.className = `extra-action-btn w-full ${colorClass} font-bold py-3 px-4 rounded-lg transition shadow-lg mb-2`;
 
@@ -2407,6 +2408,7 @@
                             if (ad.actionType === 'game') openGameById(ad.actionValue);
                             else if (ad.actionType === 'profile') openProfileById(ad.actionValue);
                             else if (ad.actionType === 'link') window.open(ad.actionValue.startsWith('http') ? ad.actionValue : `https://${ad.actionValue}`, '_blank');
+                            else if (ad.actionType === 'hash') location.hash = ad.actionValue.startsWith('#') ? ad.actionValue : `#${ad.actionValue}`;
                         };
 
                         // Insertar antes del botón cerrar
