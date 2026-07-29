@@ -694,9 +694,7 @@
                         <button id="tarde-refresh-teams-btn" class="text-xs text-gray-500 hover:text-gray-300 transition">↺ Actualizar</button>
                     </div>
                     <div id="my-teams-container">
-                        <div class="animate-pulse space-y-3">
-                            <div class="h-24 bg-gray-800/50 rounded-2xl"></div>
-                        </div>
+                        <p class="text-gray-500 text-sm text-center py-6">⏳ Cargando equipos...</p>
                     </div>
                 </section>
             </div>
@@ -737,10 +735,7 @@
                         </div>
                     </div>
                     <div id="tarde-games-container">
-                        <div class="animate-pulse space-y-3">
-                            <div class="h-32 bg-gray-800/50 rounded-2xl"></div>
-                            <div class="h-32 bg-gray-800/50 rounded-2xl"></div>
-                        </div>
+                        <p class="text-gray-500 text-sm text-center py-6">⏳ Cargando misterios de tarde...</p>
                     </div>
                 </section>
 
@@ -750,7 +745,7 @@
                         <button id="tarde-scoring-info-btn" class="text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-7 h-7 flex items-center justify-center transition shadow-lg text-sm" title="Cómo se calculan los puntos">ℹ️</button>
                     </h2>
                     <div id="tarde-podio-container">
-                        <div class="animate-pulse h-40 bg-gray-800/50 rounded-2xl"></div>
+                        <p class="text-gray-500 text-sm text-center py-6">⏳ Cargando podio...</p>
                     </div>
                 </section>
             </div>
@@ -777,9 +772,7 @@
 
                     <p class="text-gray-500 text-sm mb-5">Escape rooms de equipo: superad las salas encontrando sus códigos y resolved el código final antes de que se acabe el tiempo.</p>
                     <div id="escape-games-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="animate-pulse space-y-3 col-span-2">
-                            <div class="h-24 bg-gray-800/50 rounded-2xl"></div>
-                        </div>
+                        <p class="text-gray-500 text-sm text-center py-6 col-span-2">⏳ Cargando escape rooms...</p>
                     </div>
                 </section>
             </div>
@@ -6767,7 +6760,7 @@ function _renderMyTeams() {
     // Teams list: loading skeleton | empty msg | actual teams
     let teamsHTML = '';
     if (teamsDataLoading && myTeams.length === 0) {
-        teamsHTML = `<div class="animate-pulse h-24 bg-gray-800/50 rounded-2xl mb-3"></div>`;
+        teamsHTML = `<p class="text-gray-500 text-sm text-center py-6">⏳ Cargando equipos...</p>`;
     } else if (myTeams.length === 0) {
         teamsHTML = `<p class="text-gray-500 text-sm italic mb-3 text-center py-3">Aún no perteneces a ningún equipo.</p>`;
     } else {
@@ -6844,7 +6837,7 @@ function _renderTardeGames() {
 
     if (tardeGames.length === 0) {
         el.innerHTML = tardeGamesLoading
-            ? `<div class="animate-pulse space-y-3"><div class="h-32 bg-gray-800/50 rounded-2xl"></div><div class="h-32 bg-gray-800/50 rounded-2xl"></div></div>`
+            ? `<p class="text-gray-500 text-sm text-center py-6">⏳ Cargando misterios de tarde...</p>`
             : `<p class="text-gray-500 text-center py-10 italic text-sm">No hay misterios de tarde disponibles todavía.</p>`;
         return;
     }
@@ -6898,7 +6891,7 @@ function _renderTardePodio() {
 
     if (tardePodio.length === 0) {
         el.innerHTML = teamsDataLoading
-            ? `<div class="animate-pulse space-y-2"><div class="h-10 bg-gray-800/50 rounded-lg"></div><div class="h-10 bg-gray-800/50 rounded-lg"></div><div class="h-10 bg-gray-800/50 rounded-lg"></div></div>`
+            ? `<p class="text-gray-500 text-sm text-center py-6">⏳ Cargando podio...</p>`
             : `<p class="text-gray-500 text-center py-8 text-sm italic">El podio está vacío todavía.</p>`;
         return;
     }
@@ -7623,7 +7616,7 @@ function _renderEscapeGames() {
     if (!container) return;
     if (escapeGamesLoading) return;
     if (escapeParticipadosRefreshing) {
-        container.innerHTML = `<div class="animate-pulse space-y-3 col-span-2"><div class="h-24 bg-gray-800/50 rounded-2xl"></div></div>`;
+        container.innerHTML = `<p class="text-gray-500 text-sm text-center py-6 col-span-2">⏳ Actualizando escape rooms...</p>`;
         return;
     }
 
