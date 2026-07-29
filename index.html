@@ -7527,6 +7527,7 @@ const ESCAPE_INDEX_PATH = 'escape/index.json';
 let escapeGames     = [];
 let escapeLoaded    = false;
 let escapeGamesLoading = true;
+let escapeParticipadosRefreshing = false; // true mientras se refresca tras completar/abandonar una partida
 let myEscapeParticipados = []; // escape room ids que ya jugué/abandoné (bloqueo)
 
 let currentEscapeGame = null;
@@ -7621,6 +7622,10 @@ function _renderEscapeGames() {
     const container = document.getElementById('escape-games-container');
     if (!container) return;
     if (escapeGamesLoading) return;
+    if (escapeParticipadosRefreshing) {
+        container.innerHTML = `<div class="animate-pulse space-y-3 col-span-2"><div class="h-24 bg-gray-800/50 rounded-2xl"></div></div>`;
+        return;
+    }
 
     const active = escapeGames.filter(g => !g.isSolved);
     if (active.length === 0) {
@@ -8058,8 +8063,9 @@ async function _submitEscapeSession() {
 
     _closeEscapeSessionOverlay();
     _showEscapeResultModal(res);
+    escapeParticipadosRefreshing = true; _renderEscapeGames();
     await _loadMyEscapeParticipados();
-    _renderEscapeGames();
+    escapeParticipadosRefreshing = false; _renderEscapeGames();
 }
 
 function _showEscapeResultModal(res) {
@@ -8104,8 +8110,9 @@ async function _confirmAbandonEscapeSession() {
 
     showToast('Escape room abandonado. Esos jugadores ya no pueden reintentarlo.');
     _closeEscapeSessionOverlay();
+    escapeParticipadosRefreshing = true; _renderEscapeGames();
     await _loadMyEscapeParticipados();
-    _renderEscapeGames();
+    escapeParticipadosRefreshing = false; _renderEscapeGames();
 }
 
 function _showEscapeFormulaInfo() {
@@ -8196,14 +8203,14 @@ async function _saveTeamName(teamId) {
     const name = (document.getElementById('manage-team-name').value||'').trim();
     if (!name) return;
     const res  = await _postTarde({ action:'updateTeam', teamId, userPubId: getPublicId(userId)||'', name });
-    if (res.ok) { showToast('✅ Nombre actualizado'); await _loadMyTeams(); renderTardeSection(); }
+    if (res.ok) { showToast('✅ Nombre actualizado'); tardeLoaded = false; await loadTardeData(true); }
     else showToast('❌ ' + (res.error||'Error'));
 }
 
 async function _saveTeamAdmins(teamId) {
     const adminIds = [...document.querySelectorAll('.manage-admin-check:checked')].map(cb => cb.value).join(',');
     const res = await _postTarde({ action:'updateTeam', teamId, userPubId: getPublicId(userId)||'', adminIds });
-    if (res.ok) { showToast('✅ Admins actualizados'); await _loadMyTeams(); renderTardeSection(); }
+    if (res.ok) { showToast('✅ Admins actualizados'); tardeLoaded = false; await loadTardeData(true); }
     else showToast('❌ ' + (res.error||'Error'));
 }
 
@@ -8213,7 +8220,7 @@ async function _leaveTeam(teamId) {
     if (res.ok) {
         document.getElementById('manage-team-modal').classList.add('hidden');
         showToast('✅ Has abandonado el equipo');
-        await _loadMyTeams(); renderTardeSection();
+        tardeLoaded = false; await loadTardeData(true);
     } else showToast('❌ ' + (res.error||'Error'));
 }
 
@@ -8223,7 +8230,7 @@ async function _deleteTeam(teamId) {
     if (res.ok) {
         document.getElementById('manage-team-modal').classList.add('hidden');
         showToast('✅ Equipo eliminado');
-        await _loadMyTeams(); renderTardeSection();
+        tardeLoaded = false; await loadTardeData(true);
     } else showToast('❌ ' + (res.error||'Error'));
 }
 
@@ -8323,7 +8330,7 @@ async function _submitCreateTeam() {
     if (res.ok) {
         document.getElementById('create-team-modal').classList.add('hidden');
         showToast(`✅ Equipo creado · Código: ${res.code}`);
-        await _loadMyTeams(); renderTardeSection();
+        await loadTardeData(true); // refresca CON el estado de "cargando" visible (equipos, podio, participados...)
     } else {
         errEl.textContent = res.error || 'Error al crear el equipo.';
         errEl.classList.remove('hidden');
@@ -8342,7 +8349,7 @@ async function _submitJoinTeam() {
     if (res.ok) {
         document.getElementById('join-team-modal').classList.add('hidden');
         showToast(`✅ Te has unido a "${res.teamName}"`);
-        await _loadMyTeams(); renderTardeSection();
+        tardeLoaded = false; await loadTardeData(true);
     } else {
         errEl.textContent = res.error || 'Código inválido o equipo no encontrado.';
         errEl.classList.remove('hidden');
