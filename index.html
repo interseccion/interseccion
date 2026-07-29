@@ -760,6 +760,21 @@
                     <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                         <h2 class="text-xl font-bold text-white flex items-center gap-2">🔐 Escape Rooms</h2>
                     </div>
+
+                    <!-- Sesión activa (reanudar) -->
+                    <div id="escape-resume-banner" class="hidden mb-6 bg-violet-900/20 border border-violet-500/40 rounded-2xl p-4 flex items-center justify-between gap-3 flex-wrap">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🔐</span>
+                            <div>
+                                <p class="text-sm font-bold text-violet-300">Escape room en curso</p>
+                                <p id="escape-resume-info" class="text-xs text-gray-400"></p>
+                            </div>
+                        </div>
+                        <button id="escape-resume-btn" class="bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 px-5 rounded-xl transition text-sm">
+                            Reanudar →
+                        </button>
+                    </div>
+
                     <p class="text-gray-500 text-sm mb-5">Escape rooms de equipo: superad las salas encontrando sus códigos y resolved el código final antes de que se acabe el tiempo.</p>
                     <div id="escape-games-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="animate-pulse space-y-3 col-span-2">
@@ -7536,8 +7551,48 @@ async function loadEscapeData(force = false) {
     if (!escapeGames.length) await _loadEscapeGames();
     await _loadMyEscapeParticipados();
     _renderEscapeGames();
+    await _checkForActiveEscapeSession();
     escapeLoaded = true;
 }
+
+// Al abrir la pestaña / cargar datos: ¿hay una sesión activa en alguno de mis equipos?
+async function _checkForActiveEscapeSession() {
+    const banner = document.getElementById('escape-resume-banner');
+    if (!banner) return;
+    if (!userId || myTeams.length === 0) { banner.classList.add('hidden'); return; }
+
+    for (const team of myTeams) {
+        try {
+            const res  = await fetch(`${APPS_SCRIPT_URL}?action=getActiveEscapeSession&teamId=${encodeURIComponent(team.id)}`);
+            const data = await res.json();
+            if (data && data.active && data.session) {
+                const game = escapeGames.find(g => g.id === data.session.gameId);
+                document.getElementById('escape-resume-info').textContent =
+                    `${team.name} · ${game ? game.title : data.session.gameId}`;
+                banner.classList.remove('hidden');
+                banner.dataset.teamId = team.id;
+                return;
+            }
+        } catch { /* sigue probando con otros equipos */ }
+    }
+    banner.classList.add('hidden');
+}
+
+async function _resumeEscapeSessionFromBanner() {
+    const teamId = document.getElementById('escape-resume-banner')?.dataset.teamId;
+    if (!teamId) return;
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=getActiveEscapeSession&teamId=${encodeURIComponent(teamId)}`).then(r=>r.json()).catch(()=>null);
+    if (!res || !res.active) { showToast('La sesión ya no está activa.', true); return; }
+
+    const game = escapeGames.find(g => g.id === res.session.gameId);
+    if (!game) { showToast('No se encontró el escape room de esa sesión.', true); return; }
+
+    escapeSession = res.session;
+    escapeSessionGame = game;
+    _openEscapeSessionOverlay(false);
+}
+
+function _escapeLocalKey(suffix) { return `escape_session_${escapeSession.sessionId}_${suffix}`; }
 
 async function _loadEscapeGames() {
     try {
@@ -7773,12 +7828,12 @@ async function _startEscapeSessionFromModal() {
     escapeSession = { sessionId: res.sessionId, teamId: team.id, gameId: game.id, startTime: res.startTime, presentMembers: presentPubIds };
     escapeSessionGame = game;
     closeEscapeModal();
-    _openEscapeSessionOverlay();
+    _openEscapeSessionOverlay(true);
 }
 
 // ── Sesión de escape room a pantalla completa ────────────────────────────────
 
-function _openEscapeSessionOverlay() {
+function _openEscapeSessionOverlay(isNew) {
     escapeRoomIndex = 0;
     escapeAtFinalCode = false;
     escapeWrongRoomAttempts = 0;
@@ -7787,21 +7842,40 @@ function _openEscapeSessionOverlay() {
     escapeTimeUp = false;
     escapeAnswerLocked = false;
 
+    if (!isNew) {
+        // Reanudación: recuperar progreso local si existe (sala actual, fallos, códigos superados)
+        escapeRoomIndex          = parseInt(localStorage.getItem(_escapeLocalKey('roomIndex')))     || 0;
+        escapeWrongRoomAttempts  = parseInt(localStorage.getItem(_escapeLocalKey('wrongRoom')))      || 0;
+        escapeWrongFinalAttempts = parseInt(localStorage.getItem(_escapeLocalKey('wrongFinal')))     || 0;
+        escapeAtFinalCode        = localStorage.getItem(_escapeLocalKey('atFinalCode')) === 'true';
+        try {
+            escapeCodesLog = JSON.parse(localStorage.getItem(_escapeLocalKey('codesLog')) || '[]');
+        } catch { escapeCodesLog = []; }
+    }
+
     document.getElementById('eso-title').textContent = escapeSessionGame.title;
     const team = myTeams.find(t => t.id === escapeSession.teamId);
     document.getElementById('eso-team-name').textContent = team ? `👥 ${team.name}` : '';
     document.getElementById('eso-time-up-notice').classList.add('hidden');
-    document.getElementById('eso-wrong-count').textContent = 0;
+    document.getElementById('eso-wrong-count').textContent = escapeWrongRoomAttempts + escapeWrongFinalAttempts;
     document.getElementById('eso-success-area').classList.add('hidden');
-    document.getElementById('eso-final-code-area').classList.add('hidden');
-    document.getElementById('eso-room-code-area').classList.remove('hidden');
-    document.getElementById('eso-codes-log').classList.add('hidden');
-    document.getElementById('eso-codes-log').innerHTML = '';
     document.getElementById('eso-rating-value').value = '';
     document.getElementById('eso-rating-comment').value = '';
     document.querySelectorAll('.escape-star-btn').forEach(b => { b.classList.remove('text-yellow-400'); b.classList.add('text-gray-600'); });
 
-    _renderCurrentEscapeRoom();
+    _renderEscapeCodesLog();
+    if (escapeAtFinalCode) {
+        document.getElementById('eso-room-code-area').classList.add('hidden');
+        document.getElementById('eso-final-code-area').classList.remove('hidden');
+        document.getElementById('eso-codes-log').classList.remove('hidden');
+        document.getElementById('eso-final-feedback').classList.add('hidden');
+    } else {
+        document.getElementById('eso-final-code-area').classList.add('hidden');
+        document.getElementById('eso-room-code-area').classList.remove('hidden');
+        document.getElementById('eso-codes-log').classList.toggle('hidden', escapeCodesLog.length === 0);
+        _renderCurrentEscapeRoom();
+    }
+
     _startEscapeTimer();
 
     const overlay = document.getElementById('escape-session-overlay');
@@ -7857,6 +7931,16 @@ function _computeEscapePoints(elapsedSeconds) {
     return Math.max(min, base - (minutes*perMin) - (escapeWrongRoomAttempts*perWrongRoom) - (escapeWrongFinalAttempts*perWrongFinal));
 }
 
+/** Guarda en localStorage el progreso de la sesión de escape room en curso, por si recargas */
+function _saveEscapeProgress() {
+    if (!escapeSession) return;
+    localStorage.setItem(_escapeLocalKey('roomIndex'), escapeRoomIndex);
+    localStorage.setItem(_escapeLocalKey('wrongRoom'), escapeWrongRoomAttempts);
+    localStorage.setItem(_escapeLocalKey('wrongFinal'), escapeWrongFinalAttempts);
+    localStorage.setItem(_escapeLocalKey('atFinalCode'), escapeAtFinalCode);
+    localStorage.setItem(_escapeLocalKey('codesLog'), JSON.stringify(escapeCodesLog));
+}
+
 function _checkEscapeRoomCode() {
     if (escapeAnswerLocked) return;
     const room = (escapeSessionGame.rooms||[])[escapeRoomIndex];
@@ -7878,15 +7962,18 @@ function _checkEscapeRoomCode() {
             setTimeout(() => _renderCurrentEscapeRoom(), 700);
         } else {
             // Última sala superada → pedir código final
+            escapeAtFinalCode = true;
             document.getElementById('eso-room-code-area').classList.add('hidden');
             document.getElementById('eso-final-code-area').classList.remove('hidden');
         }
+        _saveEscapeProgress();
     } else {
         escapeWrongRoomAttempts++;
         document.getElementById('eso-wrong-count').textContent = escapeWrongRoomAttempts + escapeWrongFinalAttempts;
         feedback.className = 'text-center text-sm text-red-400';
         feedback.textContent = 'Código incorrecto — cada fallo resta puntos.';
         feedback.classList.remove('hidden');
+        _saveEscapeProgress();
     }
 }
 
@@ -7908,6 +7995,7 @@ function _checkEscapeFinalCode() {
         feedback.className = 'text-center text-sm text-red-400';
         feedback.textContent = 'Código final incorrecto — cada fallo resta puntos (más que un fallo de sala).';
         feedback.classList.remove('hidden');
+        _saveEscapeProgress();
     }
 }
 
@@ -7993,6 +8081,9 @@ function _closeEscapeSessionOverlay() {
     if (document.fullscreenElement) { try { document.exitFullscreen(); } catch(_) {} }
     document.getElementById('eso-final-code-input').disabled = false;
     document.getElementById('eso-room-code-input').disabled = false;
+    if (escapeSession) {
+        ['roomIndex','wrongRoom','wrongFinal','atFinalCode','codesLog'].forEach(k => localStorage.removeItem(_escapeLocalKey(k)));
+    }
     escapeSession = null;
     escapeSessionGame = null;
 }
@@ -8426,6 +8517,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Banner de reanudar sesión
     document.getElementById('tarde-resume-btn')?.addEventListener('click', _resumeTardeSessionFromBanner);
+    document.getElementById('escape-resume-btn')?.addEventListener('click', _resumeEscapeSessionFromBanner);
 
     // Overlay de sesión: revelar pista / comprobar respuesta / notas / abandonar / enviar
     document.getElementById('tso-reveal-btn')?.addEventListener('click', _revealNextTardeClue);
