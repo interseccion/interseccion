@@ -365,7 +365,7 @@
     </div>
 
     <!-- ═══ PANTALLA DE INICIO ════════════════════════════════════════════ -->
-    <div id="home-screen" class="min-h-screen flex flex-col items-center justify-center p-5 pb-12" style="padding-top:max(3.5rem, env(safe-area-inset-top, 0px) + 3rem)">
+    <main id="home-screen" class="min-h-screen flex flex-col items-center justify-center p-5 pb-12" style="padding-top:max(3.5rem, env(safe-area-inset-top, 0px) + 3rem)">
 
         <!-- Blobs decorativos (SVG orgánico, no rectángulos) -->
         <div class="home-blob" aria-hidden="true">
@@ -460,7 +460,7 @@
 
             </div>
         </div>
-    </div>
+    </main>
 
     <!-- ═══ VISTA PRINCIPAL (tabs + contenido) ════════════════════════════ -->
     <div id="main-app-view" class="hidden container mx-auto px-4 pb-8 md:px-8 md:pb-8 max-w-4xl relative">
@@ -8471,9 +8471,30 @@ function _esc(str) {
     return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Accesibilidad: mantiene el foco de teclado (Tab) dentro de un contenedor de modal mientras está abierto
+function _trapTabKey(e, containerEl) {
+    if (e.key !== 'Tab' || !containerEl) return;
+    const focusable = containerEl.querySelectorAll('a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+
 // ── Event listeners ──────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Accesibilidad: foco atrapado dentro del modal + devolver el foco a quien lo abrió al cerrar
+    const _tardeModalEl = document.getElementById('tarde-game-modal');
+    _tardeModalEl?.addEventListener('keydown', (e) => _trapTabKey(e, _tardeModalEl));
+    let _lastFocusBeforeTardeModal = null;
+    document.addEventListener('focusin', (e) => { if (_tardeModalEl?.classList.contains('hidden')) _lastFocusBeforeTardeModal = e.target; });
+    const _origCloseTardeModal = closeTardeModal;
+    closeTardeModal = function() {
+        _origCloseTardeModal();
+        if (_lastFocusBeforeTardeModal && document.body.contains(_lastFocusBeforeTardeModal)) _lastFocusBeforeTardeModal.focus();
+    };
+
     // Close tarde info modal
     document.getElementById('tgm-close-btn')?.addEventListener('click', closeTardeModal);
     document.getElementById('tarde-game-modal')?.addEventListener('click', e => {
@@ -8598,6 +8619,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tarde-abandon-confirm-btn')?.addEventListener('click', _confirmAbandonTardeSession);
 
     // ── ESCAPE ROOMS: listeners ──────────────────────────────────────────────
+    // Accesibilidad: foco atrapado dentro del modal + devolver el foco a quien lo abrió al cerrar
+    const _escapeModalEl = document.getElementById('escape-game-modal');
+    _escapeModalEl?.addEventListener('keydown', (e) => _trapTabKey(e, _escapeModalEl));
+    let _lastFocusBeforeEscapeModal = null;
+    document.addEventListener('focusin', (e) => { if (_escapeModalEl?.classList.contains('hidden')) _lastFocusBeforeEscapeModal = e.target; });
+    const _origCloseEscapeModal = closeEscapeModal;
+    closeEscapeModal = function() {
+        _origCloseEscapeModal();
+        if (_lastFocusBeforeEscapeModal && document.body.contains(_lastFocusBeforeEscapeModal)) _lastFocusBeforeEscapeModal.focus();
+    };
+
     document.getElementById('egm-close-btn')?.addEventListener('click', closeEscapeModal);
     document.getElementById('escape-game-modal')?.addEventListener('click', e => {
         if (e.target === e.currentTarget) closeEscapeModal();
