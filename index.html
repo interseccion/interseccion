@@ -830,13 +830,13 @@
                 <p class="text-gray-400 mb-5 text-sm text-center">Esto solo se hace una vez.</p>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-indigo-300 mb-1">Nombre de usuario <span class="text-gray-500 font-normal">(aparece en el podio)</span></label>
+                        <label for="welcome-username" class="block text-sm font-semibold text-indigo-300 mb-1">Nombre de usuario <span class="text-gray-500 font-normal">(aparece en el podio)</span></label>
                         <input id="welcome-username" type="text" maxlength="12" placeholder="ej: nekro99" autocomplete="off" spellcheck="false"
                             class="w-full bg-gray-800 border border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg p-3 text-white font-mono placeholder-gray-600 transition outline-none">
                         <p class="text-xs text-gray-500 mt-1">3–12 caracteres. Solo minúsculas (a-z), números y guion bajo. Sin espacios.</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-indigo-300 mb-1">Nombre para mostrar <span class="text-gray-500 font-normal">(como quieres que te llamen)</span></label>
+                        <label for="welcome-displayname" class="block text-sm font-semibold text-indigo-300 mb-1">Nombre para mostrar <span class="text-gray-500 font-normal">(como quieres que te llamen)</span></label>
                         <input id="welcome-displayname" type="text" maxlength="20" placeholder="ej: El Detective Oscuro"
                             class="w-full bg-gray-800 border border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-lg p-3 text-white placeholder-gray-600 transition outline-none">
                         <p class="text-xs text-gray-500 mt-1">Máximo 20 caracteres. Puede tener espacios y tildes.</p>
@@ -1074,17 +1074,17 @@
             <div id="resolver-form">
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-bold text-gray-300 mb-1">Tu solución <span class="text-red-400">*</span></label>
+                        <label for="resolver-solucion" class="block text-sm font-bold text-gray-300 mb-1">Tu solución <span class="text-red-400">*</span></label>
                         <input type="text" id="resolver-solucion" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition" placeholder="¿Cuál crees que es la intersección?">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-300 mb-1">Explicación <span class="text-red-400">*</span></label>
+                        <label for="resolver-explicacion" class="block text-sm font-bold text-gray-300 mb-1">Explicación <span class="text-red-400">*</span></label>
                         <textarea id="resolver-explicacion" rows="3" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none" placeholder="¿Cómo llegaste a esa conclusión? Cuéntanos tu razonamiento."></textarea>
                         <p id="explicacion-error" class="hidden text-red-400 text-xs mt-1">Debes explicar tu razonamiento para poder enviar la respuesta.</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-300 mb-2">¿Cómo te ha parecido de difícil? <span class="text-gray-500 font-normal">(opcional)</span></label>
-                        <div class="flex gap-2" id="resolver-dificultad-btns">
+                        <label id="resolver-dificultad-label" class="block text-sm font-bold text-gray-300 mb-2">¿Cómo te ha parecido de difícil? <span class="text-gray-500 font-normal">(opcional)</span></label>
+                        <div class="flex gap-2" id="resolver-dificultad-btns" role="group" aria-labelledby="resolver-dificultad-label">
                             <button type="button" data-val="1" class="dif-btn flex-1 py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-green-800 text-gray-300 hover:text-white transition border border-transparent">😄 Muy fácil</button>
                             <button type="button" data-val="2" class="dif-btn flex-1 py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-lime-800 text-gray-300 hover:text-white transition border border-transparent">🙂 Fácil</button>
                             <button type="button" data-val="3" class="dif-btn flex-1 py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-yellow-800 text-gray-300 hover:text-white transition border border-transparent">😐 Normal</button>
@@ -1094,7 +1094,7 @@
                         <input type="hidden" id="resolver-dificultad" value="">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-300 mb-1">Opinión / Sugerencias <span class="text-gray-500 font-normal">(opcional)</span></label>
+                        <label for="resolver-opinion" class="block text-sm font-bold text-gray-300 mb-1">Opinión / Sugerencias <span class="text-gray-500 font-normal">(opcional)</span></label>
                         <textarea id="resolver-opinion" rows="2" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none" placeholder="¿Algo que quieras decir sobre el misterio?"></textarea>
                     </div>
                 </div>
@@ -1136,12 +1136,12 @@
         <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md">
             <div class="flex items-center justify-between p-5 border-b border-gray-700">
                 <h3 class="text-base font-bold text-white">💬 Dame tu opinión</h3>
-                <button id="feedback-modal-close" class="text-gray-400 hover:text-white text-2xl leading-none">×</button>
+                <button id="feedback-modal-close" class="text-gray-400 hover:text-white text-2xl leading-none" aria-label="Cerrar">×</button>
             </div>
             <div id="feedback-form" class="p-5 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">¿Qué tipo de comentario es?</label>
-                    <div class="grid grid-cols-2 gap-2" id="feedback-tipo-btns">
+                    <label id="feedback-tipo-label" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">¿Qué tipo de comentario es?</label>
+                    <div class="grid grid-cols-2 gap-2" id="feedback-tipo-btns" role="group" aria-labelledby="feedback-tipo-label">
                         <button type="button" data-val="sugerencia" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-indigo-800 text-gray-300 hover:text-white transition border border-transparent">💡 Sugerencia</button>
                         <button type="button" data-val="bug" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-red-900 text-gray-300 hover:text-white transition border border-transparent">🐛 Bug / Error</button>
                         <button type="button" data-val="elogio" class="feedback-tipo-btn py-2 rounded-lg text-sm font-semibold bg-gray-700 hover:bg-green-900 text-gray-300 hover:text-white transition border border-transparent">❤️ Opinión</button>
@@ -1150,8 +1150,8 @@
                     <input type="hidden" id="feedback-tipo" value="">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Valoración general <span class="normal-case text-gray-600 font-normal">(opcional)</span></label>
-                    <div class="flex gap-2" id="feedback-stars">
+                    <label id="feedback-valoracion-label" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Valoración general <span class="normal-case text-gray-600 font-normal">(opcional)</span></label>
+                    <div class="flex gap-2" id="feedback-stars" role="group" aria-labelledby="feedback-valoracion-label">
                         <button type="button" data-val="1" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="1 estrella">★</button>
                         <button type="button" data-val="2" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="2 estrellas">★</button>
                         <button type="button" data-val="3" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="3 estrellas">★</button>
@@ -1161,7 +1161,7 @@
                     <input type="hidden" id="feedback-valoracion" value="">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tu mensaje <span class="text-red-400">*</span></label>
+                    <label for="feedback-texto" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tu mensaje <span class="text-red-400">*</span></label>
                     <textarea id="feedback-texto" rows="4" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none text-sm" placeholder="Cuéntanos lo que piensas..."></textarea>
                     <p id="feedback-error" class="text-red-400 text-xs mt-1 hidden">Por favor escribe algo antes de enviar.</p>
                 </div>
@@ -6313,8 +6313,8 @@
                     <div id="eso-presentes-final-list" class="space-y-1.5"></div>
                 </div>
                 <div class="border-t border-white/10 pt-4">
-                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">¿Qué tal os ha parecido? <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
-                    <div class="flex gap-2 mb-3" id="eso-rating-stars">
+                    <label id="eso-rating-label" class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">¿Qué tal os ha parecido? <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
+                    <div class="flex gap-2 mb-3" id="eso-rating-stars" role="group" aria-labelledby="eso-rating-label">
                         <button type="button" data-val="1" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="1 estrella">★</button>
                         <button type="button" data-val="2" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="2 estrellas">★</button>
                         <button type="button" data-val="3" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="3 estrellas">★</button>
@@ -6449,7 +6449,7 @@
                 <input id="tso-answer-input" type="text" placeholder="¿Cuál es la intersección?" maxlength="200"
                     class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-amber-500 transition">
                 <div>
-                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Explicación <span class="text-red-400 font-normal normal-case">(obligatoria antes de comprobar)</span></label>
+                    <label for="tso-explain-input" class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1.5">Explicación <span class="text-red-400 font-normal normal-case">(obligatoria antes de comprobar)</span></label>
                     <textarea id="tso-explain-input" placeholder="Razonamiento o comentario… (hay que rellenarlo antes de comprobar la respuesta)" rows="2" maxlength="500"
                         class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition text-sm resize-none"></textarea>
                 </div>
@@ -6475,8 +6475,8 @@
                     <div id="tso-presentes-final-list" class="space-y-1.5"></div>
                 </div>
                 <div class="border-t border-white/10 pt-4">
-                    <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">¿Qué tal os ha parecido este misterio? <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
-                    <div class="flex gap-2 mb-3" id="tso-rating-stars">
+                    <label id="tso-rating-label" class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">¿Qué tal os ha parecido este misterio? <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
+                    <div class="flex gap-2 mb-3" id="tso-rating-stars" role="group" aria-labelledby="tso-rating-label">
                         <button type="button" data-val="1" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="1 estrella">★</button>
                         <button type="button" data-val="2" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="2 estrellas">★</button>
                         <button type="button" data-val="3" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="3 estrellas">★</button>
@@ -6535,7 +6535,7 @@
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1.5">Nombre del equipo</label>
+                    <label for="create-team-name" class="block text-sm font-medium text-gray-300 mb-1.5">Nombre del equipo</label>
                     <input id="create-team-name" type="text" maxlength="40" placeholder="Ej: Los Detectives del Jueves"
                            class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition">
                 </div>
@@ -6557,7 +6557,7 @@
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1.5">Código de invitación</label>
+                    <label for="join-team-code" class="block text-sm font-medium text-gray-300 mb-1.5">Código de invitación</label>
                     <input id="join-team-code" type="text" maxlength="6" placeholder="XXXXXX"
                            class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition font-mono text-center text-xl tracking-widest uppercase"
                            oninput="this.value=this.value.toUpperCase()">
