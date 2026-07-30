@@ -333,6 +333,7 @@
     </style>
 </head>
 <body class="text-gray-200">
+    <a href="#home-screen" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[999] focus:bg-indigo-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg">Saltar al contenido principal</a>
 
     <!-- ═══ BARRA FIJA SUPERIOR (siempre visible) ══════════════════════════ -->
     <!-- top-bar es fixed+relative para que notif-panel (absolute) se ancle al borde derecho de pantalla -->
@@ -365,7 +366,7 @@
     </header>
 
     <!-- ═══ PANTALLA DE INICIO ════════════════════════════════════════════ -->
-    <main id="home-screen" class="min-h-screen flex flex-col items-center justify-center p-5 pb-12" style="padding-top:max(3.5rem, env(safe-area-inset-top, 0px) + 3rem)">
+    <main id="home-screen" tabindex="-1" class="min-h-screen flex flex-col items-center justify-center p-5 pb-12" style="padding-top:max(3.5rem, env(safe-area-inset-top, 0px) + 3rem)">
 
         <!-- Blobs decorativos (SVG orgánico, no rectángulos) -->
         <div class="home-blob" aria-hidden="true">
@@ -842,7 +843,7 @@
                         <p class="text-xs text-gray-500 mt-1">Máximo 20 caracteres. Puede tener espacios y tildes.</p>
                         <p class="text-xs text-yellow-400/80 flex items-start gap-1.5 mt-1.5"><span>⚠️</span><span>Por tu seguridad, <strong>no uses tu nombre real</strong> ni datos que te identifiquen.</span></p>
                     </div>
-                    <p id="welcome-form-error" class="text-red-400 text-sm hidden"></p>
+                    <p id="welcome-form-error" class="text-red-400 text-sm hidden" role="alert"></p>
                     <!-- Casillas de consentimiento RGPD — las tres son obligatorias para crear cuenta -->
                     <div class="space-y-3 bg-gray-800/60 border border-gray-700 rounded-lg p-4">
                         <label class="flex items-start gap-3 cursor-pointer group">
@@ -878,7 +879,7 @@
                         class="w-full bg-gray-800 border border-gray-600 focus:border-green-500 rounded-lg p-3 text-white placeholder-gray-600 outline-none">
                     <input id="welcome-seed-input" type="text" placeholder="Frase semilla (ej: Nebula Zorro Glaciar)"
                         class="w-full bg-gray-800 border border-gray-600 focus:border-green-500 rounded-lg p-3 text-white placeholder-gray-600 outline-none font-mono tracking-wide">
-                    <p id="welcome-recover-error" class="text-red-400 text-sm hidden"></p>
+                    <p id="welcome-recover-error" class="text-red-400 text-sm hidden" role="alert"></p>
                     <button id="welcome-recover-submit-btn" class="w-full bg-green-700 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition">
                         🔓 Recuperar mi cuenta
                     </button>
@@ -1025,7 +1026,7 @@
             </div>
 
             <div class="text-left bg-yellow-900/30 p-4 rounded-lg border border-yellow-700/50 mb-5">
-                <h4 class="font-bold text-yellow-500 mb-1">¡Advertencia!</h4>
+                <h3 class="font-bold text-yellow-500 mb-1">¡Advertencia!</h3>
                 <p class="text-sm text-gray-300">Si pierdes o borras este archivo, perderás el acceso a tu progreso. Basta con ejecutarlo para volver a entrar.</p>
             </div>
             <div class="grid grid-cols-1 gap-3">
@@ -1080,7 +1081,7 @@
                     <div>
                         <label for="resolver-explicacion" class="block text-sm font-bold text-gray-300 mb-1">Explicación <span class="text-red-400">*</span></label>
                         <textarea id="resolver-explicacion" rows="3" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none" placeholder="¿Cómo llegaste a esa conclusión? Cuéntanos tu razonamiento."></textarea>
-                        <p id="explicacion-error" class="hidden text-red-400 text-xs mt-1">Debes explicar tu razonamiento para poder enviar la respuesta.</p>
+                        <p id="explicacion-error" class="hidden text-red-400 text-xs mt-1" role="alert">Debes explicar tu razonamiento para poder enviar la respuesta.</p>
                     </div>
                     <div>
                         <label id="resolver-dificultad-label" class="block text-sm font-bold text-gray-300 mb-2">¿Cómo te ha parecido de difícil? <span class="text-gray-500 font-normal">(opcional)</span></label>
@@ -1163,7 +1164,7 @@
                 <div>
                     <label for="feedback-texto" class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tu mensaje <span class="text-red-400">*</span></label>
                     <textarea id="feedback-texto" rows="4" class="w-full bg-gray-900 border border-gray-600 focus:border-indigo-500 rounded-lg p-3 text-white outline-none transition resize-none text-sm" placeholder="Cuéntanos lo que piensas..."></textarea>
-                    <p id="feedback-error" class="text-red-400 text-xs mt-1 hidden">Por favor escribe algo antes de enviar.</p>
+                    <p id="feedback-error" class="text-red-400 text-xs mt-1 hidden" role="alert">Por favor escribe algo antes de enviar.</p>
                 </div>
                 <div class="flex justify-end gap-3 pt-1">
                     <button id="feedback-cancel-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition">Cancelar</button>
@@ -1180,7 +1181,7 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast-notification"></div>
+    <div id="toast-notification" role="status" aria-live="polite"></div>
 
     <!-- Modal de detalle de notificación -->
     <div id="notif-detail-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-[95]">
@@ -1217,7 +1218,7 @@
                     <button id="tli-cancel-btn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2.5 rounded-xl transition">Ahora no</button>
                     <button id="tli-join-btn" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl transition">Unirme</button>
                 </div>
-                <p id="tli-error" class="text-red-400 text-xs text-center mt-3 hidden"></p>
+                <p id="tli-error" class="text-red-400 text-xs text-center mt-3 hidden" role="alert"></p>
             </div>
         </div>
     </div>
@@ -6131,7 +6132,7 @@
                 <button id="tgm-start-session-btn" class="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition">
                     Empezar misterio
                 </button>
-                <p id="tgm-presentes-error" class="text-red-400 text-xs text-center hidden"></p>
+                <p id="tgm-presentes-error" class="text-red-400 text-xs text-center hidden" role="alert"></p>
             </div>
 
         </div>
@@ -6233,7 +6234,7 @@
                 <button id="egm-start-session-btn" class="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition">
                     Entrar al escape room
                 </button>
-                <p id="egm-presentes-error" class="text-red-400 text-xs text-center hidden"></p>
+                <p id="egm-presentes-error" class="text-red-400 text-xs text-center hidden" role="alert"></p>
             </div>
 
         </div>
@@ -6328,7 +6329,7 @@
                 <button id="eso-submit-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition">
                     Enviar y terminar
                 </button>
-                <p id="eso-submit-error" class="text-red-400 text-xs text-center hidden"></p>
+                <p id="eso-submit-error" class="text-red-400 text-xs text-center hidden" role="alert"></p>
             </div>
         </div>
     </div>
@@ -6490,7 +6491,7 @@
                 <button id="tso-submit-btn" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition">
                     Enviar y terminar
                 </button>
-                <p id="tso-submit-error" class="text-red-400 text-xs text-center hidden"></p>
+                <p id="tso-submit-error" class="text-red-400 text-xs text-center hidden" role="alert"></p>
             </div>
         </div>
     </div>
@@ -6540,7 +6541,7 @@
                            class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 focus:border-amber-500 transition">
                 </div>
                 <p class="text-xs text-gray-500">Se generará un código de invitación automáticamente (6 caracteres). Compártelo con tu equipo para que puedan unirse.</p>
-                <p id="create-team-error" class="text-red-400 text-sm hidden"></p>
+                <p id="create-team-error" class="text-red-400 text-sm hidden" role="alert"></p>
                 <button id="create-team-submit-btn" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-xl transition">
                     Crear equipo
                 </button>
@@ -6563,7 +6564,7 @@
                            oninput="this.value=this.value.toUpperCase()">
                 </div>
                 <div id="join-team-preview" class="hidden bg-gray-800/60 border border-gray-700/40 rounded-xl px-4 py-3 text-sm text-gray-300"></div>
-                <p id="join-team-error" class="text-red-400 text-sm hidden"></p>
+                <p id="join-team-error" class="text-red-400 text-sm hidden" role="alert"></p>
                 <button id="join-team-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition">
                     Unirse
                 </button>
