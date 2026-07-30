@@ -336,7 +336,7 @@
 
     <!-- ═══ BARRA FIJA SUPERIOR (siempre visible) ══════════════════════════ -->
     <!-- top-bar es fixed+relative para que notif-panel (absolute) se ancle al borde derecho de pantalla -->
-    <div id="top-bar" class="fixed top-0 right-0 flex items-center gap-2 z-30 p-3" style="position:fixed">
+    <header id="top-bar" class="fixed top-0 right-0 flex items-center gap-2 z-30 p-3" style="position:fixed">
         <span id="streak-badge" class="text-xs font-bold bg-gray-700/40 text-gray-400 border border-gray-600/40 px-2 py-1 rounded-full">🔥 …</span>
         <div class="relative" id="bell-wrapper">
             <button id="bell-btn" class="bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 font-bold p-2 rounded-full border border-indigo-500/30 transition-all flex items-center justify-center" title="Notificaciones">
@@ -362,7 +362,7 @@
                 <p class="text-gray-500 text-sm text-center py-8">Cargando...</p>
             </div>
         </div>
-    </div>
+    </header>
 
     <!-- ═══ PANTALLA DE INICIO ════════════════════════════════════════════ -->
     <main id="home-screen" class="min-h-screen flex flex-col items-center justify-center p-5 pb-12" style="padding-top:max(3.5rem, env(safe-area-inset-top, 0px) + 3rem)">
@@ -464,10 +464,10 @@
 
     <!-- ═══ VISTA PRINCIPAL (tabs + contenido) ════════════════════════════ -->
     <div id="main-app-view" class="hidden container mx-auto px-4 pb-8 md:px-8 md:pb-8 max-w-4xl relative">
-        <header class="text-center mb-6 relative">
+        <div class="text-center mb-6 relative">
             <h1 class="section-hero-title text-3xl md:text-4xl tracking-tight">La Intersección</h1>
             <p class="mt-2 text-base text-gray-400">Un juego de misterios semanales.</p>
-        </header>
+        </div>
 
     <!-- Modal de notas: bloc de notas global guardado en localStorage. Un único bloc
          compartido para todos los misterios — simple y fácil de encontrar. -->
