@@ -2294,11 +2294,11 @@
             if(!text) return '';
             // Reemplazar @{UUID|Nombre} por enlace a perfil
             let processed = text.replace(/@\{([^|]+)\|([^}]+)\}/g, (match, id, name) => {
-                return `<span class="cursor-pointer text-indigo-400 hover:text-indigo-300 hover:underline font-bold" onclick="openProfileById('${id}')">@${name}</span>`;
+                return `<span class="cursor-pointer text-indigo-400 hover:text-indigo-300 hover:underline font-bold" onclick="openProfileById('${id}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'){openProfileById('${id}')}">@${name}</span>`;
             });
             // Reemplazar #{ID_Juego|Nombre} por enlace a juego
             processed = processed.replace(/#\{([^|]+)\|([^}]+)\}/g, (match, id, name) => {
-                return `<span class="cursor-pointer text-yellow-400 hover:text-yellow-300 hover:underline font-bold" onclick="openGameById('${id}')">#${name}</span>`;
+                return `<span class="cursor-pointer text-yellow-400 hover:text-yellow-300 hover:underline font-bold" onclick="openGameById('${id}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'){openGameById('${id}')}">#${name}</span>`;
             });
             return processed;
         }
@@ -3804,7 +3804,7 @@
                             }
 
                             // CAMBIO 1: NOMBRE CLICABLE
-                            tableHTML += `<tr class="${rowClass}"><td class="p-3 text-lg">${rankDisplay}</td><td class="p-3"><span class="cursor-pointer hover:text-indigo-300 hover:underline" onclick="openProfileById('${entry.id}')">${entry.name}</span> ${entry.id === currentPublicId() ? '(Tú)' : ''}</td><td class="p-3 text-right text-green-400 font-mono">${entry.points}</td></tr>`;
+                            tableHTML += `<tr class="${rowClass}"><td class="p-3 text-lg">${rankDisplay}</td><td class="p-3"><span class="cursor-pointer hover:text-indigo-300 hover:underline" onclick="openProfileById('${entry.id}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'){openProfileById('${entry.id}')}">${entry.name}</span> ${entry.id === currentPublicId() ? '(Tú)' : ''}</td><td class="p-3 text-right text-green-400 font-mono">${entry.points}</td></tr>`;
                         });
                         tableHTML += `</tbody></table>`;
                         dom.modalContent.innerHTML = `<h3 class="text-xl font-bold text-center text-yellow-500 mb-2">Podio: ${game.title}</h3>${tableHTML}`;
@@ -3865,7 +3865,7 @@
                             let rClass = "border-b border-gray-700/50 hover:bg-gray-700/30";
                             if(u.id === currentPublicId()) rClass += " bg-indigo-900/30 text-indigo-200 border-indigo-500 border-l-2";
                             // Al hacer clic aquí, abre perfil DE ESA TEMPORADA
-                            html += `<tr class="${rClass}"><td class="p-2 font-mono text-gray-500">${i+1}</td><td class="p-2"><span class="cursor-pointer hover:text-indigo-300 hover:underline" onclick="openSeasonProfile('${u.id}', '${game.id}')">${u.name}</span></td><td class="p-2 text-right font-bold text-green-400">${u.points}</td></tr>`;
+                            html += `<tr class="${rClass}"><td class="p-2 font-mono text-gray-500">${i+1}</td><td class="p-2"><span class="cursor-pointer hover:text-indigo-300 hover:underline" onclick="openSeasonProfile('${u.id}', '${game.id}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'){openSeasonProfile('${u.id}', '${game.id}')}">${u.name}</span></td><td class="p-2 text-right font-bold text-green-400">${u.points}</td></tr>`;
                         });
                         html += `</tbody></table>`;
                         dom.modalContent.innerHTML = html;
@@ -4911,6 +4911,24 @@
 
             dom.cancelRedirectBtn.addEventListener('click', () => dom.redirectModal.classList.remove('active'));
             dom.confirmRedirectBtn.addEventListener('click', () => { dom.redirectModal.classList.remove('active'); if(pendingRedirectUrl) window.open(pendingRedirectUrl, '_blank'); });
+            // Accesibilidad: mantener el foco de teclado dentro del modal mientras está abierto (Tab no se escapa a la página de fondo)
+            dom.modal.addEventListener('keydown', (e) => {
+                if (e.key !== 'Tab') return;
+                const focusable = dom.modal.querySelectorAll('a[href], button:not([disabled]), textarea, input:not([disabled]), select, [tabindex]:not([tabindex="-1"])');
+                if (!focusable.length) return;
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            });
+            // Accesibilidad: recordar qué elemento tenía el foco antes de abrir el modal, para devolvérselo al cerrar
+            let _lastFocusBeforeModal = null;
+            document.addEventListener('focusin', (e) => { if (!dom.modal.classList.contains('active')) _lastFocusBeforeModal = e.target; });
+            const _origCloseModal = closeModal;
+            closeModal = function() {
+                _origCloseModal();
+                if (_lastFocusBeforeModal && document.body.contains(_lastFocusBeforeModal)) _lastFocusBeforeModal.focus();
+            };
+
             dom.modalCloseBtn.addEventListener('click', closeModal);
             dom.modalBackBtn.addEventListener('click', goBackModal);
             dom.modal.addEventListener('click', (e) => { if (e.target === dom.modal) closeModal(); });
@@ -6805,7 +6823,7 @@ function _teamCardHTML(team, pubId) {
                 </button>
             </div>
             <div class="flex flex-wrap gap-1.5 mt-3">
-                ${(team.members || []).map(m => `<span class="member-chip" style="cursor:pointer" onclick="event.stopPropagation();openProfileById('${m}')">${_esc(String(m).substring(0,8))}…</span>`).join('')}
+                ${(team.members || []).map(m => `<span class="member-chip" style="cursor:pointer" onclick="event.stopPropagation();openProfileById('${m}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'){event.stopPropagation();openProfileById('${m}')}">${_esc(String(m).substring(0,8))}…</span>`).join('')}
             </div>
         </div>`;
 }
@@ -6858,7 +6876,7 @@ function _renderTardeGames() {
     // NOTA: en la lista NUNCA se muestran las pistas, solo título/descripción/dificultad/duración,
     // para que nadie pueda verlas sin haber empezado la partida.
     const cardHTML = g => `
-        <div onclick="openTardeModal('${g.id}')"
+        <div onclick="openTardeModal('${g.id}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openTardeModal('${g.id}')}"
              class="cursor-pointer bg-gray-800/40 border border-gray-700/40 rounded-2xl p-5 hover:border-amber-500/40 hover:bg-gray-800/70 transition group ${yaJugado(g) && !g.isSolved ? 'opacity-60' : ''}">
             <div class="flex items-start justify-between mb-3">
                 <span class="tarde-badge text-xs font-bold px-2 py-0.5 rounded-full">${_esc(g.type || 'Tarde')}</span>
@@ -8300,7 +8318,7 @@ async function showTeamProfile(teamId) {
                 <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">Miembros</div>
                 <div class="flex flex-wrap gap-1.5">
                     ${team.members.map(m => `
-                        <span class="member-chip" style="cursor:pointer" onclick="openProfileById('${m}')">
+                        <span class="member-chip" style="cursor:pointer" onclick="openProfileById('${m}')" role="link" tabindex="0" onkeydown="if(event.key==='Enter'){openProfileById('${m}')}">
                             ${m === team.captain ? '👑 ' : ((team.admins||[]).includes(m) ? '⭐ ' : '')}${_esc(String(m).substring(0,12))}…
                         </span>`).join('')}
                 </div>
@@ -8461,6 +8479,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('tarde-game-modal')?.addEventListener('click', e => {
         if (e.target === e.currentTarget) closeTardeModal();
     });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !document.getElementById('tarde-game-modal')?.classList.contains('hidden')) closeTardeModal();
+    });
 
     // Back to info step from presentes-inicio step
     document.getElementById('tgm-back-btn')?.addEventListener('click', () => _tgmShowStep('game'));
@@ -8580,6 +8601,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('egm-close-btn')?.addEventListener('click', closeEscapeModal);
     document.getElementById('escape-game-modal')?.addEventListener('click', e => {
         if (e.target === e.currentTarget) closeEscapeModal();
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !document.getElementById('escape-game-modal')?.classList.contains('hidden')) closeEscapeModal();
     });
     document.getElementById('egm-back-btn')?.addEventListener('click', () => _egmShowStep('game'));
     document.getElementById('egm-goto-presentes-btn')?.addEventListener('click', _openEscapePresentesStep);
