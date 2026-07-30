@@ -339,7 +339,7 @@
     <header id="top-bar" class="fixed top-0 right-0 flex items-center gap-2 z-30 p-3" style="position:fixed">
         <span id="streak-badge" class="text-xs font-bold bg-gray-700/40 text-gray-400 border border-gray-600/40 px-2 py-1 rounded-full">🔥 …</span>
         <div class="relative" id="bell-wrapper">
-            <button id="bell-btn" class="bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 font-bold p-2 rounded-full border border-indigo-500/30 transition-all flex items-center justify-center" title="Notificaciones">
+            <button id="bell-btn" class="bg-indigo-900/50 hover:bg-indigo-800 text-indigo-300 font-bold p-2 rounded-full border border-indigo-500/30 transition-all flex items-center justify-center" title="Notificaciones" aria-label="Notificaciones">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
             </button>
             <span id="bell-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center leading-none">0</span>
@@ -554,7 +554,7 @@
             <div id="podio" class="tab-content hidden fade-in">
                 <div class="panel panel-amber p-6 md:p-8 relative">
                     <!-- Botón de Información de Puntos (z-index y margen para no tapar) -->
-                    <button id="scoring-info-btn" class="absolute top-4 right-4 z-10 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center transition shadow-lg" title="Cómo se calculan los puntos">ℹ️</button>
+                    <button id="scoring-info-btn" class="absolute top-4 right-4 z-10 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center transition shadow-lg" title="Cómo se calculan los puntos" aria-label="Cómo se calculan los puntos">ℹ️</button>
                     <!-- Botón Ver mi perfil (antes tarjeta "Mi Cuenta" en el inicio) -->
                     <button id="podio-my-profile-btn" class="absolute top-4 left-4 z-10 text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full text-xs font-semibold px-3 h-8 flex items-center gap-1.5 transition shadow-lg" title="Ver mi perfil">👤 Mi perfil</button>
 
@@ -742,7 +742,7 @@
                 <!-- Podio de Equipos -->
                 <section>
                     <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">🏆 Podio de Equipos
-                        <button id="tarde-scoring-info-btn" class="text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-7 h-7 flex items-center justify-center transition shadow-lg text-sm" title="Cómo se calculan los puntos">ℹ️</button>
+                        <button id="tarde-scoring-info-btn" class="text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-7 h-7 flex items-center justify-center transition shadow-lg text-sm" title="Cómo se calculan los puntos" aria-label="Cómo se calculan los puntos">ℹ️</button>
                     </h2>
                     <div id="tarde-podio-container">
                         <p class="text-gray-500 text-sm text-center py-6">⏳ Cargando podio...</p>
@@ -1152,11 +1152,11 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Valoración general <span class="normal-case text-gray-600 font-normal">(opcional)</span></label>
                     <div class="flex gap-2" id="feedback-stars">
-                        <button type="button" data-val="1" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="2" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="3" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="4" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="5" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="1" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="1 estrella">★</button>
+                        <button type="button" data-val="2" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="2 estrellas">★</button>
+                        <button type="button" data-val="3" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="3 estrellas">★</button>
+                        <button type="button" data-val="4" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="4 estrellas">★</button>
+                        <button type="button" data-val="5" class="star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="5 estrellas">★</button>
                     </div>
                     <input type="hidden" id="feedback-valoracion" value="">
                 </div>
@@ -2685,7 +2685,7 @@
                     <div class="flex items-center justify-between gap-2">
                         <button id="tour-skip-btn" class="text-xs text-gray-500 hover:text-gray-300">Saltar tour</button>
                         <div class="flex gap-2">
-                            <button id="tour-prev-btn" class="text-sm bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg">←</button>
+                            <button id="tour-prev-btn" class="text-sm bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg" aria-label="Anterior">←</button>
                             <button id="tour-next-btn" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-1.5 rounded-lg">Siguiente →</button>
                         </div>
                     </div>
@@ -3597,7 +3597,7 @@
                     <span class="text-xs font-bold px-3 py-1 ${typeData.color} text-white rounded-full">${typeData.label}</span>
                     <span class="text-xs font-bold px-3 py-1 ${difficultyData.bgColor} ${difficultyData.textColor} rounded-full">${difficultyData.label} ${difficultyData.emoji}</span>
                     ${seasonBadge}
-                    <button id="modal-fav-btn" class="ml-2 hover:scale-110 transition-transform">${getStarIconSVG(isFav)}</button>
+                    <button id="modal-fav-btn" class="ml-2 hover:scale-110 transition-transform" aria-label="${isFav ? 'Quitar de favoritos' : 'Marcar como favorito'}">${getStarIconSVG(isFav)}</button>
                 `;
                 document.getElementById('modal-fav-btn').addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(game.id); });
             }
@@ -6039,7 +6039,7 @@
                     <span class="tarde-badge text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" id="tgm-type-badge">Tarde</span>
                     <h2 class="text-sm font-bold text-white truncate" id="tgm-title">—</h2>
                 </div>
-                <button id="tgm-close-btn" class="text-gray-400 hover:text-white transition p-1.5 rounded-lg hover:bg-gray-700 flex-shrink-0">
+                <button id="tgm-close-btn" class="text-gray-400 hover:text-white transition p-1.5 rounded-lg hover:bg-gray-700 flex-shrink-0" aria-label="Cerrar">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -6150,7 +6150,7 @@
                     <span class="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" style="background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);color:#c4b5fd;">🔐 Escape Room</span>
                     <h2 class="text-sm font-bold text-white truncate" id="egm-title">—</h2>
                 </div>
-                <button id="egm-close-btn" class="text-gray-400 hover:text-white transition p-1.5 rounded-lg hover:bg-gray-700 flex-shrink-0">
+                <button id="egm-close-btn" class="text-gray-400 hover:text-white transition p-1.5 rounded-lg hover:bg-gray-700 flex-shrink-0" aria-label="Cerrar">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -6315,11 +6315,11 @@
                 <div class="border-t border-white/10 pt-4">
                     <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">¿Qué tal os ha parecido? <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
                     <div class="flex gap-2 mb-3" id="eso-rating-stars">
-                        <button type="button" data-val="1" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="2" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="3" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="4" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="5" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="1" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="1 estrella">★</button>
+                        <button type="button" data-val="2" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="2 estrellas">★</button>
+                        <button type="button" data-val="3" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="3 estrellas">★</button>
+                        <button type="button" data-val="4" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="4 estrellas">★</button>
+                        <button type="button" data-val="5" class="escape-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="5 estrellas">★</button>
                     </div>
                     <input type="hidden" id="eso-rating-value" value="">
                     <textarea id="eso-rating-comment" rows="2" maxlength="500" placeholder="Comentario opcional…"
@@ -6477,11 +6477,11 @@
                 <div class="border-t border-white/10 pt-4">
                     <label class="block text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">¿Qué tal os ha parecido este misterio? <span class="text-gray-600 font-normal normal-case">(opcional)</span></label>
                     <div class="flex gap-2 mb-3" id="tso-rating-stars">
-                        <button type="button" data-val="1" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="2" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="3" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="4" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
-                        <button type="button" data-val="5" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition">★</button>
+                        <button type="button" data-val="1" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="1 estrella">★</button>
+                        <button type="button" data-val="2" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="2 estrellas">★</button>
+                        <button type="button" data-val="3" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="3 estrellas">★</button>
+                        <button type="button" data-val="4" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="4 estrellas">★</button>
+                        <button type="button" data-val="5" class="tarde-star-btn text-2xl text-gray-600 hover:text-yellow-400 transition" aria-label="5 estrellas">★</button>
                     </div>
                     <input type="hidden" id="tso-rating-value" value="">
                     <textarea id="tso-rating-comment" rows="2" maxlength="500" placeholder="Comentario opcional sobre el misterio…"
@@ -6531,7 +6531,7 @@
         <div class="tarde-modal-box" style="max-width:440px">
             <div class="px-6 py-5 border-b border-gray-700/60 flex items-center justify-between">
                 <h3 class="font-bold text-white text-lg">Crear equipo</h3>
-                <button onclick="document.getElementById('create-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition">✕</button>
+                <button onclick="document.getElementById('create-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition" aria-label="Cerrar">✕</button>
             </div>
             <div class="p-6 space-y-4">
                 <div>
@@ -6553,7 +6553,7 @@
         <div class="tarde-modal-box" style="max-width:400px">
             <div class="px-6 py-5 border-b border-gray-700/60 flex items-center justify-between">
                 <h3 class="font-bold text-white text-lg">Unirse a un equipo</h3>
-                <button onclick="document.getElementById('join-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition">✕</button>
+                <button onclick="document.getElementById('join-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition" aria-label="Cerrar">✕</button>
             </div>
             <div class="p-6 space-y-4">
                 <div>
@@ -6576,7 +6576,7 @@
         <div class="tarde-modal-box" style="max-width:500px">
             <div class="px-6 py-5 border-b border-gray-700/60 flex items-center justify-between">
                 <h3 class="font-bold text-white text-lg" id="manage-team-title">Gestionar equipo</h3>
-                <button onclick="document.getElementById('manage-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition">✕</button>
+                <button onclick="document.getElementById('manage-team-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition" aria-label="Cerrar">✕</button>
             </div>
             <div id="manage-team-body" class="p-6 space-y-5"></div>
         </div>
@@ -8274,7 +8274,7 @@ async function showTardeMysteryPodio() {
         };
 
         const content = `<div class="flex justify-end mb-2">
-                <button onclick="showTardeScoringInfo()" class="text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-7 h-7 flex items-center justify-center transition shadow-lg text-sm" title="Cómo se calculan los puntos">ℹ️</button>
+                <button onclick="showTardeScoringInfo()" class="text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-full w-7 h-7 flex items-center justify-center transition shadow-lg text-sm" title="Cómo se calculan los puntos" aria-label="Cómo se calculan los puntos">ℹ️</button>
             </div>`
             + block('⚡ Por puntos', data.byPoints, e => `${Math.round(e.points)} pts`)
             + block('⏱️ Por tiempo', data.byTime, e => _fmtTardeSeconds(e.timeSeconds))
