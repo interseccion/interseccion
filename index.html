@@ -1532,8 +1532,10 @@
             try {
                 const res  = await fetch(`${APPS_SCRIPT_URL}?action=createAccount` +
                     `&username=${encodeURIComponent(username)}&displayName=${encodeURIComponent(displayName)}`);
-                const data = await res.json();
-                return data.ok ? data : null;
+                // Devolvemos la respuesta completa aunque falle (ok:false), para poder
+                // mostrar el motivo real (nombre bloqueado, ya cogido...) en vez de un
+                // genérico "no se pudo contactar con el servidor".
+                return await res.json();
             } catch(e) { return null; }
         }
 
@@ -1840,8 +1842,15 @@
                 dom.welcomeSubmitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
             };
 
-            // 1) Comprobar duplicados
+            // 1) Comprobar duplicados / nombres bloqueados
             const availCheck = await checkUsernameAvailable(username);
+            if (availCheck && availCheck.blocked) {
+                dom.welcomeFormError.textContent = `❌ ${availCheck.message || 'Ese nombre de usuario no está permitido.'}`;
+                dom.welcomeFormError.classList.remove('hidden');
+                dom.welcomeUsername.focus();
+                unlock();
+                return;
+            }
             if (availCheck && !availCheck.available) {
                 const suggestion = availCheck.suggestion || (username + '2');
                 // Error visible justo debajo de la caja de nombre, no como toast discreto.
@@ -1854,6 +1863,21 @@
 
             // 2) Crear cuenta en el servidor (nunca en el cliente)
             const serverResult = await createAccountOnServer(username, displayName);
+            if (serverResult && serverResult.error === 'blocked') {
+                dom.welcomeFormError.textContent = `❌ ${serverResult.message || 'Ese nombre de usuario no está permitido.'}`;
+                dom.welcomeFormError.classList.remove('hidden');
+                dom.welcomeUsername.focus();
+                unlock();
+                return;
+            }
+            if (serverResult && serverResult.error === 'username_taken') {
+                const suggestion = serverResult.suggestion || (username + '2');
+                dom.welcomeFormError.textContent = `❌ El nombre "${username}" ya está registrado. Prueba con "${suggestion}" o elige otro.`;
+                dom.welcomeFormError.classList.remove('hidden');
+                dom.welcomeUsername.focus();
+                unlock();
+                return;
+            }
             if (!serverResult || !serverResult.privateId) {
                 dom.welcomeFormError.textContent = '❌ No se pudo contactar con el servidor. Inténtalo de nuevo.';
                 dom.welcomeFormError.classList.remove('hidden');
