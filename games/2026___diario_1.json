@@ -1,0 +1,54 @@
+{
+  "id": "b058cd4f-c0b5-4703-9174-0e3afecab7a9",
+  "title": "2026 - Diario 1",
+  "type": "Diario",
+  "difficulty": "Medio",
+  "mystery": "Una persona",
+  "showMystery": false,
+  "notes": "Uno diario para el calor. Pistas nuevas a las cuatro.",
+  "startDate": "2026-08-13",
+  "googleFormLink": "",
+  "formEntryId": "",
+  "clues": [
+    {
+      "type": "image",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/ojos.jpg",
+      "text": null,
+      "publishDate": "2026-08-14T16:00"
+    },
+    {
+      "type": "text",
+      "content": "T",
+      "text": null,
+      "publishDate": "2026-08-15T16:00"
+    },
+    {
+      "type": "audio",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/evamaria.mp3",
+      "text": null,
+      "publishDate": "2026-08-16T16:00"
+    },
+    {
+      "type": "image",
+      "content": "https://raw.githubusercontent.com/interseccion/archivos/refs/heads/main/2026/cid.jpg",
+      "text": null,
+      "publishDate": "2026-08-17T16:00"
+    },
+    {
+      "type": "image",
+      "content": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Sealtiel.jpg",
+      "text": null,
+      "publishDate": "2026-08-18T16:00"
+    }
+  ],
+  "isSolved": false,
+  "endDate": "",
+  "solution": "Arturo Pérez-Reverte",
+  "winner": "",
+  "winnerId": "",
+  "explanation": "1. Uno de sus libros es « Ojos azules ».\n2. Es el ocupante del sillón « T » de la RAE.\n3. Otro de sus libros se titula « Eva ».\n4. Otro de sus libros es « Sidi », y trata sobre el Cid.\n5. Enrique Sealtiel Alatriste y Lozano, más conocido como Sealtiel Alatriste, es un escritor mexicano amigo de Arturo. Además, « Alatriste » es uno de sus más célebres personajes.",
+  "winnerExplanation": "",
+  "bibliography": "",
+  "utd": 24,
+  "lastUpdated": "2026-08-14T16:12:36.387Z"
+}
