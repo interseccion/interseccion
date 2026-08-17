@@ -4,7 +4,7 @@
   "type": "Diario",
   "difficulty": "Medio",
   "mystery": "Una persona",
-  "showMystery": false,
+  "showMystery": true,
   "notes": "Uno diario para el calor. Pistas nuevas a las cuatro.",
   "startDate": "2026-08-13",
   "googleFormLink": "https://forms.gle/VVMt2tku3YKPMQsSA",
